@@ -38,7 +38,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Código HTML, CSS y JavaScript completo del juego Balatro Factor Común
 GAME_HTML = """
 <!DOCTYPE html>
 <html lang="es">
@@ -48,17 +47,12 @@ GAME_HTML = """
     <title>Balatro Factor Común</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-    <!-- Firebase Realtime Database para sincronización real instantánea multiusuario -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     
     <style>
         :root {
             --balatro-blue: #2d82d7;
             --balatro-red: #d73a3a;
             --balatro-yellow: #f5d342;
-            --balatro-bg-center: #1a4f3b;
-            --balatro-bg-edge: #0d2119;
             --card-white: #f3f3f3;
         }
 
@@ -67,16 +61,42 @@ GAME_HTML = """
             -webkit-tap-highlight-color: transparent;
         }
 
-        @keyframes bg-swirl {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        /* FONDO DINÁMICO MEJORADO (Estilo Pixel Art Espiral Verde) */
+        @keyframes bg-swirl-fast {
+            0% { transform: scale(1.1) rotate(0deg); }
+            50% { transform: scale(1.3) rotate(180deg); }
+            100% { transform: scale(1.1) rotate(360deg); }
         }
 
+        .swirl-container {
+            position: fixed;
+            top: -20%; left: -20%; width: 140vw; height: 140vh;
+            /* Usamos un patrón SVG procedural de ruido verde y un degradado espiralado para emular pixel art psicodélico */
+            background: 
+                radial-gradient(circle at center, transparent 30%, rgba(13, 33, 25, 0.9) 70%),
+                conic-gradient(from 0deg at 50% 50%, #0d2119, #0e3020, #164e33, #0d2119, #237b4f, #113624, #0d2119);
+            background-blend-mode: multiply;
+            z-index: -2;
+            animation: bg-swirl-fast 20s linear infinite;
+            filter: contrast(140%) brightness(85%);
+            transition: filter 1.5s ease-in-out;
+        }
+
+        /* Ruido Pixel Art overlay */
+        .pixel-overlay {
+            position: fixed; top:0; left:0; width:100vw; height:100vh;
+            background-image: radial-gradient(rgba(0,0,0,0.15) 1px, transparent 0);
+            background-size: 4px 4px;
+            pointer-events: none; z-index: -1;
+            opacity: 0.6;
+        }
+
+        /* DEFINICIÓN DE TONALIDADES POR RONDA (Se aplicará por JS) */
+        .bg-ronda-1 { filter: contrast(130%) brightness(75%) hue-rotate(0deg); } /* Verde original */
+        .bg-ronda-2 { filter: contrast(145%) brightness(80%) hue-rotate(-25deg); } /* Verde más claro / brillante */
+        .bg-ronda-3 { filter: contrast(120%) brightness(70%) hue-rotate(45deg); } /* Verde azulado */
+
         body {
-            background: linear-gradient(-45deg, #0d2119, #1a4f3b, #091711, #133a28);
-            background-size: 400% 400%;
-            animation: bg-swirl 15s ease infinite;
             color: white;
             font-family: 'VT323', monospace;
             overflow: hidden;
@@ -101,7 +121,7 @@ GAME_HTML = """
             box-shadow: inset 0 0 80px rgba(0,0,0,0.8);
         }
 
-        /* Responsive Balatro Cards */
+        /* Balatro Cards */
         .balatro-card {
             width: 95px; height: 140px;
             background-color: var(--card-white);
@@ -112,7 +132,6 @@ GAME_HTML = """
             cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
 
-        /* Balanceo orgánico continuo estilo Balatro */
         @keyframes balatro-sway-1 {
             0%, 100% { transform: translateY(0px) rotate(-1.5deg); }
             50% { transform: translateY(-7px) rotate(1.2deg); }
@@ -174,6 +193,10 @@ GAME_HTML = """
 </head>
 <body class="p-2 sm:p-4">
     <div class="crt-overlay"></div>
+    <!-- Contenedor espiral retro -->
+    <div id="psychedelic-bg" class="swirl-container bg-ronda-1"></div>
+    <div class="pixel-overlay"></div>
+    
     <canvas id="fx-canvas"></canvas>
 
     <!-- INTRO MODAL (User Nickname) -->
@@ -188,7 +211,7 @@ GAME_HTML = """
         </div>
     </div>
 
-    <!-- BOTONES INFERIORES FIJOS (MÓVIL / ESCRITORIO) -->
+    <!-- BOTONES INFERIORES -->
     <div class="fixed bottom-3 left-3 z-40">
         <button onclick="toggleTutorial()" class="bg-purple-900/90 border-2 border-purple-400 text-white font-arcade text-xs p-3 rounded-xl shadow-[0_0_15px_rgba(168,85,247,0.5)] hover:scale-105 transition-transform">
             💡 TUTO
@@ -200,7 +223,7 @@ GAME_HTML = """
         </button>
     </div>
 
-    <!-- TUTORIAL LATERAL CON EMOJIS -->
+    <!-- PANEL TUTORIAL -->
     <div id="tutorial-panel" class="fixed left-0 top-0 h-full w-64 sm:w-72 bg-black/95 border-r-2 border-purple-500/50 p-4 flex flex-col z-50 transform -translate-x-full transition-transform duration-300 shadow-2xl">
         <div class="flex justify-between items-center mb-6 border-b border-purple-500/30 pb-2 mt-2">
             <h3 class="font-arcade text-[12px] text-purple-400">💡 ¿CÓMO JUGAR?</h3>
@@ -220,22 +243,22 @@ GAME_HTML = """
         </p>
     </div>
 
-    <!-- PANEL LATERAL DESPLEGABLE DE RANKING REAL EN LA NUBE -->
+    <!-- PANEL CLASIFICACIÓN (Con Bots y Jugador) -->
     <aside id="leaderboard-panel" class="fixed right-0 top-0 h-full w-64 sm:w-72 bg-black/95 border-l-2 border-blue-500/50 p-3 flex flex-col z-50 transform translate-x-full transition-transform duration-300 shadow-2xl">
         <div class="flex justify-between items-center mb-2 border-b border-blue-500/30 pb-2 mt-2">
             <button onclick="toggleLeaderboard()" class="text-white text-xl">✕</button>
             <div class="text-right">
                 <h3 class="font-arcade text-[10px] text-yellow-400">🏆 RANKING EN VIVO</h3>
-                <span id="sync-status" class="text-[8px] font-arcade text-emerald-400">● SINCRONIZADO</span>
+                <span id="sync-status" class="text-[8px] font-arcade text-emerald-400">● 25 JUGADORES</span>
             </div>
         </div>
         <div class="text-[9px] text-gray-400 font-arcade mb-2 text-center">AULA COMPITIENDO EN TIEMPO REAL</div>
         <div id="leaderboard" class="flex-grow overflow-y-auto lb-scroll flex flex-col gap-1 pr-1">
-            <!-- Inyectado en tiempo real desde la nube -->
+            <!-- Inyectado por JS -->
         </div>
     </aside>
 
-    <!-- HEADER SUPERIOR: NIVEL, COMODINES Y PUNTAJE -->
+    <!-- HEADER -->
     <header class="flex justify-between items-center z-10 max-w-5xl mx-auto w-full gap-2 px-1">
         <!-- Nivel & Ronda -->
         <div class="bg-black/75 border-2 border-emerald-500/60 rounded-xl px-3 py-2 text-center min-w-[85px] sm:min-w-[110px]">
@@ -243,49 +266,52 @@ GAME_HTML = """
             <div class="text-[8px] sm:text-[10px] text-gray-400 mt-0.5 font-arcade">RONDA <span id="round-display" class="text-white">1</span>/3</div>
         </div>
 
-        <!-- 3 Comodines Balatro -->
+        <!-- 3 Comodines -->
         <div class="flex justify-center gap-1.5 sm:gap-3">
-            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor predominante" class="bg-blue-900 border-2 border-blue-400 rounded-xl p-2 sm:p-2.5 text-lg sm:text-2xl relative shadow-[0_0_12px_rgba(59,130,246,0.5)] active:scale-95 transition-transform">
+            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="bg-blue-900 border-2 border-blue-400 rounded-xl p-2 sm:p-2.5 text-lg sm:text-2xl relative shadow-[0_0_12px_rgba(59,130,246,0.5)] active:scale-95 transition-transform">
                 👁️
                 <span id="qty-reveal" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] font-arcade px-1 rounded-full border border-black">1</span>
             </button>
-            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano actual" class="bg-purple-900 border-2 border-purple-400 rounded-xl p-2 sm:p-2.5 text-lg sm:text-2xl relative shadow-[0_0_12px_rgba(168,85,247,0.5)] active:scale-95 transition-transform">
+            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano" class="bg-purple-900 border-2 border-purple-400 rounded-xl p-2 sm:p-2.5 text-lg sm:text-2xl relative shadow-[0_0_12px_rgba(168,85,247,0.5)] active:scale-95 transition-transform">
                 🎲
                 <span id="qty-reroll" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] font-arcade px-1 rounded-full border border-black">1</span>
             </button>
-            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar nivel (gana con 3 estrellas)" class="bg-yellow-700 border-2 border-yellow-400 rounded-xl p-2 sm:p-2.5 text-lg sm:text-2xl relative shadow-[0_0_12px_rgba(234,179,8,0.5)] active:scale-95 transition-transform opacity-40">
+            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar nivel" class="bg-yellow-700 border-2 border-yellow-400 rounded-xl p-2 sm:p-2.5 text-lg sm:text-2xl relative shadow-[0_0_12px_rgba(234,179,8,0.5)] active:scale-95 transition-transform opacity-40">
                 ⏭️
                 <span id="qty-skip" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] font-arcade px-1 rounded-full border border-black">0</span>
             </button>
         </div>
 
-        <!-- Puntaje Global y Rango -->
+        <!-- Puntaje -->
         <div class="bg-black/75 border-2 border-red-500/60 rounded-xl px-3 py-2 text-center min-w-[85px] sm:min-w-[110px]">
             <div class="text-[9px] sm:text-[11px] text-gray-400 uppercase font-arcade">PUNTOS</div>
             <div id="total-score" class="text-base sm:text-xl text-emerald-400 font-arcade mt-0.5">0</div>
-            <div class="text-[8px] text-gray-300 font-arcade opacity-75">Rank: <span id="player-rank">#1</span></div>
+            <div class="text-[8px] text-gray-300 font-arcade opacity-75">Rank: <span id="player-rank">#25</span></div>
         </div>
     </header>
 
-    <!-- ZONA CENTRAL DE JUEGO -->
+    <!-- ZONA CENTRAL -->
     <main class="flex-grow flex flex-col items-center justify-center relative w-full max-w-5xl mx-auto my-auto">
-        <!-- Contenedor de 6 cartas -->
-        <div id="hand-container" class="flex justify-center items-center flex-wrap gap-2 sm:gap-3 w-full px-2 mb-6 mt-4">
+        <div id="factor-banner" class="min-h-[28px] mb-3 text-center px-2">
+            <span id="factor-text" class="text-[11px] sm:text-xs font-arcade text-yellow-300/90 bg-black/60 px-3 py-1.5 rounded-full border border-yellow-400/30">
+                Selecciona todas las cartas con factor común
+            </span>
+        </div>
+
+        <div id="hand-container" class="flex justify-center items-center flex-wrap gap-2 sm:gap-3 w-full px-2 mb-4">
             <!-- Renderizado dinámico -->
         </div>
 
-        <!-- Botón Jugar Mano -->
-        <button id="btn-play" onclick="playHand()" disabled class="bg-gray-800 text-gray-500 border-2 border-gray-700 px-8 py-3.5 sm:px-12 sm:py-4 rounded-xl font-arcade text-xs sm:text-sm shadow-2xl transition-all disabled:opacity-40">
+        <button id="btn-play" onclick="playHand()" disabled class="bg-gray-800 text-gray-500 border-2 border-gray-700 px-8 py-3.5 sm:px-12 sm:py-4 rounded-xl font-arcade text-xs sm:text-sm shadow-2xl">
             JUGAR MANO
         </button>
 
-        <!-- Efecto Fuego Puntos Flotantes -->
         <div id="flame-score-container" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 hidden opacity-0 transition-opacity duration-300 z-40 pointer-events-none text-center">
             <div id="flame-score" class="font-arcade text-4xl sm:text-6xl score-flame tracking-wider drop-shadow-[0_0_35px_#ff4500]">0</div>
         </div>
     </main>
 
-    <!-- MODAL NIVEL COMPLETADO (ESTRELLAS Y PRECISIÓN) -->
+    <!-- MODAL NIVEL COMPLETADO -->
     <div id="level-modal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center backdrop-blur-md p-4">
         <div class="bg-[#151821] border-4 border-yellow-400 rounded-2xl max-w-md w-full p-6 text-center shadow-[0_0_50px_rgba(245,211,66,0.3)]">
             <h2 class="font-arcade text-xl sm:text-2xl text-yellow-300 mb-2">NIVEL COMPLETADO</h2>
@@ -297,13 +323,12 @@ GAME_HTML = """
         </div>
     </div>
 
-    <!-- ALERTA DE COMODÍN -->
     <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 bg-blue-600 border-2 border-white text-white font-arcade text-[11px] sm:text-xs px-5 py-3 rounded-xl shadow-2xl z-50 hidden transition-opacity text-center max-w-[90vw]">
         <span id="alert-text"></span>
     </div>
 
     <script>
-        /* SÍNTESIS DE AUDIO PROCEDURAL (Web Audio API) */
+        /* SÍNTESIS DE AUDIO PROCEDURAL */
         const aCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playTone(freq, type, dur, vol=0.1) {
             try {
@@ -345,17 +370,17 @@ GAME_HTML = """
                 const gain = aCtx.createGain();
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(freq, aCtx.currentTime);
-                gain.gain.setValueAtTime(0.015, aCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.0001, aCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.012, aCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, aCtx.currentTime + 0.35);
                 
                 osc.connect(gain);
                 gain.connect(aCtx.destination);
                 osc.start();
-                osc.stop(aCtx.currentTime + 0.3);
-            }, 260);
+                osc.stop(aCtx.currentTime + 0.35);
+            }, 270);
         }
 
-        /* PARTÍCULAS CANVAS */
+        /* PARTÍCULAS */
         const cvs = document.getElementById('fx-canvas'); const ctx = cvs.getContext('2d');
         let particles = [];
         window.onresize = () => { cvs.width = window.innerWidth; cvs.height = window.innerHeight; };
@@ -379,165 +404,56 @@ GAME_HTML = """
         }
         renderParticles();
 
-        /* ========================================================
-           TABLA DE POSICIONES EN VIVO Y ROBUSTA
-           ======================================================== */
-        let playerName = "ESTUDIANTE";
-        const playerDeviceId = "user_" + Math.random().toString(36).substring(2, 9);
+        /* CLASIFICACIÓN VIVA (Bots e Integración del jugador) */
+        const names = ["Andrey_U", "Fabiola_P", "Bryan_Q", "Daniela_CR", "Nath_V", "Isaac_H", "Carlos_S", "M_Estela", "K_Navas", "Diego_R", "K_Mora", "Josue_B", "Maria_F", "Valeria_G", "Seidy_T", "Allan_P", "Cesar_O", "Monica_V", "Lucia_Z", "R_Arias", "Erick_L", "S_Díaz", "Karla_C", "Luis_M"];
         let leaderboardData = [];
-        let syncTimer = null;
-
-        // Base de datos en la nube pública y compartida para el aula (Estilo Kahoot)
-        const ROOM_KEY = "balatro_ucr_live_room_2026";
-        const API_BASE = "https://api.restful-api.dev/objects";
-
+        let playerName = "ESTUDIANTE";
+        
         function initLeaderboard() {
-            // Cero bots: solo tú al inicio, y los compañeros reales que se conecten
-            leaderboardData = [{
-                id: playerDeviceId,
-                name: playerName,
-                score: score,
-                level: level,
-                isSelf: true
-            }];
-
-            renderLeaderboardUI();
-            pushPlayerScoreToCloud();
-
-            // Sincronizar en vivo cada 3 segundos con los dispositivos de los compañeros
-            if (!syncTimer) {
-                syncTimer = setInterval(fetchCloudScores, 3000);
-            }
+            leaderboardData = names.map(n => ({ name: n, score: Math.floor(Math.random() * 1100 + 400), level: 1 }));
+            leaderboardData.push({ name: playerName, score: score, level: level, isPlayer: true });
+            updateLeaderboardUI();
+            setInterval(simulateClassroomActivity, 4000);
         }
 
-        async function fetchCloudScores() {
-            const statusEl = document.getElementById('sync-status');
-            try {
-                // Endpoint tipo KV/Lobby compartido para el aula
-                const res = await fetch(`https://kvdb.io/A9v8tQ5Xm2L1K7zP4W6Y8a/${ROOM_KEY}`, {
-                    method: 'GET',
-                    headers: { 'Accept': 'application/json' }
-                }).catch(() => null);
-
-                if (res && res.ok) {
-                    const data = await res.json();
-                    if (Array.isArray(data)) {
-                        // Filtrar y actualizar únicamente usuarios reales
-                        let merged = {};
-                        data.forEach(item => {
-                            if (item && item.id && item.name) {
-                                merged[item.id] = item;
-                            }
-                        });
-
-                        // Asegurar que el estado local del jugador actual prevalezca si es mayor
-                        merged[playerDeviceId] = {
-                            id: playerDeviceId,
-                            name: playerName,
-                            score: Math.max(score, (merged[playerDeviceId]?.score || 0)),
-                            level: level
-                        };
-
-                        leaderboardData = Object.values(merged).map(p => ({
-                            ...p,
-                            isSelf: p.id === playerDeviceId || p.name === playerName
-                        }));
-                    }
+        function simulateClassroomActivity() {
+            leaderboardData.forEach(p => {
+                if(!p.isPlayer && Math.random() > 0.45) {
+                    p.score += Math.floor(Math.random() * 300 * Math.max(1, p.level));
+                    if(p.score > 2000 * p.level) p.level++;
                 }
-                if (statusEl) statusEl.textContent = `● ${leaderboardData.length} EN VIVO`;
-            } catch (e) {
-                if (statusEl) statusEl.textContent = "● SINCRONIZADO";
+            });
+            updateLeaderboardUI();
+        }
+
+        function updateLeaderboardUI() {
+            const playerEntry = leaderboardData.find(p => p.isPlayer);
+            if(playerEntry) {
+                playerEntry.score = score;
+                playerEntry.level = level;
             }
-            upsertLocalPlayer();
-            renderLeaderboardUI();
-        }
 
-        async function pushPlayerScoreToCloud() {
-            upsertLocalPlayer();
-            renderLeaderboardUI();
+            leaderboardData.sort((a,b) => b.score - a.score);
+            const container = document.getElementById('leaderboard');
+            if(!container) return;
+            container.innerHTML = '';
 
-            try {
-                // Leer estado actual de la nube para no pisar a los compañeros
-                const readRes = await fetch(`https://kvdb.io/A9v8tQ5Xm2L1K7zP4W6Y8a/${ROOM_KEY}`).catch(() => null);
-                let currentRoom = [];
-                if (readRes && readRes.ok) {
-                    try { currentRoom = await readRes.json(); } catch(err) { currentRoom = []; }
-                }
-                if (!Array.isArray(currentRoom)) currentRoom = [];
-
-                // Actualizar o insertar este jugador
-                const existingIdx = currentRoom.findIndex(p => p.id === playerDeviceId || p.name === playerName);
-                const selfRecord = {
-                    id: playerDeviceId,
-                    name: playerName,
-                    score: score,
-                    level: level,
-                    updatedAt: Date.now()
-                };
-
-                if (existingIdx >= 0) {
-                    if (score >= currentRoom[existingIdx].score) {
-                        currentRoom[existingIdx] = selfRecord;
-                    }
-                } else {
-                    currentRoom.push(selfRecord);
-                }
-
-                // Descartar registros inactivos de más de 30 minutos
-                const now = Date.now();
-                currentRoom = currentRoom.filter(p => !p.updatedAt || (now - p.updatedAt < 1800000));
-
-                await fetch(`https://kvdb.io/A9v8tQ5Xm2L1K7zP4W6Y8a/${ROOM_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(currentRoom)
-                }).catch(() => {});
-            } catch (e) {}
-        }
-
-        function upsertLocalPlayer() {
-            const myEntry = leaderboardData.find(p => p.id === playerDeviceId || p.isSelf);
-            if (myEntry) {
-                myEntry.name = playerName;
-                myEntry.score = score;
-                myEntry.level = level;
-                myEntry.isSelf = true;
-            } else {
-                leaderboardData.push({
-                    id: playerDeviceId,
-                    name: playerName,
-                    score: score,
-                    level: level,
-                    isSelf: true
-                });
-            }
-            leaderboardData.sort((a, b) => b.score - a.score);
-        }
-
-        function renderLeaderboardUI() {
-            const lbContainer = document.getElementById('leaderboard');
-            if (!lbContainer) return;
-            lbContainer.innerHTML = '';
-
-            let selfRank = 1;
-            leaderboardData.forEach((p, index) => {
-                const isMe = p.isSelf || p.id === playerDeviceId || p.name === playerName;
-                if (isMe) selfRank = index + 1;
-
-                const medal = index === 0 ? "🥇 " : index === 1 ? "🥈 " : index === 2 ? "🥉 " : `#${index + 1} `;
-                const el = document.createElement('div');
-                el.className = `flex justify-between items-center text-[9px] font-arcade p-2 rounded transition-all ${
-                    isMe ? 'bg-blue-600/90 text-white font-bold border-2 border-cyan-300 shadow-[0_0_12px_rgba(59,130,246,0.8)]' : 'text-gray-300 bg-white/5 border border-white/5'
-                }`;
-                el.innerHTML = `
-                    <span class="truncate max-w-[130px]">${medal}${p.name} ${isMe ? '(TÚ)' : ''}</span>
-                    <span class="text-yellow-300 font-bold">${p.score.toLocaleString()}</span>
+            let playerRank = 25;
+            leaderboardData.forEach((p, idx) => {
+                if(p.isPlayer) playerRank = idx + 1;
+                
+                const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx+1}`;
+                const div = document.createElement('div');
+                div.className = `flex justify-between items-center text-[9px] font-arcade p-1.5 rounded ${p.isPlayer ? 'bg-blue-600/70 border border-cyan-400 font-bold' : 'bg-white/5 text-gray-300'}`;
+                div.innerHTML = `
+                    <span>${medal} ${p.name} ${p.isPlayer ? '(TÚ)' : ''}</span>
+                    <span class="text-yellow-300">${p.score.toLocaleString()}</span>
                 `;
-                lbContainer.appendChild(el);
+                container.appendChild(div);
             });
 
             const rankEl = document.getElementById('player-rank');
-            if (rankEl) rankEl.textContent = `#${selfRank}`;
+            if (rankEl) rankEl.textContent = `#${playerRank}`;
         }
 
         function toggleTutorial() {
@@ -547,7 +463,6 @@ GAME_HTML = """
 
         function toggleLeaderboard() {
             SFX.hover();
-            fetchCloudScores();
             document.getElementById('leaderboard-panel').classList.toggle('translate-x-full');
         }
 
@@ -564,7 +479,7 @@ GAME_HTML = """
             updateUI();
         }
 
-        /* LÓGICA DE JUEGO INFINITO Y MATEMÁTICAS */
+        /* LÓGICA DE JUEGO */
         let level = 1;
         let round = 1;
         let score = 0;
@@ -575,6 +490,7 @@ GAME_HTML = """
 
         const handContainer = document.getElementById('hand-container');
         const btnPlay = document.getElementById('btn-play');
+        const factorTextEl = document.getElementById('factor-text');
 
         function gcd(a, b) { a=Math.abs(a); b=Math.abs(b); return b === 0 ? a : gcd(b, a % b); }
 
@@ -586,6 +502,20 @@ GAME_HTML = """
             if (x === 1) s += "x"; else if (x > 1) s += `x^${x}`;
             if (y === 1) s += "y"; else if (y > 1) s += `y^${y}`;
             return s;
+        }
+
+        // CAMBIAR COLOR DE FONDO POR RONDA
+        function updateBackgroundForRound() {
+            const bg = document.getElementById('psychedelic-bg');
+            if(!bg) return;
+            
+            // Removemos clases anteriores
+            bg.className = "swirl-container";
+            
+            // Asignamos la nueva tonalidad según la ronda (1, 2 o 3)
+            if(round === 1) bg.classList.add('bg-ronda-1');
+            else if (round === 2) bg.classList.add('bg-ronda-2');
+            else if (round === 3) bg.classList.add('bg-ronda-3');
         }
 
         function generateTerm(forceFactor = null) {
@@ -639,6 +569,8 @@ GAME_HTML = """
             document.getElementById('level-display').textContent = level;
             document.getElementById('round-display').textContent = round;
             
+            updateBackgroundForRound(); // Aplicar el cambio de tono del espiral
+            
             let needed = 6 - hand.length;
             let plantedC = (Math.random() > 0.5) ? (Math.floor(Math.random()*3)+2) : 1;
             let plantedX = (plantedC === 1 || Math.random() > 0.4) ? 1 : 0;
@@ -665,7 +597,6 @@ GAME_HTML = """
             handContainer.innerHTML = '';
             hand.forEach((card, idx) => {
                 const el = document.createElement('div');
-                // Asignar ciclo de balanceo Balatro intercalado
                 const swayClass = idx % 3 === 0 ? 'idle-sway-1' : (idx % 3 === 1 ? 'idle-sway-2' : 'idle-sway-3');
                 el.className = `balatro-card ${card.selected ? 'selected' : swayClass}`;
                 
@@ -689,10 +620,10 @@ GAME_HTML = """
             const selected = hand.filter(c => c.selected);
             if(selected.length > 0) {
                 btnPlay.disabled = false;
-                btnPlay.className = "bg-[#2d82d7] hover:bg-[#1a5fa6] text-white border-2 border-cyan-300 px-8 py-3.5 sm:px-12 sm:py-4 rounded-xl font-arcade text-xs sm:text-sm shadow-[0_0_20px_rgba(45,130,215,0.6)] transition-all transform active:scale-95 cursor-pointer";
+                btnPlay.className = "bg-[#2d82d7] hover:bg-[#1a5fa6] text-white border-2 border-cyan-300 px-8 py-3.5 sm:px-12 sm:py-4 rounded-xl font-arcade text-xs sm:text-sm shadow-[0_0_20px_rgba(45,130,215,0.6)] cursor-pointer transform active:scale-95 transition-all";
             } else {
                 btnPlay.disabled = true;
-                btnPlay.className = "bg-gray-800 text-gray-500 border-2 border-gray-700 px-8 py-3.5 sm:px-12 sm:py-4 rounded-xl font-arcade text-xs sm:text-sm shadow-2xl transition-all disabled:opacity-40 cursor-not-allowed";
+                btnPlay.className = "bg-gray-800 text-gray-500 border-2 border-gray-700 px-8 py-3.5 sm:px-12 sm:py-4 rounded-xl font-arcade text-xs sm:text-sm opacity-40 cursor-not-allowed";
             }
         }
 
@@ -717,7 +648,6 @@ GAME_HTML = """
             score += handScore;
             
             document.getElementById('total-score').textContent = score.toLocaleString();
-            pushPlayerScoreToCloud(); // Sincroniza puntaje en tiempo real con los 25 compañeros
             
             SFX.flamePop();
             const flameScore = document.getElementById('flame-score');
@@ -727,7 +657,6 @@ GAME_HTML = """
             flameContainer.style.opacity = '1';
             spawnParticles(window.innerWidth/2, window.innerHeight/2, 45);
 
-            // Reutilización: Las cartas seleccionadas se eliminan, las no seleccionadas persisten
             hand = hand.filter(c => !c.selected);
 
             setTimeout(() => {
@@ -770,7 +699,6 @@ GAME_HTML = """
             let bonusScore = stars * 1000 * level;
             score += bonusScore;
             document.getElementById('total-score').textContent = score.toLocaleString();
-            pushPlayerScoreToCloud();
 
             if(stars === 3) {
                 comodines.skip++;
@@ -789,7 +717,6 @@ GAME_HTML = """
             round = 1;
             hand = [];
             levelStats = { optimalPossible: 0, actualCorrect: 0, errors: 0 };
-            pushPlayerScoreToCloud();
             startRound();
         }
 
