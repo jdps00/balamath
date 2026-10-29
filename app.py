@@ -48,6 +48,9 @@ GAME_HTML = """
     <title>Balatro Factor Común</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <!-- Firebase Realtime Database para sincronización real instantánea multiusuario -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     
     <style>
         :root {
@@ -384,74 +387,56 @@ GAME_HTML = """
         renderParticles();
 
         /* ========================================================
-           TABLA DE POSICIONES REAL EN LA NUBE (25+ DISPOSITIVOS)
+           TABLA DE POSICIONES REAL EN LA NUBE CON FIREBASE EN VIVO
            ======================================================== */
         let playerName = "ESTUDIANTE";
-        const playerDeviceId = "user_" + Math.random().toString(36).substring(2, 9);
-        const CLOUD_ROOM_BIN = "balatro_ucr_if0003_scores";
-        const KV_ENDPOINT = `https://api.counterapi.dev/v1/`; // Fallback robusto
-
+        const playerDeviceId = "user_" + Math.random().toString(36).substring(2, 10);
         let leaderboardData = [];
-        let syncTimer = null;
+        let dbRef = null;
 
-        async function fetchCloudLeaderboard() {
+        function setupRealtimeDatabase() {
             const statusEl = document.getElementById('sync-status');
             try {
-                // Endpoint público seguro en JSONBIN/MockAPI para sincronizar entre teléfonos
-                const res = await fetch(`https://api.restful-api.dev/objects?id=balatro_room_leaderboard`, {
-                    headers: { 'Accept': 'application/json' }
-                }).catch(() => null);
-
-                // Alternativa resiliente con KV Storage público
-                const altRes = await fetch(`https://kvdb.io/4T8m4Wq6DvZv1V8aWcK4u3/${CLOUD_ROOM_BIN}`).catch(() => null);
-
-                if (altRes && altRes.ok) {
-                    const data = await altRes.json();
-                    if (Array.isArray(data)) {
-                        leaderboardData = data;
-                    }
+                // Proyecto Firebase público en tiempo real configurado para el aula
+                const firebaseConfig = {
+                    databaseURL: "https://balatro-if0003-default-rtdb.firebaseio.com"
+                };
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
                 }
-                if (statusEl) statusEl.textContent = "● EN VIVO";
+                const db = firebase.database();
+                dbRef = db.ref("aula_if0003_leaderboard");
+
+                // Escuchar cambios de todos los 25+ compañeros en tiempo real
+                dbRef.on("value", (snapshot) => {
+                    const val = snapshot.val();
+                    if (val) {
+                        leaderboardData = Object.values(val);
+                    } else {
+                        leaderboardData = [];
+                    }
+                    if (statusEl) statusEl.textContent = "● EN VIVO";
+                    renderLeaderboardUI();
+                }, (error) => {
+                    if (statusEl) statusEl.textContent = "○ LOCAL";
+                });
             } catch (err) {
                 if (statusEl) statusEl.textContent = "○ LOCAL";
             }
-
-            upsertLocalPlayer();
-            renderLeaderboardUI();
         }
 
-        async function pushPlayerScoreToCloud() {
-            upsertLocalPlayer();
-            renderLeaderboardUI();
-
+        function pushPlayerScoreToCloud() {
+            if (!dbRef) return;
             try {
-                // Guardar en bucket cloud multiusuario
-                await fetch(`https://kvdb.io/4T8m4Wq6DvZv1V8aWcK4u3/${CLOUD_ROOM_BIN}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(leaderboardData.slice(0, 30))
-                }).catch(() => {});
-            } catch (e) {}
-        }
-
-        function upsertLocalPlayer() {
-            const existingIndex = leaderboardData.findIndex(p => p.id === playerDeviceId || p.name === playerName);
-            if (existingIndex >= 0) {
-                if (score > leaderboardData[existingIndex].score) {
-                    leaderboardData[existingIndex].score = score;
-                    leaderboardData[existingIndex].level = level;
-                }
-            } else {
-                leaderboardData.push({
+                // Escritura directa al nodo propio del alumno (no sobreescribe a los demás)
+                dbRef.child(playerDeviceId).set({
                     id: playerDeviceId,
                     name: playerName,
                     score: score,
                     level: level,
-                    isSelf: true
+                    updatedAt: Date.now()
                 });
-            }
-
-            leaderboardData.sort((a, b) => b.score - a.score);
+            } catch (e) {}
         }
 
         function renderLeaderboardUI() {
@@ -459,32 +444,35 @@ GAME_HTML = """
             if (!lbContainer) return;
             lbContainer.innerHTML = '';
 
+            // Si aún no hay conexión, mantener al jugador local
+            const list = [...leaderboardData];
+            const hasMe = list.some(p => p.id === playerDeviceId || p.name === playerName);
+            if (!hasMe) {
+                list.push({ id: playerDeviceId, name: playerName, score: score, level: level });
+            }
+
+            // Ordenar por mayor puntaje
+            list.sort((a, b) => b.score - a.score);
+
             let selfRank = 1;
-            leaderboardData.forEach((p, index) => {
+            list.forEach((p, index) => {
                 const isMe = p.id === playerDeviceId || p.name === playerName;
                 if (isMe) selfRank = index + 1;
 
                 const medal = index === 0 ? "🥇 " : index === 1 ? "🥈 " : index === 2 ? "🥉 " : `#${index + 1} `;
                 const el = document.createElement('div');
-                el.className = `flex justify-between items-center text-[9px] font-arcade p-1.5 rounded ${
-                    isMe ? 'bg-blue-600/70 text-white font-bold border border-cyan-400' : 'text-gray-300 bg-white/5'
+                el.className = `flex justify-between items-center text-[9px] font-arcade p-1.5 rounded transition-all ${
+                    isMe ? 'bg-blue-600/80 text-white font-bold border border-cyan-400 shadow-[0_0_8px_rgba(59,130,246,0.6)]' : 'text-gray-300 bg-white/5'
                 }`;
                 el.innerHTML = `
-                    <span class="truncate max-w-[130px]">${medal}${p.name} ${isMe ? '(TÚ)' : ''}</span>
-                    <span class="text-yellow-300">${p.score.toLocaleString()}</span>
+                    <span class="truncate max-w-[125px]">${medal}${p.name} ${isMe ? '(TÚ)' : ''}</span>
+                    <span class="text-yellow-300 font-bold">${p.score.toLocaleString()}</span>
                 `;
                 lbContainer.appendChild(el);
             });
 
             const rankEl = document.getElementById('player-rank');
             if (rankEl) rankEl.textContent = `#${selfRank}`;
-        }
-
-        function initCloudLeaderboard() {
-            fetchCloudLeaderboard();
-            if (!syncTimer) {
-                syncTimer = setInterval(fetchCloudLeaderboard, 4000); // Polling cada 4s para ver a los compañeros
-            }
         }
 
         function toggleTutorial() {
@@ -494,7 +482,6 @@ GAME_HTML = """
 
         function toggleLeaderboard() {
             SFX.hover();
-            fetchCloudLeaderboard();
             document.getElementById('leaderboard-panel').classList.toggle('translate-x-full');
         }
 
@@ -506,7 +493,8 @@ GAME_HTML = """
             SFX.select();
             playBGM();
             
-            initCloudLeaderboard();
+            setupRealtimeDatabase();
+            pushPlayerScoreToCloud();
             startRound();
             updateUI();
         }
