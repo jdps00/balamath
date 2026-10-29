@@ -384,58 +384,67 @@ GAME_HTML = """
            ======================================================== */
         let playerName = "ESTUDIANTE";
         const playerDeviceId = "user_" + Math.random().toString(36).substring(2, 9);
-        const CLASSMATES = ["Carlos_M", "Valeria_R", "Diego_CR", "Sofia_UCR", "Mateo99", "Daniela_G", "Felipe_K", "Mariana_T", "Gabriel_L", "Camila_S", "Andres_V", "Elena_P", "Esteban_H", "Lucia_B", "Alonso_Q"];
         let leaderboardData = [];
         let syncTimer = null;
 
-        const CLOUD_ROOM_URL = "https://api.jsonbin.io/v3/b/663d2e38ad19ca34f86641e7"; // Fallback cloud seguro
+        // Base de datos en la nube pública y compartida para el aula (Estilo Kahoot)
+        const ROOM_KEY = "balatro_ucr_live_room_2026";
+        const API_BASE = "https://api.restful-api.dev/objects";
 
         function initLeaderboard() {
-            // Inicializar con compañeros simulados + el jugador activo
-            leaderboardData = CLASSMATES.map(name => ({
-                id: "bot_" + name,
-                name: name,
-                score: Math.floor(Math.random() * 2500) + 300,
-                level: Math.floor(Math.random() * 3) + 1,
-                isSelf: false
-            }));
+            // Cero bots: solo tú al inicio, y los compañeros reales que se conecten
+            leaderboardData = [{
+                id: playerDeviceId,
+                name: playerName,
+                score: score,
+                level: level,
+                isSelf: true
+            }];
 
-            upsertLocalPlayer();
             renderLeaderboardUI();
+            pushPlayerScoreToCloud();
 
-            // Sincronizar periódicamente
-            fetchCloudScores();
+            // Sincronizar en vivo cada 3 segundos con los dispositivos de los compañeros
             if (!syncTimer) {
-                syncTimer = setInterval(() => {
-                    simulateClassActivity();
-                    fetchCloudScores();
-                }, 4000);
+                syncTimer = setInterval(fetchCloudScores, 3000);
             }
         }
 
         async function fetchCloudScores() {
             const statusEl = document.getElementById('sync-status');
             try {
-                const res = await fetch("https://jsonbin.org/balatro_if0003/scores", { method: 'GET' }).catch(() => null);
+                // Endpoint tipo KV/Lobby compartido para el aula
+                const res = await fetch(`https://kvdb.io/A9v8tQ5Xm2L1K7zP4W6Y8a/${ROOM_KEY}`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                }).catch(() => null);
+
                 if (res && res.ok) {
                     const data = await res.json();
-                    if (Array.isArray(data) && data.length > 0) {
-                        data.forEach(remote => {
-                            if (remote.id !== playerDeviceId) {
-                                const exist = leaderboardData.find(l => l.id === remote.id || l.name === remote.name);
-                                if (exist) {
-                                    if (remote.score > exist.score) {
-                                        exist.score = remote.score;
-                                        exist.level = remote.level;
-                                    }
-                                } else {
-                                    leaderboardData.push({ ...remote, isSelf: false });
-                                }
+                    if (Array.isArray(data)) {
+                        // Filtrar y actualizar únicamente usuarios reales
+                        let merged = {};
+                        data.forEach(item => {
+                            if (item && item.id && item.name) {
+                                merged[item.id] = item;
                             }
                         });
+
+                        // Asegurar que el estado local del jugador actual prevalezca si es mayor
+                        merged[playerDeviceId] = {
+                            id: playerDeviceId,
+                            name: playerName,
+                            score: Math.max(score, (merged[playerDeviceId]?.score || 0)),
+                            level: level
+                        };
+
+                        leaderboardData = Object.values(merged).map(p => ({
+                            ...p,
+                            isSelf: p.id === playerDeviceId || p.name === playerName
+                        }));
                     }
                 }
-                if (statusEl) statusEl.textContent = "● EN VIVO";
+                if (statusEl) statusEl.textContent = `● ${leaderboardData.length} EN VIVO`;
             } catch (e) {
                 if (statusEl) statusEl.textContent = "● SINCRONIZADO";
             }
@@ -448,23 +457,42 @@ GAME_HTML = """
             renderLeaderboardUI();
 
             try {
-                const payload = leaderboardData.slice(0, 30);
-                await fetch("https://jsonbin.org/balatro_if0003/scores", {
+                // Leer estado actual de la nube para no pisar a los compañeros
+                const readRes = await fetch(`https://kvdb.io/A9v8tQ5Xm2L1K7zP4W6Y8a/${ROOM_KEY}`).catch(() => null);
+                let currentRoom = [];
+                if (readRes && readRes.ok) {
+                    try { currentRoom = await readRes.json(); } catch(err) { currentRoom = []; }
+                }
+                if (!Array.isArray(currentRoom)) currentRoom = [];
+
+                // Actualizar o insertar este jugador
+                const existingIdx = currentRoom.findIndex(p => p.id === playerDeviceId || p.name === playerName);
+                const selfRecord = {
+                    id: playerDeviceId,
+                    name: playerName,
+                    score: score,
+                    level: level,
+                    updatedAt: Date.now()
+                };
+
+                if (existingIdx >= 0) {
+                    if (score >= currentRoom[existingIdx].score) {
+                        currentRoom[existingIdx] = selfRecord;
+                    }
+                } else {
+                    currentRoom.push(selfRecord);
+                }
+
+                // Descartar registros inactivos de más de 30 minutos
+                const now = Date.now();
+                currentRoom = currentRoom.filter(p => !p.updatedAt || (now - p.updatedAt < 1800000));
+
+                await fetch(`https://kvdb.io/A9v8tQ5Xm2L1K7zP4W6Y8a/${ROOM_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(currentRoom)
                 }).catch(() => {});
             } catch (e) {}
-        }
-
-        function simulateClassActivity() {
-            leaderboardData.forEach(p => {
-                if (!p.isSelf && Math.random() > 0.55) {
-                    p.score += Math.floor(Math.random() * 320) + 80;
-                }
-            });
-            upsertLocalPlayer();
-            renderLeaderboardUI();
         }
 
         function upsertLocalPlayer() {
@@ -519,7 +547,7 @@ GAME_HTML = """
 
         function toggleLeaderboard() {
             SFX.hover();
-            renderLeaderboardUI();
+            fetchCloudScores();
             document.getElementById('leaderboard-panel').classList.toggle('translate-x-full');
         }
 
@@ -532,7 +560,6 @@ GAME_HTML = """
             playBGM();
             
             initLeaderboard();
-            pushPlayerScoreToCloud();
             startRound();
             updateUI();
         }
