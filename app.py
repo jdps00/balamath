@@ -40,6 +40,36 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+# Cargar fuentes locales en base64 para garantizar compatibilidad total
+def get_font_base64(filenames, font_format="truetype"):
+    for fname in filenames:
+        if os.path.exists(fname):
+            try:
+                with open(fname, "rb") as f:
+                    data = base64.b64encode(f.read()).decode("utf-8")
+                return f"data:font/{font_format};base64,{data}"
+            except Exception:
+                pass
+    return None
+
+daydream_uri = get_font_base64(["Daydream DEMO.otf", "Daydream.otf", "Daydream.ttf"], "opentype")
+kiwisoda_uri = get_font_base64(["KiwiSoda.ttf", "kiwisoda.ttf"], "truetype")
+
+FONT_FACE_CSS = f"""
+    @font-face {{
+        font-family: 'Daydream';
+        src: {f"url('{daydream_uri}') format('opentype')" if daydream_uri else "local('Press Start 2P')"};
+        font-weight: normal;
+        font-style: normal;
+    }}
+    @font-face {{
+        font-family: 'KiwiSoda';
+        src: {f"url('{kiwisoda_uri}') format('truetype')" if kiwisoda_uri else "local('VT323')"};
+        font-weight: normal;
+        font-style: normal;
+    }}
+"""
+
 # Detectar y cargar el archivo de video local 'fakcpg' (soporta .mp4, .webm, .gif)
 def get_video_base64():
     candidates = [
@@ -85,6 +115,8 @@ GAME_HTML = f"""
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
     
     <style>
+        {FONT_FACE_CSS}
+
         :root {{
             --balatro-blue: #2d82d7;
             --balatro-red: #d73a3a;
@@ -100,7 +132,7 @@ GAME_HTML = f"""
         body {{
             background-color: transparent;
             color: white;
-            font-family: 'VT323', monospace;
+            font-family: 'KiwiSoda', 'VT323', monospace;
             overflow: hidden;
             user-select: none;
             margin: 0;
@@ -110,6 +142,10 @@ GAME_HTML = f"""
             flex-direction: column;
             justify-content: space-between;
         }}
+
+        /* Tipografías asignadas */
+        .font-title {{ font-family: 'Daydream', 'Press Start 2P', cursive; }}
+        .font-body {{ font-family: 'KiwiSoda', 'VT323', monospace; }}
 
         #bg-video {{
             position: fixed;
@@ -125,33 +161,6 @@ GAME_HTML = f"""
 
         .swirl-fallback {{
             background: radial-gradient(circle, #1a4f3b 0%, #0d2119 100%);
-        }}
-
-        .pixel-overlay {{
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background-image: radial-gradient(rgba(0, 0, 0, 0.25) 1px, transparent 0);
-            background-size: 4px 4px;
-            pointer-events: none;
-            z-index: -1;
-            opacity: 0.6;
-        }}
-
-        /* Filtro de tonalidad que cambia automáticamente según la ronda */
-        .round-tint-1 {{ filter: contrast(125%) brightness(85%) hue-rotate(0deg); }}
-        .round-tint-2 {{ filter: contrast(135%) brightness(90%) hue-rotate(45deg); }}
-        .round-tint-3 {{ filter: contrast(140%) brightness(80%) hue-rotate(-40deg); }}
-
-        .font-arcade {{ font-family: 'Press Start 2P', cursive; }}
-
-        /* CRT Overlay */
-        .crt-overlay {{
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.18) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 3px, 6px 100%;
-            pointer-events: none; z-index: 999;
-            box-shadow: inset 0 0 80px rgba(0,0,0,0.8);
         }}
 
         /* Responsive Balatro Cards */
@@ -197,7 +206,7 @@ GAME_HTML = f"""
 
         @media (max-width: 640px) {{
             .balatro-card {{ width: 80px !important; height: 115px !important; }}
-            .balatro-card .term-text {{ font-size: 1.2rem !important; }}
+            .balatro-card .term-text {{ font-size: 1.4rem !important; }}
             #hand-container {{ min-height: 250px !important; }}
         }}
 
@@ -224,19 +233,17 @@ GAME_HTML = f"""
         .lb-scroll::-webkit-scrollbar-thumb {{ background: rgba(255,255,255,0.2); border-radius: 4px; }}
     </style>
 </head>
-<body class="p-2 sm:p-4">
-    <div class="crt-overlay"></div>
+<body class="p-2 sm:p-4 font-body">
     {BG_ELEMENT}
-    <div class="pixel-overlay"></div>
     <canvas id="fx-canvas"></canvas>
 
     <!-- INTRO MODAL (User Nickname) -->
-    <div id="intro-modal" class="fixed inset-0 bg-black/95 z-[1000] flex items-center justify-center p-4 backdrop-blur-md">
+    <div id="intro-modal" class="fixed inset-0 bg-black/90 z-[1000] flex items-center justify-center p-4 backdrop-blur-md">
         <div class="bg-[#151821] border-4 border-emerald-500 rounded-2xl max-w-sm w-full p-6 text-center shadow-[0_0_50px_rgba(16,185,129,0.4)]">
-            <h1 class="font-arcade text-3xl sm:text-4xl text-emerald-400 mb-2 animate-pulse" style="text-shadow: 0 0 20px #10b981;">FACTOR<br>COMÚN</h1>
-            <p class="font-arcade text-[10px] text-gray-300 mb-6 mt-4">INGRESA TU USUARIO</p>
-            <input type="text" id="username-input" class="w-full bg-black border-2 border-white/20 text-white font-arcade p-3 rounded mb-6 text-center focus:border-yellow-400 outline-none uppercase" placeholder="TU NOMBRE" maxlength="12">
-            <button onclick="startGameFromIntro()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-arcade py-4 rounded-xl text-sm transition-transform active:scale-95 shadow-[0_0_20px_rgba(16,185,129,0.5)]">
+            <h1 class="font-title text-2xl sm:text-3xl text-emerald-400 mb-2 animate-pulse" style="text-shadow: 0 0 20px #10b981;">FACTOR<br>COMÚN</h1>
+            <p class="font-title text-[9px] text-gray-300 mb-5 mt-4">INGRESA TU USUARIO</p>
+            <input type="text" id="username-input" class="w-full bg-black border-2 border-white/20 text-white font-title text-xs p-3 rounded mb-5 text-center focus:border-yellow-400 outline-none uppercase" placeholder="TU NOMBRE" maxlength="12">
+            <button onclick="startGameFromIntro()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-title py-3.5 rounded-xl text-xs transition-transform active:scale-95 shadow-[0_0_20px_rgba(16,185,129,0.5)]">
                 ENTRAR AL JUEGO
             </button>
         </div>
@@ -244,12 +251,12 @@ GAME_HTML = f"""
 
     <!-- BOTONES INFERIORES FIJOS -->
     <div class="fixed bottom-3 left-3 z-40">
-        <button onclick="toggleTutorial()" class="bg-purple-900/90 border-2 border-purple-400 text-white font-arcade text-xs p-3 rounded-xl shadow-[0_0_15px_rgba(168,85,247,0.5)] hover:scale-105 transition-transform">
+        <button onclick="toggleTutorial()" class="bg-purple-900/90 border-2 border-purple-400 text-white font-title text-[10px] p-3 rounded-xl shadow-[0_0_15px_rgba(168,85,247,0.5)] hover:scale-105 transition-transform">
             💡 TUTO
         </button>
     </div>
     <div class="fixed bottom-3 right-3 z-40">
-        <button onclick="toggleLeaderboard()" class="bg-blue-900/90 border-2 border-blue-400 text-white font-arcade text-xs p-3 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.5)] hover:scale-105 transition-transform">
+        <button onclick="toggleLeaderboard()" class="bg-blue-900/90 border-2 border-blue-400 text-white font-title text-[10px] p-3 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.5)] hover:scale-105 transition-transform">
             🏆 RANK
         </button>
     </div>
@@ -257,17 +264,17 @@ GAME_HTML = f"""
     <!-- TUTORIAL LATERAL CON EMOJIS -->
     <div id="tutorial-panel" class="fixed left-0 top-0 h-full w-64 sm:w-72 bg-black/95 border-r-2 border-purple-500/50 p-4 flex flex-col z-50 transform -translate-x-full transition-transform duration-300 shadow-2xl">
         <div class="flex justify-between items-center mb-6 border-b border-purple-500/30 pb-2 mt-2">
-            <h3 class="font-arcade text-[12px] text-purple-400">💡 ¿CÓMO JUGAR?</h3>
+            <h3 class="font-title text-[10px] text-purple-400">💡 ¿CÓMO JUGAR?</h3>
             <button onclick="toggleTutorial()" class="text-white text-xl">✕</button>
         </div>
         <div class="text-2xl bg-black/50 p-3 rounded-xl border border-gray-700 mb-4 text-center">
             🍎🍉 <span class="text-pink-500">+</span> 🍎🍌
         </div>
-        <p class="text-[11px] text-gray-300 font-arcade text-center mb-4 leading-relaxed">SACA LO QUE<br>TIENEN EN COMÚN (🍎)</p>
+        <p class="text-sm text-gray-300 font-body text-center mb-4 leading-relaxed tracking-wide">Saca lo que tienen en común (🍎)</p>
         <div class="text-3xl bg-purple-900/30 p-3 rounded-xl border border-purple-500 text-center mb-6">
             🍎<span class="text-gray-400 text-xl">(</span>🍉 <span class="text-pink-500 text-xl">+</span> 🍌<span class="text-gray-400 text-xl">)</span>
         </div>
-        <p class="text-[10px] text-gray-400 font-arcade text-center leading-relaxed">
+        <p class="text-sm text-gray-300 font-body text-center leading-relaxed">
             1. Selecciona las cartas que comparten letras o números.<br><br>
             2. Presiona "JUGAR MANO".<br><br>
             3. Haz el mayor combo posible.
@@ -279,43 +286,43 @@ GAME_HTML = f"""
         <div class="flex justify-between items-center mb-2 border-b border-blue-500/30 pb-2 mt-2">
             <button onclick="toggleLeaderboard()" class="text-white text-xl">✕</button>
             <div class="text-right">
-                <h3 class="font-arcade text-[10px] text-yellow-400">🏆 RANKING EN VIVO</h3>
-                <span id="sync-status" class="text-[8px] font-arcade text-emerald-400">● 25 JUGADORES</span>
+                <h3 class="font-title text-[9px] text-yellow-400">🏆 RANKING EN VIVO</h3>
+                <span id="sync-status" class="text-[8px] font-title text-emerald-400">● 25 JUGADORES</span>
             </div>
         </div>
-        <div class="text-[9px] text-gray-400 font-arcade mb-2 text-center">AULA COMPITIENDO EN TIEMPO REAL</div>
-        <div id="leaderboard" class="flex-grow overflow-y-auto lb-scroll flex flex-col gap-1 pr-1"></div>
+        <div class="text-xs text-gray-400 font-body mb-2 text-center">Aula compitiendo en vivo</div>
+        <div id="leaderboard" class="flex-grow overflow-y-auto lb-scroll flex flex-col gap-1 pr-1 font-body text-sm"></div>
     </aside>
 
     <!-- HEADER SUPERIOR: NIVEL, COMODINES Y PUNTAJE -->
     <header class="flex justify-between items-center z-10 max-w-5xl mx-auto w-full gap-2 px-1">
         <!-- Nivel & Ronda -->
-        <div class="bg-black/75 border-2 border-emerald-500/60 rounded-xl px-3 py-2 text-center min-w-[85px] sm:min-w-[110px]">
-            <div class="text-[9px] sm:text-[11px] text-gray-400 uppercase font-arcade">NIVEL <span id="level-display" class="text-emerald-400 text-sm sm:text-lg">1</span></div>
-            <div class="text-[8px] sm:text-[10px] text-gray-400 mt-0.5 font-arcade">RONDA <span id="round-display" class="text-white">1</span>/3</div>
+        <div class="bg-black/80 border-2 border-emerald-500/60 rounded-xl px-3 py-2 text-center min-w-[85px] sm:min-w-[110px]">
+            <div class="text-[8px] sm:text-[9px] text-gray-400 uppercase font-title">NIVEL <span id="level-display" class="text-emerald-400 text-xs sm:text-sm">1</span></div>
+            <div class="text-xs sm:text-sm text-gray-300 mt-0.5 font-body">Ronda <span id="round-display" class="text-white font-bold">1</span>/3</div>
         </div>
 
         <!-- 3 Comodines Balatro -->
         <div class="flex justify-center gap-1.5 sm:gap-3">
             <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor predominante" class="bg-blue-900 border-2 border-blue-400 rounded-xl p-2 sm:p-2.5 text-lg sm:text-2xl relative shadow-[0_0_12px_rgba(59,130,246,0.5)] active:scale-95 transition-transform">
                 👁️
-                <span id="qty-reveal" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] font-arcade px-1 rounded-full border border-black">1</span>
+                <span id="qty-reveal" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[8px] font-title px-1 rounded-full border border-black">1</span>
             </button>
             <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano actual" class="bg-purple-900 border-2 border-purple-400 rounded-xl p-2 sm:p-2.5 text-lg sm:text-2xl relative shadow-[0_0_12px_rgba(168,85,247,0.5)] active:scale-95 transition-transform">
                 🎲
-                <span id="qty-reroll" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] font-arcade px-1 rounded-full border border-black">1</span>
+                <span id="qty-reroll" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[8px] font-title px-1 rounded-full border border-black">1</span>
             </button>
             <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar nivel (gana con 3 estrellas)" class="bg-yellow-700 border-2 border-yellow-400 rounded-xl p-2 sm:p-2.5 text-lg sm:text-2xl relative shadow-[0_0_12px_rgba(234,179,8,0.5)] active:scale-95 transition-transform opacity-40">
                 ⏭️
-                <span id="qty-skip" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] font-arcade px-1 rounded-full border border-black">0</span>
+                <span id="qty-skip" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[8px] font-title px-1 rounded-full border border-black">0</span>
             </button>
         </div>
 
         <!-- Puntaje Global y Rango -->
-        <div class="bg-black/75 border-2 border-red-500/60 rounded-xl px-3 py-2 text-center min-w-[85px] sm:min-w-[110px]">
-            <div class="text-[9px] sm:text-[11px] text-gray-400 uppercase font-arcade">PUNTOS</div>
-            <div id="total-score" class="text-base sm:text-xl text-emerald-400 font-arcade mt-0.5">0</div>
-            <div class="text-[8px] text-gray-300 font-arcade opacity-75">Rank: <span id="player-rank">#25</span></div>
+        <div class="bg-black/80 border-2 border-red-500/60 rounded-xl px-3 py-2 text-center min-w-[85px] sm:min-w-[110px]">
+            <div class="text-[8px] sm:text-[9px] text-gray-400 uppercase font-title">PUNTOS</div>
+            <div id="total-score" class="text-sm sm:text-base text-emerald-400 font-title mt-0.5">0</div>
+            <div class="text-xs text-gray-300 font-body opacity-80">Rank: <span id="player-rank" class="font-bold">#25</span></div>
         </div>
     </header>
 
@@ -325,30 +332,30 @@ GAME_HTML = f"""
         <div id="hand-container" class="flex justify-center items-center flex-wrap gap-2 sm:gap-3 w-full px-2 mb-6 mt-4"></div>
 
         <!-- Botón Jugar Mano -->
-        <button id="btn-play" onclick="playHand()" disabled class="bg-gray-800 text-gray-500 border-2 border-gray-700 px-8 py-3.5 sm:px-12 sm:py-4 rounded-xl font-arcade text-xs sm:text-sm shadow-2xl transition-all disabled:opacity-40">
+        <button id="btn-play" onclick="playHand()" disabled class="bg-gray-800 text-gray-500 border-2 border-gray-700 px-8 py-3.5 sm:px-12 sm:py-4 rounded-xl font-title text-[10px] sm:text-xs shadow-2xl transition-all disabled:opacity-40">
             JUGAR MANO
         </button>
 
         <!-- Efecto Fuego Puntos Flotantes -->
         <div id="flame-score-container" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 hidden opacity-0 transition-opacity duration-300 z-40 pointer-events-none text-center">
-            <div id="flame-score" class="font-arcade text-4xl sm:text-6xl score-flame tracking-wider drop-shadow-[0_0_35px_#ff4500]">0</div>
+            <div id="flame-score" class="font-title text-3xl sm:text-5xl score-flame tracking-wider drop-shadow-[0_0_35px_#ff4500]">0</div>
         </div>
     </main>
 
     <!-- MODAL NIVEL COMPLETADO -->
     <div id="level-modal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center backdrop-blur-md p-4">
         <div class="bg-[#151821] border-4 border-yellow-400 rounded-2xl max-w-md w-full p-6 text-center shadow-[0_0_50px_rgba(245,211,66,0.3)]">
-            <h2 class="font-arcade text-xl sm:text-2xl text-yellow-300 mb-2">NIVEL COMPLETADO</h2>
+            <h2 class="font-title text-lg sm:text-xl text-yellow-300 mb-2">NIVEL COMPLETADO</h2>
             <div class="flex justify-center gap-3 my-5" id="modal-stars"></div>
-            <p id="modal-desc" class="text-gray-300 text-[11px] sm:text-xs font-arcade leading-relaxed mb-6"></p>
-            <button onclick="nextLevel()" class="w-full bg-[#f5d342] hover:bg-[#e5c332] text-black font-arcade py-4 rounded-xl text-xs transition-transform active:scale-95 shadow-lg">
+            <p id="modal-desc" class="text-gray-300 text-sm font-body leading-relaxed mb-6"></p>
+            <button onclick="nextLevel()" class="w-full bg-[#f5d342] hover:bg-[#e5c332] text-black font-title py-3.5 rounded-xl text-xs transition-transform active:scale-95 shadow-lg">
                 SIGUIENTE NIVEL ➔
             </button>
         </div>
     </div>
 
     <!-- ALERTA DE COMODÍN -->
-    <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 bg-blue-600 border-2 border-white text-white font-arcade text-[11px] sm:text-xs px-5 py-3 rounded-xl shadow-2xl z-50 hidden transition-opacity text-center max-w-[90vw]">
+    <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 bg-blue-600 border-2 border-white text-white font-title text-[10px] sm:text-xs px-5 py-3 rounded-xl shadow-2xl z-50 hidden transition-opacity text-center max-w-[90vw]">
         <span id="alert-text"></span>
     </div>
 
@@ -469,10 +476,10 @@ GAME_HTML = f"""
                 
                 const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${{idx+1}}`;
                 const div = document.createElement('div');
-                div.className = `flex justify-between items-center text-[9px] font-arcade p-1.5 rounded ${{p.isPlayer ? 'bg-blue-600/70 border border-cyan-400 font-bold' : 'bg-white/5 text-gray-300'}}`;
+                div.className = `flex justify-between items-center text-xs font-body p-1.5 rounded ${{p.isPlayer ? 'bg-blue-600/70 border border-cyan-400 font-bold' : 'bg-white/5 text-gray-300'}}`;
                 div.innerHTML = `
                     <span>${{medal}} ${{p.name}} ${{p.isPlayer ? '(TÚ)' : ''}}</span>
-                    <span class="text-yellow-300">${{p.score.toLocaleString()}}</span>
+                    <span class="text-yellow-300 font-bold">${{p.score.toLocaleString()}}</span>
                 `;
                 container.appendChild(div);
             }});
@@ -627,7 +634,7 @@ GAME_HTML = f"""
                 if(card.str.length > 5) tSize = 'text-xl sm:text-2xl';
                 if(card.str.length > 8) tSize = 'text-lg sm:text-xl';
 
-                el.innerHTML = `<div class="term-text ${{tSize}} font-bold font-sans tracking-tighter text-[#111] px-1 text-center">${{card.str}}</div>`;
+                el.innerHTML = `<div class="term-text font-body ${{tSize}} font-bold tracking-tight text-[#111] px-1 text-center">${{card.str}}</div>`;
                 
                 el.onclick = () => {{
                     card.selected = !card.selected;
@@ -643,10 +650,10 @@ GAME_HTML = f"""
             const selected = hand.filter(c => c.selected);
             if(selected.length > 0) {{
                 btnPlay.disabled = false;
-                btnPlay.className = "bg-[#2d82d7] hover:bg-[#1a5fa6] text-white border-2 border-cyan-300 px-8 py-3.5 sm:px-12 sm:py-4 rounded-xl font-arcade text-xs sm:text-sm shadow-[0_0_20px_rgba(45,130,215,0.6)] cursor-pointer transform active:scale-95 transition-all";
+                btnPlay.className = "bg-[#2d82d7] hover:bg-[#1a5fa6] text-white border-2 border-cyan-300 px-8 py-3.5 sm:px-12 sm:py-4 rounded-xl font-title text-[10px] sm:text-xs shadow-[0_0_20px_rgba(45,130,215,0.6)] cursor-pointer transform active:scale-95 transition-all";
             }} else {{
                 btnPlay.disabled = true;
-                btnPlay.className = "bg-gray-800 text-gray-500 border-2 border-gray-700 px-8 py-3.5 sm:px-12 sm:py-4 rounded-xl font-arcade text-xs sm:text-sm opacity-40 cursor-not-allowed";
+                btnPlay.className = "bg-gray-800 text-gray-500 border-2 border-gray-700 px-8 py-3.5 sm:px-12 sm:py-4 rounded-xl font-title text-[10px] sm:text-xs opacity-40 cursor-not-allowed";
             }}
         }}
 
@@ -713,9 +720,9 @@ GAME_HTML = f"""
             for(let i=0; i<3; i++) {{
                 setTimeout(() => SFX.star(), i * 250);
                 if(i < stars) {{
-                    starContainer.innerHTML += `<span class="text-yellow-400 text-4xl sm:text-5xl drop-shadow-[0_0_15px_rgba(245,211,66,0.8)] animate-pulse">★</span>`;
+                    starContainer.innerHTML += `<span class="text-yellow-400 text-3xl sm:text-4xl drop-shadow-[0_0_15px_rgba(245,211,66,0.8)] animate-pulse">★</span>`;
                 }} else {{
-                    starContainer.innerHTML += `<span class="text-gray-700 text-4xl sm:text-5xl">★</span>`;
+                    starContainer.innerHTML += `<span class="text-gray-700 text-3xl sm:text-4xl">★</span>`;
                 }}
             }}
 
@@ -785,7 +792,7 @@ GAME_HTML = f"""
                 }}
                 SFX.select();
                 if(maxSubset > 1) {{
-                    showAlert(`🔎 FACTOR DOMINANTE:<br><br><span class="text-yellow-300 text-base sm:text-lg">${{bestFactor}}</span> (en ${{maxSubset}} cartas)`);
+                    showAlert(`🔎 FACTOR DOMINANTE:<br><br><span class="text-yellow-300 text-sm sm:text-base">${{bestFactor}}</span> (en ${{maxSubset}} cartas)`);
                 }} else {{
                     showAlert(`🔎 No hay factores comunes detectables en esta mano.`);
                 }}
