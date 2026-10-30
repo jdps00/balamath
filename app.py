@@ -21,7 +21,6 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    /* Ocultar barra superior y pie de página de Streamlit para inmersión completa */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
@@ -33,110 +32,75 @@ st.markdown(
         max-width: 100% !important;
     }
     .stApp {
-        background-color: #06110d;
+        background-color: #0d2119;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# ---------------------------------------------------------------------------
-# CARGA Y CODIFICACIÓN EN BASE64 DE VIDEO Y FUENTES LOCALES
-# ---------------------------------------------------------------------------
-def get_base64_encoded_file(filename):
-    """Codifica un archivo local a Base64 si existe en el directorio."""
-    for candidate in [filename, filename.lower(), filename.upper()]:
-        if os.path.exists(candidate):
-            with open(candidate, "rb") as f:
-                return base64.b64encode(f.read()).decode("utf-8")
-    return None
+# Detección y conversión a Base64 del video o GIF de fondo
+video_b64 = None
+video_mime = "video/mp4"
 
-# Buscar video de fondo (fakcpg.mp4 o .gif)
-bg_video_b64 = (
-    get_base64_encoded_file("fakcpg.mp4")
-    or get_base64_encoded_file("faKcpg.mp4")
-    or get_base64_encoded_file("fakcpg.gif")
-    or get_base64_encoded_file("faKcpg.gif")
-)
+for video_candidate in [
+    "fakcpg.mp4", "faKcpg.mp4", "fakcpg.MP4",
+    "fakcpg.gif", "faKcpg.gif", "fakcpg.GIF",
+    "background.mp4", "background.gif"
+]:
+    if os.path.exists(video_candidate):
+        with open(video_candidate, "rb") as vf:
+            video_b64 = base64.b64encode(vf.read()).decode("utf-8")
+            if video_candidate.lower().endswith(".gif"):
+                video_mime = "image/gif"
+            else:
+                video_mime = "video/mp4"
+        break
 
-# Cargar fuentes locales
-font_daydream_b64 = (
-    get_base64_encoded_file("Daydream DEMO.otf")
-    or get_base64_encoded_file("Daydream.otf")
-    or get_base64_encoded_file("Daydream.ttf")
-)
+# Inyección dinámica de las fuentes personalizadas
+font_faces = ""
 
-font_kiwisoda_b64 = (
-    get_base64_encoded_file("KiwiSoda.ttf")
-    or get_base64_encoded_file("KiwiSoda.otf")
-)
+# 1. Fuente Balatro Oficial (balatro.otf)
+balatro_font_path = None
+for fname in ["balatro.otf", "Balatro.otf", "balatro.ttf"]:
+    if os.path.exists(fname):
+        balatro_font_path = fname
+        break
 
-font_pixelta_b64 = (
-    get_base64_encoded_file("Pixelta.ttf")
-    or get_base64_encoded_file("pixelta.ttf")
-    or get_base64_encoded_file("Pixelta.otf")
-)
+if balatro_font_path:
+    with open(balatro_font_path, "rb") as f:
+        bfont_b64 = base64.b64encode(f.read()).decode("utf-8")
+        font_faces += f"""
+        @font-face {{
+            font-family: 'BalatroFont';
+            src: url('data:font/otf;base64,{bfont_b64}') format('opentype');
+            font-display: swap;
+        }}
+        """
 
-# Inyección condicional de @font-face en base64
-font_faces_css = ""
-if font_pixelta_b64:
-    font_faces_css += f"""
-    @font-face {{
-        font-family: 'Pixelta';
-        src: url(data:font/ttf;base64,{font_pixelta_b64}) format('truetype');
-        font-weight: normal;
-        font-style: normal;
-    }}
-    """
-elif font_daydream_b64:
-    font_faces_css += f"""
-    @font-face {{
-        font-family: 'Pixelta';
-        src: url(data:font/otf;base64,{font_daydream_b64}) format('opentype');
-        font-weight: normal;
-        font-style: normal;
-    }}
-    """
-else:
-    font_faces_css += """
-    @font-face {
-        font-family: 'Pixelta';
-        src: local('Press Start 2P');
-    }
-    """
+# 2. Fuentes secundarias de respaldo si existen en la carpeta
+for f_pattern, f_family, f_fmt in [
+    (["Pixelta.ttf", "pixelta.ttf"], "PixeltaFont", "truetype"),
+    (["Daydream DEMO.otf", "daydream demo.otf", "Daydream.otf"], "DaydreamFont", "opentype"),
+    (["KiwiSoda.ttf", "kiwisoda.ttf"], "KiwiSodaFont", "truetype"),
+]:
+    fpath = None
+    for fname in f_pattern:
+        if os.path.exists(fname):
+            fpath = fname
+            break
+    if fpath:
+        with open(fpath, "rb") as f:
+            f_b64 = base64.b64encode(f.read()).decode("utf-8")
+            font_faces += f"""
+            @font-face {{
+                font-family: '{f_family}';
+                src: url('data:font/{'opentype' if f_fmt=='opentype' else 'truetype'};base64,{f_b64}') format('{f_fmt}');
+                font-display: swap;
+            }}
+            """
 
-if font_kiwisoda_b64:
-    font_faces_css += f"""
-    @font-face {{
-        font-family: 'KiwiSoda';
-        src: url(data:font/ttf;base64,{font_kiwisoda_b64}) format('truetype');
-        font-weight: normal;
-        font-style: normal;
-    }}
-    """
-else:
-    font_faces_css += """
-    @font-face {
-        font-family: 'KiwiSoda';
-        src: local('VT323');
-    }
-    """
-
-# Elemento HTML del video de fondo si existe
-if bg_video_b64:
-    bg_video_html = f"""
-    <video id="bg-video-element" class="bg-layer round-hue-1" autoplay muted loop playsinline>
-        <source src="data:video/mp4;base64,{bg_video_b64}" type="video/mp4">
-    </video>
-    """
-else:
-    bg_video_html = """
-    <div id="bg-video-element" class="bg-fallback-swirl round-hue-1"></div>
-    """
-
-# ---------------------------------------------------------------------------
-# CÓDIGO HTML, CSS Y JAVASCRIPT COMPLETO DEL JUEGO
-# ---------------------------------------------------------------------------
+# Código HTML, CSS y JavaScript completo del juego Balatro Factor Común
 GAME_HTML = f"""
 <!DOCTYPE html>
 <html lang="es">
@@ -145,17 +109,16 @@ GAME_HTML = f"""
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Balatro Factor Común</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
     
     <style>
-        {font_faces_css}
+        {font_faces}
 
         :root {{
             --balatro-blue: #2d82d7;
             --balatro-red: #d73a3a;
             --balatro-yellow: #f5d342;
+            --card-white: #fdfbf7;
         }}
 
         * {{
@@ -163,9 +126,80 @@ GAME_HTML = f"""
             -webkit-tap-highlight-color: transparent;
         }}
 
+        /* Tipografías con prioridad en BalatroFont */
+        .font-balatro {{
+            font-family: 'BalatroFont', 'PixeltaFont', 'DaydreamFont', 'Press Start 2P', monospace;
+            letter-spacing: 0.5px;
+        }}
+
+        .font-arcade {{
+            font-family: 'BalatroFont', 'DaydreamFont', 'Press Start 2P', monospace;
+        }}
+
+        .font-ui {{
+            font-family: 'BalatroFont', 'KiwiSodaFont', 'VT323', monospace;
+        }}
+
+        /* VIDEO / ANIMACIÓN DE FONDO CON FILTRO DE CONTRASTE CINEMATOGRÁFICO */
+        #bg-video-container {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            z-index: -3;
+        }}
+
+        .bg-media {{
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%) scale(1.08);
+            object-fit: cover;
+            transition: filter 1.2s ease-in-out;
+        }}
+
+        /* Tonalidades de rotación verde Balatro por ronda */
+        .bg-round-1 {{
+            filter: hue-rotate(95deg) saturate(145%) contrast(125%) brightness(72%);
+        }}
+        .bg-round-2 {{
+            filter: hue-rotate(120deg) saturate(160%) contrast(135%) brightness(80%);
+        }}
+        .bg-round-3 {{
+            filter: hue-rotate(65deg) saturate(135%) contrast(120%) brightness(68%);
+        }}
+
+        /* Capa oscura radial para dar máximo contraste y profundidad a las cartas */
+        .bg-tint-overlay {{
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(10, 24, 18, 0.45) 0%, rgba(5, 12, 9, 0.82) 100%);
+            pointer-events: none;
+            z-index: -1;
+        }}
+
+        /* Fallback si no hay video cargado */
+        @keyframes bg-swirl-fallback {{
+            0% {{ background-position: 0% 50%; }}
+            50% {{ background-position: 100% 50%; }}
+            100% {{ background-position: 0% 50%; }}
+        }}
+
+        .fallback-swirl {{
+            background: linear-gradient(-45deg, #0d2119, #1a4f3b, #091711, #133a28);
+            background-size: 400% 400%;
+            animation: bg-swirl-fallback 15s ease infinite;
+        }}
+
         body {{
             color: white;
-            font-family: 'KiwiSoda', 'VT323', monospace;
+            font-family: 'BalatroFont', 'KiwiSodaFont', 'VT323', monospace;
             overflow: hidden;
             user-select: none;
             margin: 0;
@@ -174,109 +208,156 @@ GAME_HTML = f"""
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            background-color: #06110d;
         }}
-
-        .font-arcade {{ font-family: 'Pixelta', 'Daydream', 'Press Start 2P', cursive; }}
-        .font-body {{ font-family: 'KiwiSoda', 'VT323', monospace; }}
-
-        /* VIDEO / ANIMACIÓN DE FONDO CON TRANSICIÓN DE TONALIDAD */
-        .bg-layer {{
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 110vw;
-            height: 110vh;
-            transform: translate(-50%, -50%);
-            object-fit: cover;
-            z-index: -3;
-            pointer-events: none;
-            transition: filter 1.2s ease-in-out;
-        }}
-
-        /* Fondo de respaldo procedural si el archivo de video no está presente */
-        @keyframes bg-swirl-alt {{
-            0% {{ transform: translate(-50%, -50%) rotate(0deg) scale(1.1); }}
-            50% {{ transform: translate(-50%, -50%) rotate(180deg) scale(1.25); }}
-            100% {{ transform: translate(-50%, -50%) rotate(360deg) scale(1.1); }}
-        }}
-        .bg-fallback-swirl {{
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 140vw;
-            height: 140vh;
-            z-index: -3;
-            background: 
-                radial-gradient(circle at center, transparent 20%, rgba(6, 17, 13, 0.85) 75%),
-                conic-gradient(from 0deg at 50% 50%, #0d2119, #1b533a, #237b4f, #0d2119, #3ca871, #133a28, #0d2119);
-            animation: bg-swirl-alt 22s linear infinite;
-            transition: filter 1.2s ease-in-out;
-        }}
-
-        /* CAMBIO DE TONALIDADES POR RONDA */
-        .round-hue-1 {{ filter: contrast(125%) brightness(85%) hue-rotate(0deg); }}
-        .round-hue-2 {{ filter: contrast(140%) brightness(95%) hue-rotate(-35deg); }}
-        .round-hue-3 {{ filter: contrast(130%) brightness(85%) hue-rotate(45deg); }}
 
         /* ========================================================
-           CARTAS ESTILO BALATRO CLÁSICO (LIMPIAS)
+           CARTAS ESTILO BALATRO AUTÉNTICO
            ======================================================== */
         .balatro-card {{
-            width: 95px;
-            height: 140px;
-            background-color: #f4f4f4;
-            border-radius: 8px;
-            box-shadow: 2px 4px 10px rgba(0,0,0,0.4), inset 0 0 0 3px #e5e5e5, inset 0 0 0 4px #ccc;
-            color: #111;
+            width: 108px;
+            height: 154px;
+            background: #ffffff;
+            background: linear-gradient(175deg, #ffffff 0%, #fdfcfa 65%, #f4ede0 100%);
+            border-radius: 9px;
+            box-shadow: 
+                0 4px 0 #1b1e26,
+                0 8px 18px rgba(0,0,0,0.55),
+                inset 0 0 0 2px #ffffff,
+                inset 0 0 0 4px #e5dccb;
+            color: #1a1c23;
             position: relative;
             transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.18s ease;
             cursor: pointer;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            justify-content: space-between;
+            align-items: stretch;
+            padding: 6px 7px;
+            border: 2px solid #20222b;
         }}
 
-        /* Balanceo orgánico continuo estilo Balatro */
+        .balatro-card::before {{
+            content: "";
+            position: absolute;
+            inset: 5px;
+            border-radius: 5px;
+            border: 1px solid rgba(0, 0, 0, 0.07);
+            pointer-events: none;
+        }}
+
+        /* Balanceo oscilante continuo de Balatro */
         @keyframes balatro-sway-1 {{
-            0%, 100% {{ transform: translateY(0px) rotate(-1.5deg); }}
-            50% {{ transform: translateY(-7px) rotate(1.2deg); }}
+            0%, 100% {{ transform: translateY(0px) rotate(-1.8deg); }}
+            50% {{ transform: translateY(-7px) rotate(1.4deg); }}
         }}
         @keyframes balatro-sway-2 {{
-            0%, 100% {{ transform: translateY(-4px) rotate(1.4deg); }}
-            50% {{ transform: translateY(3px) rotate(-1.8deg); }}
+            0%, 100% {{ transform: translateY(-4px) rotate(1.6deg); }}
+            50% {{ transform: translateY(3px) rotate(-1.7deg); }}
         }}
         @keyframes balatro-sway-3 {{
-            0%, 100% {{ transform: translateY(2px) rotate(-0.8deg); }}
-            50% {{ transform: translateY(-6px) rotate(1.6deg); }}
+            0%, 100% {{ transform: translateY(2px) rotate(-1deg); }}
+            50% {{ transform: translateY(-6px) rotate(1.8deg); }}
         }}
 
-        .idle-sway-1 {{ animation: balatro-sway-1 3.2s ease-in-out infinite; }}
-        .idle-sway-2 {{ animation: balatro-sway-2 3.8s ease-in-out infinite; }}
-        .idle-sway-3 {{ animation: balatro-sway-3 4.1s ease-in-out infinite; }}
+        .idle-sway-1 {{ animation: balatro-sway-1 3.4s ease-in-out infinite; }}
+        .idle-sway-2 {{ animation: balatro-sway-2 3.9s ease-in-out infinite; }}
+        .idle-sway-3 {{ animation: balatro-sway-3 4.2s ease-in-out infinite; }}
 
         .balatro-card:hover {{
-            transform: translateY(-14px) scale(1.05) rotate(0deg) !important;
+            transform: translateY(-16px) scale(1.05) rotate(0deg) !important;
             animation-play-state: paused;
-            box-shadow: 0 14px 20px rgba(0,0,0,0.5), inset 0 0 0 3px #e5e5e5;
-            z-index: 20;
+            box-shadow: 
+                0 6px 0 #1b1e26,
+                0 16px 26px rgba(0,0,0,0.7),
+                inset 0 0 0 2px #ffffff,
+                0 0 16px rgba(245,211,66,0.6);
+            z-index: 25;
         }}
 
         .balatro-card.selected {{
-            transform: translateY(-24px) scale(1.08) rotate(0deg) !important;
+            transform: translateY(-24px) scale(1.07) rotate(0deg) !important;
             animation-play-state: paused;
-            box-shadow: 0 14px 24px rgba(0,0,0,0.6), inset 0 0 0 3px var(--balatro-yellow), 0 0 0 3px var(--balatro-blue) !important;
+            border-color: #f5d342;
+            box-shadow: 
+                0 6px 0 #b38b14,
+                0 18px 28px rgba(0,0,0,0.8), 
+                0 0 0 3px #f5d342, 
+                0 0 22px rgba(245,211,66,0.85),
+                inset 0 0 0 2px #ffffff !important;
             z-index: 30;
         }}
 
-        @media (max-width: 640px) {{
-            .balatro-card {{ width: 80px !important; height: 115px !important; }}
-            .balatro-card .term-text {{ font-size: 1.25rem !important; }}
-            #hand-container {{ min-height: 240px !important; }}
+        /* Esquinas de naipes Balatro */
+        .card-corner {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            line-height: 1;
+            width: 18px;
+            user-select: none;
+        }}
+        .card-corner.top-left {{
+            align-self: flex-start;
+        }}
+        .card-corner.bottom-right {{
+            align-self: flex-end;
+            transform: rotate(180deg);
         }}
 
-        /* Efecto Flotante de Puntuación con Fuego */
+        .corner-rank {{
+            font-size: 0.75rem;
+            font-weight: 900;
+            line-height: 1;
+        }}
+        .corner-suit {{
+            font-size: 0.65rem;
+            line-height: 1;
+            margin-top: 1px;
+        }}
+
+        /* Contenedor central del término algebraico */
+        .card-center-term {{
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2px;
+            color: #171920;
+        }}
+
+        .term-value {{
+            font-family: 'BalatroFont', monospace;
+            font-weight: bold;
+            line-height: 1.1;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.12);
+        }}
+
+        .card-suit-red {{
+            color: #d83a3a;
+        }}
+        .card-suit-blue {{
+            color: #1e5ba3;
+        }}
+
+        @media (max-width: 640px) {{
+            .balatro-card {{ width: 84px !important; height: 122px !important; padding: 4px 5px !important; }}
+            .corner-rank {{ font-size: 0.62rem !important; }}
+            .corner-suit {{ font-size: 0.55rem !important; }}
+            #hand-container {{ min-height: 220px !important; }}
+        }}
+
+        /* Botón Jugar Mano en estado deshabilitado más nítido */
+        .btn-play-disabled {{
+            background: rgba(18, 20, 26, 0.85) !important;
+            color: #6b7280 !important;
+            border: 2px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4) !important;
+            cursor: not-allowed !important;
+        }}
+
+        /* Efectos de Fuego y Puntaje */
         @keyframes flame-flicker {{
             0% {{ text-shadow: 0 0 10px #ff5a00, 0 -5px 15px #ff9c00, 0 -10px 20px #ffce00; transform: scale(1); }}
             50% {{ text-shadow: 0 0 20px #ff5a00, 0 -10px 25px #ff9c00, 0 -15px 30px #ffce00; transform: scale(1.1); }}
@@ -300,68 +381,69 @@ GAME_HTML = f"""
     </style>
 </head>
 <body class="p-2 sm:p-4">
-    <!-- CAPA DE VIDEO O FONDO DINÁMICO -->
-    {bg_video_html}
+    <!-- CONTENEDOR DE FONDO (VIDEO LOCAL O FALLBACK PROCEDURAL) -->
+    <div id="bg-video-container">
+        {f'<video id="bg-media" class="bg-media bg-round-1" autoplay muted loop playsinline><source src="data:{video_mime};base64,{video_b64}" type="{video_mime}"></video>' if video_b64 else '<div id="bg-media" class="bg-media fallback-swirl bg-round-1 w-full h-full"></div>'}
+    </div>
+    <div class="bg-tint-overlay"></div>
 
     <canvas id="fx-canvas"></canvas>
 
-    <!-- INTRO MODAL (Usuario del estudiante) -->
+    <!-- INTRO MODAL (User Nickname) -->
     <div id="intro-modal" class="fixed inset-0 bg-black/95 z-[1000] flex items-center justify-center p-4 backdrop-blur-md">
         <div class="bg-[#151821] border-4 border-emerald-500 rounded-2xl max-w-sm w-full p-6 text-center shadow-[0_0_50px_rgba(16,185,129,0.4)]">
-            <h1 class="font-arcade text-2xl sm:text-3xl text-emerald-400 mb-2 animate-pulse leading-snug" style="text-shadow: 0 0 20px #10b981;">
-                FACTOR<br>COMÚN
-            </h1>
-            <p class="font-arcade text-[9px] text-gray-300 mb-6 mt-4">INGRESA TU USUARIO</p>
-            <input type="text" id="username-input" class="w-full bg-black border-2 border-white/20 text-white font-arcade p-3 rounded mb-6 text-center focus:border-yellow-400 outline-none uppercase text-xs" placeholder="TU NOMBRE" maxlength="12">
-            <button onclick="startGameFromIntro()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-arcade py-4 rounded-xl text-xs transition-transform active:scale-95 shadow-[0_0_20px_rgba(16,185,129,0.5)] cursor-pointer">
+            <h1 class="font-balatro text-3xl sm:text-4xl text-emerald-400 mb-2 animate-pulse" style="text-shadow: 0 0 20px #10b981;">FACTOR<br>COMÚN</h1>
+            <p class="font-balatro text-[10px] text-gray-300 mb-6 mt-4">INGRESA TU USUARIO</p>
+            <input type="text" id="username-input" class="w-full bg-black border-2 border-white/20 text-white font-balatro p-3 rounded mb-6 text-center focus:border-yellow-400 outline-none uppercase" placeholder="TU NOMBRE" maxlength="12">
+            <button onclick="startGameFromIntro()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-balatro py-4 rounded-xl text-sm transition-transform active:scale-95 shadow-[0_0_20px_rgba(16,185,129,0.5)]">
                 ENTRAR AL JUEGO
             </button>
         </div>
     </div>
 
-    <!-- BOTONES INFERIORES FIJOS -->
+    <!-- BOTONES INFERIORES FIJOS (MÓVIL / ESCRITORIO) -->
     <div class="fixed bottom-3 left-3 z-40">
-        <button onclick="toggleTutorial()" class="bg-purple-900/90 border-2 border-purple-400 text-white font-arcade text-[10px] p-3 rounded-xl shadow-[0_0_15px_rgba(168,85,247,0.5)] hover:scale-105 transition-transform cursor-pointer">
+        <button onclick="toggleTutorial()" class="bg-purple-900/90 border-2 border-purple-400 text-white font-balatro text-xs p-3 rounded-xl shadow-[0_0_15px_rgba(168,85,247,0.5)] hover:scale-105 transition-transform">
             💡 TUTO
         </button>
     </div>
     <div class="fixed bottom-3 right-3 z-40">
-        <button onclick="toggleLeaderboard()" class="bg-blue-900/90 border-2 border-blue-400 text-white font-arcade text-[10px] p-3 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.5)] hover:scale-105 transition-transform cursor-pointer">
+        <button onclick="toggleLeaderboard()" class="bg-blue-900/90 border-2 border-blue-400 text-white font-balatro text-xs p-3 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.5)] hover:scale-105 transition-transform">
             🏆 RANK
         </button>
     </div>
 
-    <!-- PANEL TUTORIAL LATERAL -->
+    <!-- TUTORIAL LATERAL CON EMOJIS -->
     <div id="tutorial-panel" class="fixed left-0 top-0 h-full w-64 sm:w-72 bg-black/95 border-r-2 border-purple-500/50 p-4 flex flex-col z-50 transform -translate-x-full transition-transform duration-300 shadow-2xl">
         <div class="flex justify-between items-center mb-6 border-b border-purple-500/30 pb-2 mt-2">
-            <h3 class="font-arcade text-[11px] text-purple-400">💡 ¿CÓMO JUGAR?</h3>
-            <button onclick="toggleTutorial()" class="text-white text-xl cursor-pointer">✕</button>
+            <h3 class="font-balatro text-[12px] text-purple-400">💡 ¿CÓMO JUGAR?</h3>
+            <button onclick="toggleTutorial()" class="text-white text-xl">✕</button>
         </div>
         <div class="text-2xl bg-black/50 p-3 rounded-xl border border-gray-700 mb-4 text-center">
             🍎🍉 <span class="text-pink-500">+</span> 🍎🍌
         </div>
-        <p class="text-[10px] text-gray-300 font-arcade text-center mb-4 leading-relaxed">SACA LO QUE<br>TIENEN EN COMÚN (🍎)</p>
-        <div class="text-2xl bg-purple-900/30 p-3 rounded-xl border border-purple-500 text-center mb-6">
-            🍎<span class="text-gray-400 text-lg">(</span>🍉 <span class="text-pink-500 text-lg">+</span> 🍌<span class="text-gray-400 text-lg">)</span>
+        <p class="text-[11px] text-gray-300 font-balatro text-center mb-4 leading-relaxed">SACA LO QUE<br>TIENEN EN COMÚN (🍎)</p>
+        <div class="text-3xl bg-purple-900/30 p-3 rounded-xl border border-purple-500 text-center mb-6">
+            🍎<span class="text-gray-400 text-xl">(</span>🍉 <span class="text-pink-500 text-xl">+</span> 🍌<span class="text-gray-400 text-xl">)</span>
         </div>
-        <p class="text-[9px] text-gray-400 font-arcade text-center leading-relaxed">
-            1. Selecciona las cartas que comparten factores numéricos o algebraicos.<br><br>
+        <p class="text-[10px] text-gray-400 font-balatro text-center leading-relaxed">
+            1. Selecciona las cartas que comparten factores numéricos o letras.<br><br>
             2. Presiona "JUGAR MANO".<br><br>
-            3. ¡Arma el mayor combo posible!
+            3. Haz el mayor combo posible.
         </p>
     </div>
 
-    <!-- PANEL LATERAL DE RANKING (25 JUGADORES) -->
+    <!-- PANEL LATERAL DESPLEGABLE DE RANKING (25 JUGADORES) -->
     <aside id="leaderboard-panel" class="fixed right-0 top-0 h-full w-64 sm:w-72 bg-black/95 border-l-2 border-blue-500/50 p-3 flex flex-col z-50 transform translate-x-full transition-transform duration-300 shadow-2xl">
         <div class="flex justify-between items-center mb-2 border-b border-blue-500/30 pb-2 mt-2">
-            <button onclick="toggleLeaderboard()" class="text-white text-xl cursor-pointer">✕</button>
+            <button onclick="toggleLeaderboard()" class="text-white text-xl">✕</button>
             <div class="text-right">
-                <h3 class="font-arcade text-[9px] text-yellow-400">🏆 RANKING EN VIVO</h3>
-                <span class="text-[8px] font-arcade text-emerald-400">● 25 JUGADORES</span>
+                <h3 class="font-balatro text-[10px] text-yellow-400">🏆 RANKING EN VIVO</h3>
+                <span id="sync-status" class="text-[8px] font-balatro text-emerald-400">● 25 JUGADORES</span>
             </div>
         </div>
-        <div class="text-[8px] text-gray-400 font-arcade mb-2 text-center">AULA COMPITIENDO EN TIEMPO REAL</div>
-        <div id="leaderboard" class="flex-grow overflow-y-auto lb-scroll flex flex-col gap-1 pr-1 font-body">
+        <div class="text-[9px] text-gray-400 font-balatro mb-2 text-center">AULA COMPITIENDO EN TIEMPO REAL</div>
+        <div id="leaderboard" class="flex-grow overflow-y-auto lb-scroll flex flex-col gap-1 pr-1">
             <!-- Inyectado por JS -->
         </div>
     </aside>
@@ -369,72 +451,72 @@ GAME_HTML = f"""
     <!-- HEADER SUPERIOR: NIVEL, COMODINES Y PUNTAJE -->
     <header class="flex justify-between items-center z-10 max-w-5xl mx-auto w-full gap-2 px-1">
         <!-- Nivel & Ronda -->
-        <div class="bg-black/80 border-2 border-emerald-500/60 rounded-xl px-3 py-2 text-center min-w-[85px] sm:min-w-[110px] shadow-lg">
-            <div class="text-[8px] sm:text-[9px] text-gray-400 uppercase font-arcade">NIVEL <span id="level-display" class="text-emerald-400 text-xs sm:text-base">1</span></div>
-            <div class="text-[8px] sm:text-[9px] text-gray-400 mt-0.5 font-arcade">RONDA <span id="round-display" class="text-white">1</span>/3</div>
+        <div class="bg-black/75 border-2 border-emerald-500/60 rounded-xl px-3 py-2 text-center min-w-[85px] sm:min-w-[110px]">
+            <div class="text-[9px] sm:text-[11px] text-gray-400 uppercase font-balatro">NIVEL <span id="level-display" class="text-emerald-400 text-sm sm:text-lg">1</span></div>
+            <div class="text-[8px] sm:text-[10px] text-gray-400 mt-0.5 font-balatro">RONDA <span id="round-display" class="text-white">1</span>/3</div>
         </div>
 
         <!-- 3 Comodines Balatro -->
         <div class="flex justify-center gap-1.5 sm:gap-3">
-            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor predominante" class="bg-blue-900 border-2 border-blue-400 rounded-xl p-2 sm:p-2.5 text-lg sm:text-2xl relative shadow-[0_0_12px_rgba(59,130,246,0.5)] active:scale-95 transition-transform cursor-pointer">
+            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor predominante" class="bg-blue-900 border-2 border-blue-400 rounded-xl p-2 sm:p-2.5 text-lg sm:text-2xl relative shadow-[0_0_12px_rgba(59,130,246,0.5)] active:scale-95 transition-transform">
                 👁️
-                <span id="qty-reveal" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[8px] font-arcade px-1 rounded-full border border-black">1</span>
+                <span id="qty-reveal" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] font-balatro px-1 rounded-full border border-black">1</span>
             </button>
-            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano actual" class="bg-purple-900 border-2 border-purple-400 rounded-xl p-2 sm:p-2.5 text-lg sm:text-2xl relative shadow-[0_0_12px_rgba(168,85,247,0.5)] active:scale-95 transition-transform cursor-pointer">
+            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano actual" class="bg-purple-900 border-2 border-purple-400 rounded-xl p-2 sm:p-2.5 text-lg sm:text-2xl relative shadow-[0_0_12px_rgba(168,85,247,0.5)] active:scale-95 transition-transform">
                 🎲
-                <span id="qty-reroll" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[8px] font-arcade px-1 rounded-full border border-black">1</span>
+                <span id="qty-reroll" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] font-balatro px-1 rounded-full border border-black">1</span>
             </button>
-            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar nivel (se desbloquea con 3 estrellas)" class="bg-yellow-700 border-2 border-yellow-400 rounded-xl p-2 sm:p-2.5 text-lg sm:text-2xl relative shadow-[0_0_12px_rgba(234,179,8,0.5)] active:scale-95 transition-transform opacity-40 cursor-pointer">
+            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar nivel (gana con 3 estrellas)" class="bg-yellow-700 border-2 border-yellow-400 rounded-xl p-2 sm:p-2.5 text-lg sm:text-2xl relative shadow-[0_0_12px_rgba(234,179,8,0.5)] active:scale-95 transition-transform opacity-40">
                 ⏭️
-                <span id="qty-skip" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[8px] font-arcade px-1 rounded-full border border-black">0</span>
+                <span id="qty-skip" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] font-balatro px-1 rounded-full border border-black">0</span>
             </button>
         </div>
 
         <!-- Puntaje Global y Rango -->
-        <div class="bg-black/80 border-2 border-red-500/60 rounded-xl px-3 py-2 text-center min-w-[85px] sm:min-w-[110px] shadow-lg">
-            <div class="text-[8px] sm:text-[9px] text-gray-400 uppercase font-arcade">PUNTOS</div>
-            <div id="total-score" class="text-sm sm:text-lg text-emerald-400 font-arcade mt-0.5">0</div>
-            <div class="text-[8px] text-gray-300 font-arcade opacity-75">Rank: <span id="player-rank">#25</span></div>
+        <div class="bg-black/75 border-2 border-red-500/60 rounded-xl px-3 py-2 text-center min-w-[85px] sm:min-w-[110px]">
+            <div class="text-[9px] sm:text-[11px] text-gray-400 uppercase font-balatro">PUNTOS</div>
+            <div id="total-score" class="text-base sm:text-xl text-emerald-400 font-balatro mt-0.5">0</div>
+            <div class="text-[8px] text-gray-300 font-balatro opacity-75">Rank: <span id="player-rank">#25</span></div>
         </div>
     </header>
 
     <!-- ZONA CENTRAL DE JUEGO -->
     <main class="flex-grow flex flex-col items-center justify-center relative w-full max-w-5xl mx-auto my-auto">
-        <!-- Contenedor de 6 cartas de juego -->
-        <div id="hand-container" class="flex justify-center items-center flex-wrap gap-2 sm:gap-3 w-full px-2 mb-4">
-            <!-- Inyectado por JS -->
+        <!-- Contenedor de cartas -->
+        <div id="hand-container" class="flex justify-center items-center flex-wrap gap-2 sm:gap-3.5 w-full px-2 mb-6">
+            <!-- Renderizado dinámico -->
         </div>
 
         <!-- Botón Jugar Mano -->
-        <button id="btn-play" onclick="playHand()" disabled class="bg-gray-800 text-gray-500 border-2 border-gray-700 px-8 py-3.5 sm:px-12 sm:py-4 rounded-xl font-arcade text-[10px] sm:text-xs shadow-2xl transition-all disabled:opacity-40 cursor-not-allowed">
+        <button id="btn-play" onclick="playHand()" disabled class="btn-play-disabled px-8 py-3.5 sm:px-12 sm:py-4 rounded-xl font-balatro text-xs sm:text-sm shadow-2xl transition-all">
             JUGAR MANO
         </button>
 
         <!-- Efecto Fuego Puntos Flotantes -->
         <div id="flame-score-container" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 hidden opacity-0 transition-opacity duration-300 z-40 pointer-events-none text-center">
-            <div id="flame-score" class="font-arcade text-3xl sm:text-5xl score-flame tracking-wider drop-shadow-[0_0_35px_#ff4500]">0</div>
+            <div id="flame-score" class="font-balatro text-4xl sm:text-6xl score-flame tracking-wider drop-shadow-[0_0_35px_#ff4500]">0</div>
         </div>
     </main>
 
     <!-- MODAL NIVEL COMPLETADO (ESTRELLAS Y PRECISIÓN) -->
     <div id="level-modal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center backdrop-blur-md p-4">
         <div class="bg-[#151821] border-4 border-yellow-400 rounded-2xl max-w-md w-full p-6 text-center shadow-[0_0_50px_rgba(245,211,66,0.3)]">
-            <h2 class="font-arcade text-base sm:text-lg text-yellow-300 mb-2">NIVEL COMPLETADO</h2>
+            <h2 class="font-balatro text-xl sm:text-2xl text-yellow-300 mb-2">NIVEL COMPLETADO</h2>
             <div class="flex justify-center gap-3 my-5" id="modal-stars"></div>
-            <p id="modal-desc" class="text-gray-300 text-[10px] sm:text-xs font-arcade leading-relaxed mb-6"></p>
-            <button onclick="nextLevel()" class="w-full bg-[#f5d342] hover:bg-[#e5c332] text-black font-arcade py-4 rounded-xl text-xs transition-transform active:scale-95 shadow-lg cursor-pointer">
+            <p id="modal-desc" class="text-gray-300 text-[11px] sm:text-xs font-balatro leading-relaxed mb-6"></p>
+            <button onclick="nextLevel()" class="w-full bg-[#f5d342] hover:bg-[#e5c332] text-black font-balatro py-4 rounded-xl text-xs transition-transform active:scale-95 shadow-lg">
                 SIGUIENTE NIVEL ➔
             </button>
         </div>
     </div>
 
     <!-- ALERTA DE COMODÍN -->
-    <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 bg-blue-600 border-2 border-white text-white font-arcade text-[10px] sm:text-xs px-5 py-3 rounded-xl shadow-2xl z-50 hidden transition-opacity text-center max-w-[90vw]">
+    <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 bg-blue-600 border-2 border-white text-white font-balatro text-[11px] sm:text-xs px-5 py-3 rounded-xl shadow-2xl z-50 hidden transition-opacity text-center max-w-[90vw]">
         <span id="alert-text"></span>
     </div>
 
     <script>
-        /* SÍNTESIS DE AUDIO PROCEDURAL */
+        /* SÍNTESIS DE AUDIO PROCEDURAL (Web Audio API) */
         const aCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playTone(freq, type, dur, vol=0.1) {{
             try {{
@@ -510,7 +592,7 @@ GAME_HTML = f"""
         }}
         renderParticles();
 
-        /* RANKING SIMULADO DE 25 COMPAÑEROS DE CLASE */
+        /* CLASIFICACIÓN DE ALUMNOS (25 PARTICIPANTES) */
         const names = ["Andrey_U", "Fabiola_P", "Bryan_Q", "Daniela_CR", "Nath_V", "Isaac_H", "Carlos_S", "M_Estela", "K_Navas", "Diego_R", "K_Mora", "Josue_B", "Maria_F", "Valeria_G", "Seidy_T", "Allan_P", "Cesar_O", "Monica_V", "Lucia_Z", "R_Arias", "Erick_L", "S_Díaz", "Karla_C", "Luis_M"];
         let leaderboardData = [];
         let playerName = "ESTUDIANTE";
@@ -525,8 +607,8 @@ GAME_HTML = f"""
         function simulateClassroomActivity() {{
             leaderboardData.forEach(p => {{
                 if(!p.isPlayer && Math.random() > 0.45) {{
-                    p.score += Math.floor(Math.random() * 300 * Math.max(1, p.level));
-                    if(p.score > 2000 * p.level) p.level++;
+                    p.score += Math.floor(Math.random() * 320 * Math.max(1, p.level));
+                    if(p.score > 2200 * p.level) p.level++;
                 }}
             }});
             updateLeaderboardUI();
@@ -550,10 +632,10 @@ GAME_HTML = f"""
                 
                 const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${{idx+1}}`;
                 const div = document.createElement('div');
-                div.className = `flex justify-between items-center text-[10px] p-1.5 rounded ${{p.isPlayer ? 'bg-blue-600/70 border border-cyan-400 font-bold' : 'bg-white/5 text-gray-300'}}`;
+                div.className = `flex justify-between items-center text-[9px] font-balatro p-1.5 rounded ${{p.isPlayer ? 'bg-blue-600/70 border border-cyan-400 font-bold' : 'bg-white/5 text-gray-300'}}`;
                 div.innerHTML = `
-                    <span>${{medal}} ${{p.name}} ${{p.isPlayer ? '(TÚ)' : ''}}</span>
-                    <span class="text-yellow-300 font-arcade text-[9px]">${{p.score.toLocaleString()}}</span>
+                    <span class="truncate max-w-[130px]">${{medal}} ${{p.name}} ${{p.isPlayer ? '(TÚ)' : ''}}</span>
+                    <span class="text-yellow-300">${{p.score.toLocaleString()}}</span>
                 `;
                 container.appendChild(div);
             }});
@@ -585,17 +667,6 @@ GAME_HTML = f"""
             updateUI();
         }}
 
-        /* CAMBIO DE COLOR DE FONDO SEGÚN LA RONDA */
-        function updateBackgroundForRound() {{
-            const bgEl = document.getElementById('bg-video-element');
-            if (!bgEl) return;
-            
-            bgEl.classList.remove('round-hue-1', 'round-hue-2', 'round-hue-3');
-            if(round === 1) bgEl.classList.add('round-hue-1');
-            else if (round === 2) bgEl.classList.add('round-hue-2');
-            else if (round === 3) bgEl.classList.add('round-hue-3');
-        }}
-
         /* LÓGICA DE JUEGO INFINITO Y MATEMÁTICAS */
         let level = 1;
         let round = 1;
@@ -618,6 +689,15 @@ GAME_HTML = f"""
             if (x === 1) s += "x"; else if (x > 1) s += `x^${{x}}`;
             if (y === 1) s += "y"; else if (y > 1) s += `y^${{y}}`;
             return s;
+        }}
+
+        function updateBackgroundForRound() {{
+            const media = document.getElementById('bg-media');
+            if(!media) return;
+            media.classList.remove('bg-round-1', 'bg-round-2', 'bg-round-3');
+            if(round === 1) media.classList.add('bg-round-1');
+            else if(round === 2) media.classList.add('bg-round-2');
+            else if(round === 3) media.classList.add('bg-round-3');
         }}
 
         function generateTerm(forceFactor = null) {{
@@ -656,7 +736,9 @@ GAME_HTML = f"""
             const n = currentHand.length;
             for(let i=1; i < (1<<n); i++) {{
                 let subset = [];
-                for(let j=0; j<n; j++) if((i & (1<<j))) subset.push(currentHand[j]);
+                for(let j=0; j<n; j++) {{
+                    if((i & (1<<j))) subset.push(currentHand[j]);
+                }}
                 if(subset.length > 1) {{
                     const info = getCommonFactorInfo(subset);
                     if(info.isValid && subset.length > maxSubset) maxSubset = subset.length;
@@ -700,11 +782,40 @@ GAME_HTML = f"""
                 const swayClass = idx % 3 === 0 ? 'idle-sway-1' : (idx % 3 === 1 ? 'idle-sway-2' : 'idle-sway-3');
                 el.className = `balatro-card ${{card.selected ? 'selected' : swayClass}}`;
                 
+                // Tamaño dinámico del término con BalatroFont
                 let tSize = 'text-2xl sm:text-3xl';
-                if(card.str.length > 5) tSize = 'text-xl sm:text-2xl';
-                if(card.str.length > 8) tSize = 'text-lg sm:text-xl';
+                if(card.str.length >= 4) tSize = 'text-xl sm:text-2xl';
+                if(card.str.length >= 7) tSize = 'text-lg sm:text-xl';
+                if(card.str.length >= 10) tSize = 'text-base sm:text-lg';
 
-                el.innerHTML = `<div class="term-text font-arcade ${{tSize}} font-bold tracking-tight text-[#111] px-1 text-center">${{card.str}}</div>`;
+                // Palo y color estilo Balatro (Corazones rojos / Picas azules)
+                const isRed = (card.c < 0 || (idx % 2 === 0));
+                const suit = isRed ? '♥' : '♠';
+                const suitClass = isRed ? 'card-suit-red' : 'card-suit-blue';
+
+                // Rango de la esquina: si tiene potencia x², x o el número simplificado
+                let cornerRank = '';
+                if(card.x > 0 && card.y > 0) cornerRank = 'XY';
+                else if(card.x > 1) cornerRank = `X²`;
+                else if(card.x === 1) cornerRank = 'X';
+                else if(card.y > 0) cornerRank = 'Y';
+                else cornerRank = Math.abs(card.c).toString();
+
+                el.innerHTML = `
+                    <div class="card-corner top-left ${{suitClass}} font-balatro">
+                        <span class="corner-rank">${{cornerRank}}</span>
+                        <span class="corner-suit">${{suit}}</span>
+                    </div>
+                    <div class="card-center-term">
+                        <span class="term-value ${{tSize}}">
+                            ${{card.str}}
+                        </span>
+                    </div>
+                    <div class="card-corner bottom-right ${{suitClass}} font-balatro">
+                        <span class="corner-rank">${{cornerRank}}</span>
+                        <span class="corner-suit">${{suit}}</span>
+                    </div>
+                `;
                 
                 el.onclick = () => {{
                     card.selected = !card.selected;
@@ -720,10 +831,10 @@ GAME_HTML = f"""
             const selected = hand.filter(c => c.selected);
             if(selected.length > 0) {{
                 btnPlay.disabled = false;
-                btnPlay.className = "bg-[#2d82d7] hover:bg-[#1a5fa6] text-white border-2 border-cyan-300 px-8 py-3.5 sm:px-12 sm:py-4 rounded-xl font-arcade text-[10px] sm:text-xs shadow-[0_0_20px_rgba(45,130,215,0.6)] cursor-pointer transform active:scale-95 transition-all";
+                btnPlay.className = "bg-[#2d82d7] hover:bg-[#1a5fa6] text-white border-2 border-cyan-300 px-8 py-3.5 sm:px-12 sm:py-4 rounded-xl font-balatro text-xs sm:text-sm shadow-[0_0_20px_rgba(45,130,215,0.6)] transition-all transform active:scale-95 cursor-pointer";
             }} else {{
                 btnPlay.disabled = true;
-                btnPlay.className = "bg-gray-800 text-gray-500 border-2 border-gray-700 px-8 py-3.5 sm:px-12 sm:py-4 rounded-xl font-arcade text-[10px] sm:text-xs opacity-40 cursor-not-allowed";
+                btnPlay.className = "btn-play-disabled px-8 py-3.5 sm:px-12 sm:py-4 rounded-xl font-balatro text-xs sm:text-sm shadow-2xl transition-all";
             }}
         }}
 
@@ -757,7 +868,6 @@ GAME_HTML = f"""
             flameContainer.style.opacity = '1';
             spawnParticles(window.innerWidth/2, window.innerHeight/2, 45);
 
-            // Reutilización: Se eliminan las jugadas, las no jugadas persisten
             hand = hand.filter(c => !c.selected);
 
             setTimeout(() => {{
@@ -791,9 +901,9 @@ GAME_HTML = f"""
             for(let i=0; i<3; i++) {{
                 setTimeout(() => SFX.star(), i * 250);
                 if(i < stars) {{
-                    starContainer.innerHTML += `<span class="text-yellow-400 text-3xl sm:text-4xl drop-shadow-[0_0_15px_rgba(245,211,66,0.8)] animate-pulse">★</span>`;
+                    starContainer.innerHTML += `<span class="text-yellow-400 text-4xl sm:text-5xl drop-shadow-[0_0_15px_rgba(245,211,66,0.8)] animate-pulse">★</span>`;
                 }} else {{
-                    starContainer.innerHTML += `<span class="text-gray-700 text-3xl sm:text-4xl">★</span>`;
+                    starContainer.innerHTML += `<span class="text-gray-700 text-4xl sm:text-5xl">★</span>`;
                 }}
             }}
 
@@ -863,7 +973,7 @@ GAME_HTML = f"""
                 }}
                 SFX.select();
                 if(maxSubset > 1) {{
-                    showAlert(`🔎 FACTOR DOMINANTE:<br><br><span class="text-yellow-300 text-sm sm:text-base">${{bestFactor}}</span> (en ${{maxSubset}} cartas)`);
+                    showAlert(`🔎 FACTOR DOMINANTE:<br><br><span class="text-yellow-300 text-base sm:text-lg">${{bestFactor}}</span> (en ${{maxSubset}} cartas)`);
                 }} else {{
                     showAlert(`🔎 No hay factores comunes detectables en esta mano.`);
                 }}
@@ -891,18 +1001,18 @@ GAME_HTML = f"""
 """
 
 # Renderizar el juego dentro del marco de Streamlit (Adaptable a celular y proyector)
-components.html(GAME_HTML, height=720, scrolling=False)
+components.html(GAME_HTML, height=730, scrolling=False)
 
-# Barra lateral informativa para la presentación académica
+# Barra lateral informativa para la presentación
 with st.sidebar:
     st.header("🧮 Balatro: Factor Común")
     st.caption("UCR • IF0003 Matemática Básica")
     st.markdown(
         """
         **Mecánica Didáctica:**
-        - **3 Rondas por Nivel:** La dificultad de los términos algebraicos escala exponencialmente.
-        - **Factor Común Monomio:** Identificar divisores numéricos (MCD) y variables con menor exponente.
-        - **Reutilización:** Las cartas no seleccionadas persisten en la siguiente ronda.
+        - **3 Rondas por Nivel:** La dificultad de los términos algebraicos escala conforme aumentas de nivel.
+        - **Factor Común Monomio:** Seleccionar los términos que comparten letras y divisores numéricos comunes (MCD).
+        - **Reutilización:** Las cartas no seleccionadas se conservan en la siguiente ronda.
         - **Comodines:**
           - 👁️ *Lupa:* Revela el factor común dominante.
           - 🎲 *Dado:* Reroll completo de la mano actual.
