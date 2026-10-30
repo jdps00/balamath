@@ -71,12 +71,27 @@ font_kiwisoda_b64 = (
     or get_base64_encoded_file("KiwiSoda.otf")
 )
 
+font_pixelta_b64 = (
+    get_base64_encoded_file("Pixelta.ttf")
+    or get_base64_encoded_file("pixelta.ttf")
+    or get_base64_encoded_file("Pixelta.otf")
+)
+
 # Inyección condicional de @font-face en base64
 font_faces_css = ""
-if font_daydream_b64:
+if font_pixelta_b64:
     font_faces_css += f"""
     @font-face {{
-        font-family: 'Daydream';
+        font-family: 'Pixelta';
+        src: url(data:font/ttf;base64,{font_pixelta_b64}) format('truetype');
+        font-weight: normal;
+        font-style: normal;
+    }}
+    """
+elif font_daydream_b64:
+    font_faces_css += f"""
+    @font-face {{
+        font-family: 'Pixelta';
         src: url(data:font/otf;base64,{font_daydream_b64}) format('opentype');
         font-weight: normal;
         font-style: normal;
@@ -85,7 +100,7 @@ if font_daydream_b64:
 else:
     font_faces_css += """
     @font-face {
-        font-family: 'Daydream';
+        font-family: 'Pixelta';
         src: local('Press Start 2P');
     }
     """
@@ -162,7 +177,7 @@ GAME_HTML = f"""
             background-color: #06110d;
         }}
 
-        .font-arcade {{ font-family: 'Daydream', 'Press Start 2P', cursive; }}
+        .font-arcade {{ font-family: 'Pixelta', 'Daydream', 'Press Start 2P', cursive; }}
         .font-body {{ font-family: 'KiwiSoda', 'VT323', monospace; }}
 
         /* VIDEO / ANIMACIÓN DE FONDO CON TRANSICIÓN DE TONALIDAD */
@@ -205,49 +220,22 @@ GAME_HTML = f"""
         .round-hue-3 {{ filter: contrast(130%) brightness(85%) hue-rotate(45deg); }}
 
         /* ========================================================
-           CARTAS PIXEL ART BLANCAS (ESTILO NAIRES BALATRO)
+           CARTAS ESTILO BALATRO CLÁSICO (LIMPIAS)
            ======================================================== */
         .balatro-card {{
-            width: 98px;
-            height: 146px;
-            background-color: #fbfbfb;
-            border-radius: 6px;
-            border: 3px solid #1a1a24;
-            box-shadow: 
-                inset -2px -2px 0px 0px #cfd3dc,
-                inset 2px 2px 0px 0px #ffffff,
-                0 6px 0px 0px #0b0c10,
-                0 10px 14px rgba(0,0,0,0.5);
+            width: 95px;
+            height: 140px;
+            background-color: #f4f4f4;
+            border-radius: 8px;
+            box-shadow: 2px 4px 10px rgba(0,0,0,0.4), inset 0 0 0 3px #e5e5e5, inset 0 0 0 4px #ccc;
             color: #111;
             position: relative;
             transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.18s ease;
             cursor: pointer;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            padding: 5px 6px;
-            image-rendering: pixelated;
-        }}
-
-        .balatro-card .card-corner {{
-            font-family: 'Daydream', cursive;
-            font-size: 8px;
-            line-height: 1;
-            color: #2b2b36;
-            text-shadow: 1px 1px 0px #fff;
-            user-select: none;
-        }}
-
-        .balatro-card .card-corner-bottom {{
-            transform: rotate(180deg);
-        }}
-
-        .balatro-card .term-center {{
-            display: flex;
-            align-items: center;
             justify-content: center;
-            flex-grow: 1;
-            text-align: center;
+            align-items: center;
         }}
 
         /* Balanceo orgánico continuo estilo Balatro */
@@ -271,32 +259,20 @@ GAME_HTML = f"""
         .balatro-card:hover {{
             transform: translateY(-14px) scale(1.05) rotate(0deg) !important;
             animation-play-state: paused;
-            border-color: #2d82d7;
-            box-shadow: 
-                inset -2px -2px 0px 0px #cbd5e1,
-                inset 2px 2px 0px 0px #ffffff,
-                0 0 0 3px #2d82d7,
-                0 12px 18px rgba(0,0,0,0.6);
+            box-shadow: 0 14px 20px rgba(0,0,0,0.5), inset 0 0 0 3px #e5e5e5;
             z-index: 20;
         }}
 
         .balatro-card.selected {{
             transform: translateY(-24px) scale(1.08) rotate(0deg) !important;
             animation-play-state: paused;
-            border-color: var(--balatro-yellow) !important;
-            box-shadow: 
-                inset -2px -2px 0px 0px #fde68a,
-                inset 2px 2px 0px 0px #ffffff,
-                0 0 0 3px var(--balatro-yellow),
-                0 0 0 5px var(--balatro-blue),
-                0 16px 22px rgba(0,0,0,0.7) !important;
+            box-shadow: 0 14px 24px rgba(0,0,0,0.6), inset 0 0 0 3px var(--balatro-yellow), 0 0 0 3px var(--balatro-blue) !important;
             z-index: 30;
         }}
 
         @media (max-width: 640px) {{
-            .balatro-card {{ width: 80px !important; height: 120px !important; padding: 4px 5px !important; }}
-            .balatro-card .card-corner {{ font-size: 7px !important; }}
-            .balatro-card .term-text {{ font-size: 1.35rem !important; }}
+            .balatro-card {{ width: 80px !important; height: 115px !important; }}
+            .balatro-card .term-text {{ font-size: 1.25rem !important; }}
             #hand-container {{ min-height: 240px !important; }}
         }}
 
@@ -728,28 +704,7 @@ GAME_HTML = f"""
                 if(card.str.length > 5) tSize = 'text-xl sm:text-2xl';
                 if(card.str.length > 8) tSize = 'text-lg sm:text-xl';
 
-                // Etiqueta de esquina estilo naipe pixel art
-                let cornerRank = "🂠";
-                if (card.x > 0 && card.y > 0) cornerRank = "xy";
-                else if (card.x === 2) cornerRank = "x²";
-                else if (card.x === 3) cornerRank = "x³";
-                else if (card.x === 1) cornerRank = "x";
-                else if (card.y > 0) cornerRank = "y";
-                else cornerRank = Math.abs(card.c) || "#";
-
-                el.innerHTML = `
-                    <div class="flex justify-between items-center w-full">
-                        <span class="card-corner">${{cornerRank}}</span>
-                        <span class="text-[9px] font-arcade opacity-40">♦</span>
-                    </div>
-                    <div class="term-center">
-                        <span class="term-text font-body ${{tSize}} font-bold tracking-tight text-[#111] px-1">${{card.str}}</span>
-                    </div>
-                    <div class="flex justify-between items-center w-full">
-                        <span class="text-[9px] font-arcade opacity-40">♦</span>
-                        <span class="card-corner card-corner-bottom">${{cornerRank}}</span>
-                    </div>
-                `;
+                el.innerHTML = `<div class="term-text font-arcade ${{tSize}} font-bold tracking-tight text-[#111] px-1 text-center">${{card.str}}</div>`;
                 
                 el.onclick = () => {{
                     card.selected = !card.selected;
