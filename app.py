@@ -5,6 +5,8 @@ Universidad de Costa Rica - Recinto de Paraíso
 """
 
 import os
+import glob
+import zipfile
 import base64
 import streamlit as st
 import streamlit.components.v1 as components
@@ -50,6 +52,18 @@ def get_base64_file(filename):
             return base64.b64encode(f.read()).decode("utf-8")
     return None
 
+def get_font_from_zip(zip_pattern, ttf_name_substring="DOS"):
+    zip_files = glob.glob(os.path.join(current_dir, zip_pattern))
+    for zf in zip_files:
+        try:
+            with zipfile.ZipFile(zf, "r") as z:
+                for name in z.namelist():
+                    if ttf_name_substring.lower() in name.lower() and name.lower().endswith(".ttf"):
+                        return base64.b64encode(z.read(name)).decode("utf-8")
+        except Exception:
+            continue
+    return None
+
 # Fondos GIF por estado
 bg_game_b64 = get_base64_file("background_gif.gif") or get_base64_file("background.gif")
 bg_reg_b64 = get_base64_file("background_gif_2.gif") or get_base64_file("background_2.gif") or bg_game_b64
@@ -57,16 +71,21 @@ bg_reg_b64 = get_base64_file("background_gif_2.gif") or get_base64_file("backgro
 # Audio de fondo
 audio_bg_b64 = get_base64_file("background.mp3")
 
-# Imágenes de selección de personajes
+# Imágenes de personajes
 ricky_b64 = get_base64_file("ricky.png")
 ariana_b64 = get_base64_file("ariana.png")
 
-# Tipografías
-balatro_font_b64 = get_base64_file("balatro.otf")
+# Cargar fuentes: soporte para archivo suelto o dentro del ZIP adjunto
 dos_font_b64 = (
     get_base64_file("Perfect DOS VGA 437 Win.ttf") or 
     get_base64_file("Perfect DOS VGA 437.ttf") or
-    get_base64_file("perfect_dos_vga_437.ttf")
+    get_font_from_zip("*dos*.zip", "DOS") or
+    get_font_from_zip("*.zip", "DOS")
+)
+
+balatro_font_b64 = (
+    get_base64_file("balatro.otf") or 
+    get_font_from_zip("*balatro*.zip", "balatro")
 )
 
 font_face_css = ""
@@ -93,13 +112,15 @@ if balatro_font_b64:
     @font-face {{
         font-family: 'BalatroFont';
         src: url(data:font/otf;base64,{balatro_font_b64}) format('opentype');
+        font-weight: normal;
+        font-style: normal;
     }}
     """
 else:
     font_face_css += """
     @font-face {
         font-family: 'BalatroFont';
-        src: local('Press Start 2P'), sans-serif;
+        src: local('DosVgaFont'), local('Press Start 2P'), monospace;
         font-weight: bold;
     }
     """
@@ -115,8 +136,8 @@ if audio_bg_b64:
     </audio>
     """
 
-ricky_img_tag = f'<img src="data:image/png;base64,{ricky_b64}" class="w-full h-full object-contain pixelated" alt="Ricky" />' if ricky_b64 else '<div class="text-3xl font-dos">CHICO</div>'
-ariana_img_tag = f'<img src="data:image/png;base64,{ariana_b64}" class="w-full h-full object-contain pixelated" alt="Ariana" />' if ariana_b64 else '<div class="text-3xl font-dos">CHICA</div>'
+ricky_img_tag = f'<img src="data:image/png;base64,{ricky_b64}" class="w-full h-full object-contain pixelated" alt="Ricky" />' if ricky_b64 else '<div class="text-xl font-dos">CHICO</div>'
+ariana_img_tag = f'<img src="data:image/png;base64,{ariana_b64}" class="w-full h-full object-contain pixelated" alt="Ariana" />' if ariana_b64 else '<div class="text-xl font-dos">CHICA</div>'
 
 GAME_HTML = f"""<!DOCTYPE html>
 <html lang="es">
@@ -132,11 +153,9 @@ GAME_HTML = f"""<!DOCTYPE html>
 
         :root {{
             --font-dos: 'DosVgaFont', 'Press Start 2P', monospace;
-            --font-balatro: 'BalatroFont', 'Press Start 2P', sans-serif;
-            --color-dark-iron: #0b0d12;
-            --color-border-dark: #191e28;
-            --color-blood-red: #9e1a22;
-            --color-card-cream: #ece5d3;
+            --font-balatro: 'BalatroFont', 'DosVgaFont', monospace;
+            --color-card-cream: #f4edd9;
+            --color-card-border: #14171f;
         }}
 
         * {{
@@ -152,7 +171,7 @@ GAME_HTML = f"""<!DOCTYPE html>
 
         body {{
             color: #f0e6d2;
-            font-family: var(--font-balatro);
+            font-family: var(--font-dos);
             overflow: hidden;
             user-select: none;
             margin: 0;
@@ -181,108 +200,106 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
 
         .procedural-reg {{
-            background: radial-gradient(circle at center, #181d26, #07090d);
+            background: radial-gradient(circle at center, #1b202c, #07090d);
         }}
         .procedural-game {{
-            background: radial-gradient(circle at center, #1b3d2b, #050c07);
+            background: radial-gradient(circle at center, #1a2f26, #050b07);
         }}
 
         .bg-dark-overlay {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at center, rgba(10, 14, 18, 0.45) 0%, rgba(3, 4, 6, 0.92) 100%);
+            background: radial-gradient(circle at center, rgba(10, 14, 18, 0.4) 0%, rgba(3, 4, 6, 0.88) 100%);
             pointer-events: none;
             z-index: -2;
         }}
 
-        /* CAJAS Y PANELES 8-BIT AUTÉNTICOS (SIN BORDES REDONDEADOS) */
-        .pixel-box-8bit {{
-            background: #1e2430;
+        /* BARRAS Y PANELES 8-BIT CON BISEL Y RELIEVE */
+        .pixel-panel-8bit {{
+            background: #181d26;
             border: 4px solid #000000;
             box-shadow: 
-                inset 3px 3px 0 #3a455a,
-                inset -3px -3px 0 #0d1017,
+                inset 3px 3px 0 #3b465c,
+                inset -3px -3px 0 #0a0c10,
                 0 6px 0 #000000;
             position: relative;
         }}
 
-        .pixel-inner-slot {{
-            background: #0d1017;
+        .pixel-inner-box {{
+            background: #090c12;
             border: 3px solid #000000;
             box-shadow: inset 2px 2px 0 #000000;
         }}
 
         .pixel-badge-red {{
-            background: #8f1920;
+            background: #a92329;
             border: 3px solid #000000;
             box-shadow: 
-                inset 2px 2px 0 #c7363e,
-                inset -2px -2px 0 #4f0a0e,
+                inset 2px 2px 0 #e44d53,
+                inset -2px -2px 0 #570b0f,
                 0 4px 0 #000000;
             color: #ffffff;
             text-shadow: 2px 2px 0 #000000;
         }}
 
-        .pixel-btn-action {{
+        .pixel-btn-orange {{
             font-family: var(--font-dos);
-            background: #d85a1a;
+            background: #d85718;
             border: 4px solid #000000;
             box-shadow: 
-                inset 3px 3px 0 #ff884d,
-                inset -3px -3px 0 #7a2b05,
+                inset 3px 3px 0 #ff8c4a,
+                inset -3px -3px 0 #732603,
                 0 6px 0 #000000;
             color: #ffffff;
             text-shadow: 2px 2px 0 #000000;
             transition: transform 0.05s steps(2);
         }}
-        .pixel-btn-action:hover {{ background: #ea6927; }}
-        .pixel-btn-action:active {{
+        .pixel-btn-orange:hover {{ background: #eb6523; }}
+        .pixel-btn-orange:active {{
             transform: translateY(4px);
             box-shadow: 
-                inset 3px 3px 0 #7a2b05,
-                inset -3px -3px 0 #ff884d,
+                inset 3px 3px 0 #732603,
+                inset -3px -3px 0 #ff8c4a,
                 0 2px 0 #000000;
         }}
 
         .pixel-btn-blue {{
             font-family: var(--font-dos);
-            background: #1b629b;
+            background: #1765a0;
             border: 3px solid #000000;
             box-shadow: 
-                inset 2px 2px 0 #4593d6,
-                inset -2px -2px 0 #0a3152,
+                inset 2px 2px 0 #4698dc,
+                inset -2px -2px 0 #0a3355,
                 0 4px 0 #000000;
             color: #ffffff;
             text-shadow: 2px 2px 0 #000000;
         }}
 
-        /* SELECCIÓN DE PERSONAJE POKÉMON 8-BIT */
-        .char-slot-8bit {{
-            background: #12161f;
+        /* SELECCIÓN DE PERSONAJE 8-BIT */
+        .char-box-8bit {{
+            background: #0e121a;
             border: 3px solid #000000;
-            box-shadow: inset 2px 2px 0 #283142;
             cursor: pointer;
             transition: transform 0.08s steps(2);
         }}
-        .char-slot-8bit:hover {{
+        .char-box-8bit:hover {{
             border-color: #f1b31c;
-            background: #1a202c;
+            background: #151b27;
             transform: translateY(-2px);
         }}
-        .char-slot-8bit.selected {{
+        .char-box-8bit.selected {{
             border-color: #f1b31c;
-            background: #232b3b;
+            background: #1d2535;
             box-shadow: inset 0 0 0 2px #f1b31c, 0 4px 0 #000000;
         }}
 
         /* ========================================================
-           CARTAS 8-BIT / DARK FANTASY (BORDE PIXELADO REAL)
+           CARTAS 8-BIT / NAIPES FÍSICOS BALATRO CON BISEL PURO
            ======================================================== */
         .card-8bit {{
             width: 104px;
             height: 150px;
             background: var(--color-card-cream);
             border: 4px solid #000000;
-            /* Bisel duro de pixel art */
             box-shadow: 
                 inset 3px 3px 0 #ffffff,
                 inset -3px -3px 0 #b3a992,
@@ -295,16 +312,15 @@ GAME_HTML = f"""<!DOCTYPE html>
             transition: transform 0.08s steps(3);
         }}
 
-        /* Marco interior rústico punteado */
-        .card-frame-inner {{
+        .card-line-frame {{
             position: absolute;
             top: 4px; left: 4px; right: 4px; bottom: 4px;
-            border: 2px solid #ccc0a2;
+            border: 2px dashed rgba(60, 50, 35, 0.25);
             pointer-events: none;
         }}
 
-        /* Esquinas */
-        .pip-corner-tl {{
+        /* Esquinas de las cartas */
+        .card-corner-tl {{
             position: absolute;
             top: 6px; left: 7px;
             display: flex; flex-direction: column; align-items: center;
@@ -312,7 +328,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             pointer-events: none;
             font-family: var(--font-dos);
         }}
-        .pip-corner-br {{
+        .card-corner-br {{
             position: absolute;
             bottom: 6px; right: 7px;
             display: flex; flex-direction: column; align-items: center;
@@ -322,18 +338,18 @@ GAME_HTML = f"""<!DOCTYPE html>
             font-family: var(--font-dos);
         }}
 
-        .corner-text {{
+        .corner-val {{
             font-size: 13px;
             font-weight: bold;
             letter-spacing: -0.5px;
         }}
-        .corner-suit-icon {{
+        .corner-suit {{
             font-size: 11px;
             margin-top: 1px;
         }}
 
         /* Contenedor central del monomio */
-        .term-box-center {{
+        .term-container {{
             max-width: 86%;
             display: flex;
             align-items: center;
@@ -343,24 +359,32 @@ GAME_HTML = f"""<!DOCTYPE html>
             pointer-events: none;
         }}
 
-        .term-math-pixel {{
+        .term-math-dos {{
             font-family: var(--font-dos);
             color: #12141a;
             line-height: 1;
             white-space: nowrap;
-            letter-spacing: -1px;
+            letter-spacing: -0.5px;
             font-weight: bold;
-            text-shadow: 1px 1px 0 #ffffff;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.7);
         }}
 
-        .len-1 {{ font-size: 2.1rem; }}
-        .len-2 {{ font-size: 1.85rem; }}
-        .len-3 {{ font-size: 1.55rem; }}
-        .len-4 {{ font-size: 1.3rem; }}
-        .len-5 {{ font-size: 1.1rem; }}
-        .len-many {{ font-size: 0.9rem; }}
+        /* Superíndice puro ASCII compatible con Perfect DOS VGA 437 */
+        .term-math-dos sup, .corner-val sup {{
+            font-size: 0.65em;
+            vertical-align: super;
+            line-height: 0;
+            letter-spacing: 0;
+            font-family: var(--font-dos);
+        }}
 
-        /* Oscilación escalonada en píxeles */
+        .len-1 {{ font-size: 2.3rem; }}
+        .len-2 {{ font-size: 1.95rem; }}
+        .len-3 {{ font-size: 1.65rem; }}
+        .len-4 {{ font-size: 1.35rem; }}
+        .len-5 {{ font-size: 1.15rem; }}
+        .len-many {{ font-size: 0.95rem; }}
+
         @keyframes sway-8bit-1 {{
             0%, 100% {{ transform: translateY(0px); }}
             50% {{ transform: translateY(-7px); }}
@@ -401,26 +425,26 @@ GAME_HTML = f"""<!DOCTYPE html>
 
         @media (max-width: 640px) {{
             .card-8bit {{ width: 84px !important; height: 122px !important; }}
-            .len-1 {{ font-size: 1.55rem !important; }}
-            .len-2 {{ font-size: 1.35rem !important; }}
+            .len-1 {{ font-size: 1.65rem !important; }}
+            .len-2 {{ font-size: 1.4rem !important; }}
             .len-3 {{ font-size: 1.15rem !important; }}
             .len-4 {{ font-size: 0.95rem !important; }}
             .len-5 {{ font-size: 0.82rem !important; }}
             .len-many {{ font-size: 0.72rem !important; }}
-            .corner-text {{ font-size: 11px !important; }}
-            .corner-suit-icon {{ font-size: 9px !important; }}
+            .corner-val {{ font-size: 11px !important; }}
+            .corner-suit {{ font-size: 9px !important; }}
             #hand-container {{ min-height: 200px !important; }}
         }}
 
-        @keyframes flame-flicker-8bit {{
+        @keyframes flame-8bit {{
             0%, 100% {{ transform: scale(1); }}
             50% {{ transform: scale(1.12); }}
         }}
         .score-flame {{
             color: #ffffff;
             font-family: var(--font-dos);
-            text-shadow: 3px 3px 0 #9e1a22, -3px -3px 0 #d85a1a;
-            animation: flame-flicker-8bit 0.25s steps(2) infinite;
+            text-shadow: 3px 3px 0 #a92329, -3px -3px 0 #d85718;
+            animation: flame-8bit 0.25s steps(2) infinite;
         }}
 
         @keyframes shake-8bit {{
@@ -440,38 +464,38 @@ GAME_HTML = f"""<!DOCTYPE html>
     <div class="bg-dark-overlay"></div>
     <canvas id="fx-canvas"></canvas>
 
-    <!-- INTRO MODAL DARK FANTASY 8-BIT -->
+    <!-- INTRO MODAL: NOMBRE Y GÉNERO POKÉMON EN ESTILO 8-BIT -->
     <div id="intro-modal" class="fixed inset-0 bg-black/85 z-[1000] flex items-center justify-center p-4">
-        <div class="pixel-box-8bit max-w-sm w-full p-6 text-center">
+        <div class="pixel-panel-8bit max-w-sm w-full p-6 text-center">
             
             <div class="pixel-badge-red py-3 px-4 mb-5 transform -rotate-1 inline-block w-full">
                 <h1 class="text-xl sm:text-2xl tracking-wide font-balatro">FACTOR COMÚN</h1>
-                <p class="text-[10px] opacity-90 tracking-widest mt-1 font-dos">DARK FANTASY • UCR</p>
+                <p class="text-[11px] opacity-90 tracking-widest mt-1 font-dos">MATEMÁTICA BÁSICA • UCR</p>
             </div>
             
             <!-- PASO 1: NOMBRE -->
             <div id="step-name">
-                <div class="pixel-inner-slot p-4 mb-5 text-left">
+                <div class="pixel-inner-box p-4 mb-5 text-left">
                     <label class="block text-xs text-gray-400 mb-2 tracking-wider font-dos">APODO DEL JUGADOR:</label>
-                    <input type="text" id="username-input" class="w-full bg-[#07090d] border-2 border-[#2b3547] text-white p-3 text-center uppercase tracking-wider text-base font-bold font-dos outline-none focus:border-[#f1b31c]" placeholder="TU NOMBRE" maxlength="12">
+                    <input type="text" id="username-input" class="w-full bg-[#05070a] border-2 border-[#262f3f] text-[#f1b31c] p-3 text-center uppercase tracking-wider text-base font-bold font-dos outline-none focus:border-[#f1b31c]" placeholder="TU NOMBRE" maxlength="12">
                 </div>
-                <button onclick="goToGenderStep()" class="pixel-btn-action w-full py-4 text-xs font-bold tracking-wider">
+                <button onclick="goToGenderStep()" class="pixel-btn-orange w-full py-4 text-xs font-bold tracking-wider">
                     CONTINUAR ➔
                 </button>
             </div>
 
             <!-- PASO 2: ELECCIÓN DE PERSONAJE POKÉMON -->
             <div id="step-gender" class="hidden">
-                <div class="pixel-inner-slot p-3 mb-4 text-center">
+                <div class="pixel-inner-box p-3 mb-4 text-center">
                     <p class="text-xs text-yellow-300 font-dos mb-3">¿ERES CHICO O CHICA?</p>
                     <div class="grid grid-cols-2 gap-3">
-                        <div id="opt-boy" onclick="selectGender('boy')" class="char-slot-8bit p-2 flex flex-col items-center">
+                        <div id="opt-boy" onclick="selectGender('boy')" class="char-box-8bit p-2 flex flex-col items-center">
                             <div class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center mb-1">
                                 {ricky_img_tag}
                             </div>
                             <span class="text-xs font-bold text-gray-300 font-dos">CHICO</span>
                         </div>
-                        <div id="opt-girl" onclick="selectGender('girl')" class="char-slot-8bit p-2 flex flex-col items-center">
+                        <div id="opt-girl" onclick="selectGender('girl')" class="char-box-8bit p-2 flex flex-col items-center">
                             <div class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center mb-1">
                                 {ariana_img_tag}
                             </div>
@@ -479,7 +503,7 @@ GAME_HTML = f"""<!DOCTYPE html>
                         </div>
                     </div>
                 </div>
-                <button id="btn-start-game" onclick="startGame()" disabled class="pixel-box-8bit bg-[#12161f] text-gray-500 w-full py-3.5 text-xs font-bold tracking-wider opacity-40 cursor-not-allowed">
+                <button id="btn-start-game" onclick="startGame()" disabled class="pixel-panel-8bit bg-[#10131a] text-gray-600 w-full py-3.5 text-xs font-bold tracking-wider opacity-40 cursor-not-allowed">
                     ENTRAR AL JUEGO
                 </button>
             </div>
@@ -495,7 +519,7 @@ GAME_HTML = f"""<!DOCTYPE html>
     </div>
     <div class="fixed bottom-3 right-3 z-40">
         <!-- RANK DESHABILITADO -->
-        <button onclick="showRankNotice()" class="pixel-box-8bit bg-[#131720] border-[#000] text-gray-400 text-xs px-3.5 py-2 cursor-pointer relative font-dos" title="Módulo en desarrollo por compañero">
+        <button onclick="showRankNotice()" class="pixel-panel-8bit bg-[#10131a] border-[#000] text-gray-400 text-xs px-3.5 py-2 cursor-pointer relative font-dos" title="Módulo en desarrollo por compañero">
             🏆 RANK
             <span class="absolute -top-2 -right-2 bg-yellow-500 text-black text-[8px] font-bold px-1 border border-black">DEV</span>
         </button>
@@ -507,11 +531,11 @@ GAME_HTML = f"""<!DOCTYPE html>
             <div class="pixel-badge-red px-3 py-1 text-xs font-dos">CÓMO JUGAR</div>
             <button onclick="toggleTutorial()" class="text-white text-base font-bold">✕</button>
         </div>
-        <div class="pixel-inner-slot p-3 text-2xl text-center mb-3">
+        <div class="pixel-inner-box p-3 text-2xl text-center mb-3">
             🍎🍉 <span class="text-red-400">+</span> 🍎🍌
         </div>
         <p class="text-xs text-yellow-300 text-center mb-3 font-dos">SACA LO QUE SE REPITE (🍎)</p>
-        <div class="pixel-inner-slot p-3 text-2xl text-center mb-4">
+        <div class="pixel-inner-box p-3 text-2xl text-center mb-4">
             🍎<span class="text-gray-400">(</span>🍉 <span class="text-red-400">+</span> 🍌<span class="text-gray-400">)</span>
         </div>
         <div class="text-xs text-gray-300 leading-relaxed font-dos space-y-2">
@@ -521,31 +545,31 @@ GAME_HTML = f"""<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- HEADER SUPERIOR -->
+    <!-- HEADER SUPERIOR 8-BIT -->
     <header class="flex justify-between items-center z-10 max-w-5xl mx-auto w-full gap-2 px-1">
-        <div class="pixel-box-8bit px-3.5 py-2 text-center min-w-[95px] sm:min-w-[125px]">
+        <div class="pixel-panel-8bit px-3.5 py-2 text-center min-w-[95px] sm:min-w-[125px]">
             <div class="text-[10px] text-gray-400 font-dos">NIVEL <span id="level-display" class="text-yellow-400 text-sm font-dos">1</span></div>
             <div class="text-[9px] text-gray-300 mt-0.5 font-dos">RONDA <span id="round-display" class="text-white">1</span>/3</div>
         </div>
 
         <!-- 3 Comodines -->
         <div class="flex justify-center gap-1.5 sm:gap-2.5">
-            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="pixel-box-8bit p-2 text-base sm:text-xl relative active:translate-y-1">
+            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="pixel-panel-8bit p-2 text-base sm:text-xl relative active:translate-y-1">
                 👁️
                 <span id="qty-reveal" class="absolute -top-2 -right-2 bg-red-600 text-white text-[9px] px-1 border border-black font-dos">1</span>
             </button>
-            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano" class="pixel-box-8bit p-2 text-base sm:text-xl relative active:translate-y-1">
+            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano" class="pixel-panel-8bit p-2 text-base sm:text-xl relative active:translate-y-1">
                 🎲
                 <span id="qty-reroll" class="absolute -top-2 -right-2 bg-red-600 text-white text-[9px] px-1 border border-black font-dos">1</span>
             </button>
             <!-- Comodín que salta 1 RONDA -->
-            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar 1 Ronda" class="pixel-box-8bit p-2 text-base sm:text-xl relative active:translate-y-1 opacity-40">
+            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar 1 Ronda" class="pixel-panel-8bit p-2 text-base sm:text-xl relative active:translate-y-1 opacity-40">
                 ⏭️
                 <span id="qty-skip" class="absolute -top-2 -right-2 bg-yellow-500 text-black text-[9px] px-1 border border-black font-dos">0</span>
             </button>
         </div>
 
-        <div class="pixel-box-8bit px-3.5 py-2 text-center min-w-[95px] sm:min-w-[125px]">
+        <div class="pixel-panel-8bit px-3.5 py-2 text-center min-w-[95px] sm:min-w-[125px]">
             <div class="text-[10px] text-gray-400 font-dos">PUNTOS</div>
             <div id="total-score" class="text-sm sm:text-lg text-yellow-400 mt-0.5 font-dos font-bold">0</div>
             <div id="user-display-tag" class="text-[9px] text-gray-400 truncate max-w-[85px] mx-auto font-dos">JUGADOR</div>
@@ -556,7 +580,7 @@ GAME_HTML = f"""<!DOCTYPE html>
     <main class="flex-grow flex flex-col items-center justify-center relative w-full max-w-5xl mx-auto my-auto">
         <div id="hand-container" class="flex justify-center items-center flex-wrap gap-2.5 sm:gap-4 w-full px-2 mb-6"></div>
 
-        <button id="btn-play" onclick="playHand()" disabled class="pixel-box-8bit bg-[#131720] text-gray-600 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed font-dos">
+        <button id="btn-play" onclick="playHand()" disabled class="pixel-panel-8bit bg-[#10131a] text-gray-600 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed font-dos">
             JUGAR MANO
         </button>
 
@@ -567,13 +591,13 @@ GAME_HTML = f"""<!DOCTYPE html>
 
     <!-- MODAL FIN DE NIVEL -->
     <div id="level-modal" class="fixed inset-0 bg-black/85 z-50 hidden flex items-center justify-center p-4">
-        <div class="pixel-box-8bit max-w-sm w-full p-6 text-center">
+        <div class="pixel-panel-8bit max-w-sm w-full p-6 text-center">
             <div class="pixel-badge-red py-2 px-4 mb-4 transform -rotate-1 inline-block w-full">
                 <h2 class="text-lg sm:text-xl font-balatro">NIVEL COMPLETADO</h2>
             </div>
             <div class="flex justify-center gap-3 my-4" id="modal-stars"></div>
-            <p id="modal-desc" class="pixel-inner-slot p-3 text-gray-200 text-xs leading-relaxed mb-5 font-dos"></p>
-            <button onclick="nextLevel()" class="pixel-btn-action w-full py-3.5 text-xs tracking-wider">
+            <p id="modal-desc" class="pixel-inner-box p-3 text-gray-200 text-xs leading-relaxed mb-5 font-dos"></p>
+            <button onclick="nextLevel()" class="pixel-btn-orange w-full py-3.5 text-xs tracking-wider">
                 SIGUIENTE NIVEL ➔
             </button>
         </div>
@@ -621,7 +645,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         window.onresize = () => {{ cvs.width = window.innerWidth; cvs.height = window.innerHeight; }};
         window.onresize();
         function spawnParticles(x, y, count=35) {{
-            const colors = ['#f1b31c', '#1b629b', '#9e1a22', '#ffffff'];
+            const colors = ['#f1b31c', '#1765a0', '#a92329', '#ffffff'];
             for(let i=0; i<count; i++) {{
                 const angle = Math.random() * Math.PI * 2; const speed = 2 + Math.random() * 7;
                 particles.push({{ x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed-2, color: colors[Math.floor(Math.random()*colors.length)], size: 4, life: 1.0, decay: 0.03 }});
@@ -663,7 +687,7 @@ GAME_HTML = f"""<!DOCTYPE html>
 
             const btn = document.getElementById('btn-start-game');
             btn.disabled = false;
-            btn.className = "pixel-btn-action w-full py-3.5 text-xs font-bold tracking-wider cursor-pointer";
+            btn.className = "pixel-btn-orange w-full py-3.5 text-xs font-bold tracking-wider cursor-pointer";
             SFX.select();
         }}
 
@@ -672,7 +696,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             document.getElementById('intro-modal').classList.add('hidden');
             document.getElementById('user-display-tag').textContent = `${{playerGender === 'boy' ? '👦' : '👧'}} ${{playerName}}`;
             
-            // Cambiar fondo de registro a fondo de juego
+            // Alternar de background_gif_2.gif a background_gif.gif
             const bgReg = document.getElementById('bg-reg');
             const bgGame = document.getElementById('bg-game');
             if (bgReg) bgReg.classList.add('hidden');
@@ -707,29 +731,42 @@ GAME_HTML = f"""<!DOCTYPE html>
 
         function gcd(a, b) {{ a=Math.abs(a); b=Math.abs(b); return b === 0 ? a : gcd(b, a % b); }}
 
-        function toSuperscript(num) {{
-            const map = {{ '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵' }};
-            return num.toString().split('').map(d => map[d] || d).join('');
-        }}
-
+        // Formato matemático usando etiquetas <sup> nativas (100% compatibles con caracteres ASCII de Perfect DOS)
         function formatTerm(c, x, y) {{
             let s = "";
             if (c === -1 && (x > 0 || y > 0)) s += "-";
             else if (c !== 1 || (x === 0 && y === 0)) s += c;
             
             if (x === 1) s += "x"; 
-            else if (x > 1) s += `x${{toSuperscript(x)}}`;
+            else if (x > 1) s += `x<sup>${{x}}</sup>`;
             
             if (y === 1) s += "y"; 
-            else if (y > 1) s += `y${{toSuperscript(y)}}`;
+            else if (y > 1) s += `y<sup>${{y}}</sup>`;
             return s;
         }}
 
         function getCardCornerRank(card) {{
-            if (card.x > 0 && card.y === 0) return card.x === 1 ? "X" : `X${{toSuperscript(card.x)}}`;
-            if (card.y > 0 && card.x === 0) return card.y === 1 ? "Y" : `Y${{toSuperscript(card.y)}}`;
+            if (card.x > 0 && card.y === 0) return card.x === 1 ? "X" : `X<sup>${{card.x}}</sup>`;
+            if (card.y > 0 && card.x === 0) return card.y === 1 ? "Y" : `Y<sup>${{card.y}}</sup>`;
             if (card.x > 0 && card.y > 0) return "XY";
             return Math.abs(card.c).toString();
+        }}
+
+        function getTermRawLength(card) {{
+            let len = Math.abs(card.c).toString().length;
+            if(card.c < 0) len++;
+            if(card.x > 0) len += (card.x > 1 ? 2 : 1);
+            if(card.y > 0) len += (card.y > 1 ? 2 : 1);
+            return len;
+        }}
+
+        function updateBackgroundForRound() {{
+            const bg = document.getElementById('bg-game');
+            if(!bg) return;
+            bg.classList.remove('filter-ronda-1', 'filter-ronda-2', 'filter-ronda-3');
+            if(round === 1) bg.classList.add('filter-ronda-1');
+            else if (round === 2) bg.classList.add('filter-ronda-2');
+            else if (round === 3) bg.classList.add('filter-ronda-3');
         }}
 
         function generateTerm(forceFactor = null) {{
@@ -751,7 +788,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             if (c === 0) c = 1;
             const suits = ['♠', '♥', '♦', '♣'];
             const suit = suits[Math.floor(Math.random() * suits.length)];
-            const suitColor = (suit === '♥' || suit === '♦') ? '#9e1a22' : '#1b629b';
+            const suitColor = (suit === '♥' || suit === '♦') ? '#a92329' : '#1765a0';
 
             return {{ c, x, y, str: formatTerm(c,x,y), suit, suitColor, selected: false, id: nextCardId++ }};
         }}
@@ -787,6 +824,8 @@ GAME_HTML = f"""<!DOCTYPE html>
             document.getElementById('level-display').textContent = level;
             document.getElementById('round-display').textContent = round;
             
+            updateBackgroundForRound();
+            
             let needed = 6 - hand.length;
             let plantedC = (Math.random() > 0.5) ? (Math.floor(Math.random()*3)+2) : 1;
             let plantedX = (plantedC === 1 || Math.random() > 0.4) ? 1 : 0;
@@ -817,27 +856,27 @@ GAME_HTML = f"""<!DOCTYPE html>
                 el.className = `card-8bit ${{card.selected ? 'selected' : swayClass}}`;
                 
                 const cornerRank = getCardCornerRank(card);
+                const rawLen = getTermRawLength(card);
 
                 let lenClass = "len-1";
-                const l = card.str.length;
-                if(l === 2) lenClass = "len-2";
-                else if(l === 3) lenClass = "len-3";
-                else if(l === 4) lenClass = "len-4";
-                else if(l === 5) lenClass = "len-5";
-                else if(l > 5) lenClass = "len-many";
+                if(rawLen === 2) lenClass = "len-2";
+                else if(rawLen === 3) lenClass = "len-3";
+                else if(rawLen === 4) lenClass = "len-4";
+                else if(rawLen === 5) lenClass = "len-5";
+                else if(rawLen > 5) lenClass = "len-many";
 
                 el.innerHTML = `
-                    <div class="card-frame-inner"></div>
-                    <div class="pip-corner-tl" style="color: ${{card.suitColor}};">
-                        <span class="corner-text">${{cornerRank}}</span>
-                        <span class="corner-suit-icon">${{card.suit}}</span>
+                    <div class="card-line-frame"></div>
+                    <div class="card-corner-tl" style="color: ${{card.suitColor}};">
+                        <span class="corner-val">${{cornerRank}}</span>
+                        <span class="corner-suit">${{card.suit}}</span>
                     </div>
-                    <div class="term-box-center">
-                        <span class="term-math-pixel ${{lenClass}}">${{card.str}}</span>
+                    <div class="term-container">
+                        <span class="term-math-dos ${{lenClass}}">${{card.str}}</span>
                     </div>
-                    <div class="pip-corner-br" style="color: ${{card.suitColor}};">
-                        <span class="corner-text">${{cornerRank}}</span>
-                        <span class="corner-suit-icon">${{card.suit}}</span>
+                    <div class="card-corner-br" style="color: ${{card.suitColor}};">
+                        <span class="corner-val">${{cornerRank}}</span>
+                        <span class="corner-suit">${{card.suit}}</span>
                     </div>
                 `;
                 
@@ -855,10 +894,10 @@ GAME_HTML = f"""<!DOCTYPE html>
             const selected = hand.filter(c => c.selected);
             if(selected.length > 0) {{
                 btnPlay.disabled = false;
-                btnPlay.className = "pixel-btn-action px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest cursor-pointer";
+                btnPlay.className = "pixel-btn-orange px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest cursor-pointer";
             }} else {{
                 btnPlay.disabled = true;
-                btnPlay.className = "pixel-box-8bit bg-[#131720] text-gray-600 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed";
+                btnPlay.className = "pixel-panel-8bit bg-[#10131a] text-gray-600 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed";
             }}
         }}
 
@@ -940,7 +979,7 @@ GAME_HTML = f"""<!DOCTYPE html>
                 updateUI();
                 desc.innerHTML = `¡PRECISIÓN PURA!<br>Ganaste un comodín SALTAR RONDA.<br>Bono: +${{bonusScore.toLocaleString()}} pts`;
             }} else {{
-                desc.innerHTML = `Precisión: ${{Math.round(precision*100)}}%.<br>Bono: +${{bonusScore.toLocaleString()}} pts`;
+                desc.innerHTML = `Precisión: ${{Math.round(precision*100)}}%.<br>Bono obtenido: +${{bonusScore.toLocaleString()}} pts`;
             }}
 
             modal.classList.remove('hidden');
@@ -997,7 +1036,7 @@ GAME_HTML = f"""<!DOCTYPE html>
                 }}
                 SFX.select();
                 if(maxSubset > 1) {{
-                    showAlert(`🔎 FACTOR DOMINANTE: <b>${{bestFactor}}</b> (en ${{maxSubset}} cartas)`);
+                    showAlert(`🔎 FACTOR COMÚN: <b>${{bestFactor}}</b> (en ${{maxSubset}} cartas)`);
                 }} else {{
                     showAlert(`🔎 No hay factores comunes detectables en esta mano.`);
                 }}
