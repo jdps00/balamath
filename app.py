@@ -323,7 +323,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             box-shadow: inset 0 0 0 2px #d4a340, 0 0 8px rgba(212, 163, 64, 0.4), 0 4px 0 #000000;
         }}
 
-        /* CARTAS BALATRO ORIGINALES (100% INTACTAS EN LÓGICA Y ESTILO) */
+        /* CARTAS BALATRO ORIGINALES */
         .card-8bit {{
             width: 104px;
             height: 150px;
@@ -480,7 +480,6 @@ GAME_HTML = f"""<!DOCTYPE html>
 
         #fx-canvas {{ position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; }}
 
-        /* TELÓN DE TRANSICIÓN */
         #fade-overlay {{
             position: fixed;
             inset: 0;
@@ -500,7 +499,7 @@ GAME_HTML = f"""<!DOCTYPE html>
     <canvas id="fx-canvas"></canvas>
     <div id="fade-overlay"></div>
 
-    <!-- INTRO / REGISTRO BALAMATH (SOLO ESTO SE VE AL INICIO) -->
+    <!-- INTRO / REGISTRO BALAMATH -->
     <div id="intro-modal" class="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-4">
         <div class="pixel-df-panel max-w-xs sm:max-w-sm w-full p-4 sm:p-6 text-center">
             
@@ -547,7 +546,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- CONTENIDO DEL JUEGO (OCULTO DURANTE EL REGISTRO) -->
+    <!-- CONTENIDO DEL JUEGO -->
     <div id="game-ui" class="hidden flex flex-col justify-between h-full w-full">
         <!-- BOTONES INFERIORES -->
         <div class="fixed bottom-2 sm:bottom-3 left-2 sm:left-3 z-40 flex gap-2">
@@ -581,7 +580,6 @@ GAME_HTML = f"""<!DOCTYPE html>
                 2x · (2x + 3)
             </div>
 
-            <!-- EXPLICACIÓN ORIGINAL LIMPIA -->
             <div class="text-xs sm:text-sm text-stone-300 leading-snug font-sub space-y-2">
                 <p>1. Selecciona 2 o más cartas que compartan divisores o variables comunes.</p>
                 <p>2. Presiona "JUGAR MANO" para acumular fichas multiplicadas.</p>
@@ -597,7 +595,6 @@ GAME_HTML = f"""<!DOCTYPE html>
                 <span class="text-[6px] sm:text-[8px] text-[#c8b99c] font-hud tracking-wider">RONDA <span id="round-display" class="text-white">1</span>/3</span>
             </div>
 
-            <!-- COMODINES: ÍCONOS PNG CON BADGES -->
             <div class="flex justify-center gap-1.5 sm:gap-3">
                 <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="btn-relic-slot relative">
                     {reveal_icon_tag}
@@ -660,9 +657,6 @@ GAME_HTML = f"""<!DOCTYPE html>
     </div>
 
     <script>
-        /* ========================================================
-           SISTEMA DE AUDIO CON REVERB DSP + PLAYBACK RATE
-           ======================================================== */
         let aCtx = null;
         let bgAudioEl = document.getElementById('bg-music');
         let bgSourceNode = null;
@@ -711,7 +705,6 @@ GAME_HTML = f"""<!DOCTYPE html>
 
                     masterMusicGain.connect(aCtx.destination);
                     
-                    // Estado inicial: Mucho reverb y lento para el registro
                     setCryptAudioMode(true);
                 }}
             }} catch(e) {{}}
@@ -721,12 +714,10 @@ GAME_HTML = f"""<!DOCTYPE html>
             if (!aCtx || !bgAudioEl) return;
             const now = aCtx.currentTime;
             if (enabled) {{
-                // Lento y con reverberación cavernosa
                 bgAudioEl.playbackRate = 0.78;
                 dryGain.gain.setValueAtTime(0.2, now);
                 wetGain.gain.setValueAtTime(0.85, now);
             }} else {{
-                // Velocidad normal y seco
                 bgAudioEl.playbackRate = 1.0;
                 dryGain.gain.setValueAtTime(1.0, now);
                 wetGain.gain.setValueAtTime(0.0, now);
@@ -767,18 +758,14 @@ GAME_HTML = f"""<!DOCTYPE html>
             winRound: () => {{ playTone(420, 'sine', 0.3, 0.2); setTimeout(() => playTone(630, 'sine', 0.3, 0.2), 150); }}
         }};
 
-        // Iniciar música en registro
         window.addEventListener('click', function initPlay() {{
             initAudioEngine();
             if (bgAudioEl && bgAudioEl.paused && !isMuted) {{
-                bgAudioEl.play().catch(()=>{});
+                bgAudioEl.play().catch(() => {{}});
             }}
             window.removeEventListener('click', initPlay);
         }}, {{ once: true }});
 
-        /* ========================================================
-           SISTEMA DE PARTÍCULAS (GENERAL + SKIP ESPECIAL)
-           ======================================================== */
         const cvs = document.getElementById('fx-canvas'); const ctx = cvs.getContext('2d');
         let particles = [];
         window.onresize = () => {{ cvs.width = window.innerWidth; cvs.height = window.innerHeight; }};
@@ -792,13 +779,12 @@ GAME_HTML = f"""<!DOCTYPE html>
             }}
         }}
 
-        // Partículas místicas de calabozo al usar SKIP
         function spawnSkipParticles() {{
             const colors = ['#9e1a22', '#d4a340', '#ff4d4d', '#ffdb70', '#ffffff'];
             const w = window.innerWidth;
             const h = window.innerHeight;
             for(let i=0; i<90; i++) {{
-                const angle = (Math.PI * 1.5) + (Math.random() - 0.5) * 1.4; // Hacia arriba
+                const angle = (Math.PI * 1.5) + (Math.random() - 0.5) * 1.4;
                 const speed = 4 + Math.random() * 9;
                 particles.push({{
                     x: Math.random() * w,
@@ -825,9 +811,6 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
         renderParticles();
 
-        /* ========================================================
-           LÓGICA DEL REGISTRO Y TRANSICIÓN
-           ======================================================== */
         let playerName = "JUGADOR";
         let playerGender = null;
 
@@ -860,7 +843,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             if (!playerGender) return;
             SFX.winRound();
 
-            // Telón negro con fade para transición suave
             const fade = document.getElementById('fade-overlay');
             fade.style.opacity = '1';
 
@@ -869,13 +851,11 @@ GAME_HTML = f"""<!DOCTYPE html>
                 document.getElementById('game-ui').classList.remove('hidden');
                 document.getElementById('user-display-tag').textContent = `${{playerGender === 'boy' ? '[CHICO]' : '[CHICA]'}} ${{playerName}}`;
                 
-                // Cambiar fondos
                 const bgReg = document.getElementById('bg-reg');
                 const bgGame = document.getElementById('bg-game');
                 if (bgReg) bgReg.classList.add('hidden');
                 if (bgGame) bgGame.classList.remove('hidden');
 
-                // Quitar reverb para el juego activo
                 setCryptAudioMode(false);
 
                 startRound();
@@ -897,9 +877,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             document.getElementById('tutorial-panel').classList.toggle('-translate-x-full');
         }}
 
-        /* ========================================================
-           ESTADO Y REGLAS MATEMÁTICAS (INTACTAS)
-           ======================================================== */
         let level = 1;
         let round = 1;
         let score = 0;
@@ -1127,7 +1104,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             const starContainer = document.getElementById('modal-stars');
             const desc = document.getElementById('modal-desc');
 
-            // Reverb épico al terminar nivel
             setCryptAudioMode(true);
 
             starContainer.innerHTML = '';
