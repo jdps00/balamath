@@ -125,9 +125,9 @@ if audio_bg_b64:
 ricky_img_tag = f'<img src="data:image/png;base64,{ricky_b64}" class="w-full h-full object-contain pixelated" alt="Ricky" />' if ricky_b64 else '<div class="text-xs font-hud font-bold">[CHICO]</div>'
 ariana_img_tag = f'<img src="data:image/png;base64,{ariana_b64}" class="w-full h-full object-contain pixelated" alt="Ariana" />' if ariana_b64 else '<div class="text-xs font-hud font-bold">[CHICA]</div>'
 
-reveal_icon_tag = f'<img src="data:image/png;base64,{joker_reveal_b64}" class="w-6 h-6 sm:w-8 sm:h-8 object-contain pixelated" alt="Revelar" />' if joker_reveal_b64 else '<span class="text-cyan-400 font-hud text-[11px]">👁</span>'
-reroll_icon_tag = f'<img src="data:image/png;base64,{joker_reroll_b64}" class="w-6 h-6 sm:w-8 sm:h-8 object-contain pixelated" alt="Revolver" />' if joker_reroll_b64 else '<span class="text-purple-400 font-hud text-[11px]">⟲</span>'
-skip_icon_tag = f'<img src="data:image/png;base64,{joker_skip_b64}" class="w-6 h-6 sm:w-8 sm:h-8 object-contain pixelated" alt="Saltar" />' if joker_skip_b64 else '<span class="text-yellow-400 font-hud text-[11px]">⏭</span>'
+reveal_icon_tag = f'<img src="data:image/png;base64,{joker_reveal_b64}" class="w-7 h-7 sm:w-9 sm:h-9 object-contain pixelated" alt="Revelar" />' if joker_reveal_b64 else '<span class="text-cyan-400 font-hud text-[12px]">👁</span>'
+reroll_icon_tag = f'<img src="data:image/png;base64,{joker_reroll_b64}" class="w-7 h-7 sm:w-9 sm:h-9 object-contain pixelated" alt="Revolver" />' if joker_reroll_b64 else '<span class="text-purple-400 font-hud text-[12px]">⟲</span>'
+skip_icon_tag = f'<img src="data:image/png;base64,{joker_skip_b64}" class="w-7 h-7 sm:w-9 sm:h-9 object-contain pixelated" alt="Saltar" />' if joker_skip_b64 else '<span class="text-yellow-400 font-hud text-[12px]">⏭</span>'
 
 GAME_HTML = f"""<!DOCTYPE html>
 <html lang="es">
@@ -167,7 +167,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             padding: 0;
             overflow: hidden;
             user-select: none;
-            background-color: transparent; /* Permite que el GIF se vea sin ser tapado */
+            background-color: transparent;
             color: #d8ceb9;
             font-family: var(--font-hud);
         }}
@@ -183,7 +183,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         .font-dos {{ font-family: var(--font-dos); }}
         .font-balatro {{ font-family: var(--font-balatro); }}
 
-        /* FONDOS FIJOS EN CAPA BASE */
+        /* FONDOS */
         .screen-bg {{
             position: fixed;
             top: 0; left: 0;
@@ -201,7 +201,6 @@ GAME_HTML = f"""<!DOCTYPE html>
         .procedural-reg {{ background: radial-gradient(circle at center, #262e3d, #0d121a); }}
         .procedural-game {{ background: radial-gradient(circle at center, #1b3d2b, #050c07); }}
 
-        /* OVERLAY RETRO POR ENCIMA DE LOS GIFS PERO DETRÁS DE LA UI */
         .bg-dark-overlay {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: 
@@ -285,6 +284,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             box-shadow: inset 2px 2px 0 #090e17, inset -2px -2px 0 #384e6f, 0 2px 0 #000;
         }}
 
+        /* COMODINES: 10% MÁS GRANDES (49px en PC, 40px en móvil) */
         .btn-relic-slot {{
             background: #131720;
             border: 2px solid #000000;
@@ -293,8 +293,8 @@ GAME_HTML = f"""<!DOCTYPE html>
                 inset -2px -2px 0 #06070a,
                 0 4px 0 #000000;
             transition: transform 0.05s steps(2);
-            width: 44px;
-            height: 44px;
+            width: 49px;
+            height: 49px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -455,7 +455,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             .pip-corner-tl {{ top: 2px !important; left: 3px !important; }}
             .pip-corner-br {{ bottom: 2px !important; right: 3px !important; }}
             #hand-container {{ gap: 6px !important; min-height: 120px !important; margin-bottom: 10px !important; }}
-            .btn-relic-slot {{ width: 36px !important; height: 36px !important; }}
+            .btn-relic-slot {{ width: 40px !important; height: 40px !important; }}
         }}
 
         @keyframes flame-flicker-8bit {{
@@ -593,7 +593,8 @@ GAME_HTML = f"""<!DOCTYPE html>
                 <span class="text-[6px] sm:text-[8px] text-[#c8b99c] font-hud tracking-wider">RONDA <span id="round-display" class="text-white">1</span>/3</span>
             </div>
 
-            <div class="flex justify-center gap-1.5 sm:gap-3">
+            <!-- COMODINES: 10% MÁS GRANDES -->
+            <div class="flex justify-center gap-2 sm:gap-3">
                 <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="btn-relic-slot relative">
                     {reveal_icon_tag}
                     <span id="qty-reveal" class="absolute -top-1.5 -right-1.5 bg-[#8b1820] text-amber-200 text-[7px] sm:text-[8px] px-1 py-0.5 border border-black font-hud">1</span>
@@ -643,14 +644,29 @@ GAME_HTML = f"""<!DOCTYPE html>
                 <div id="modal-desc" class="space-y-1"></div>
             </div>
             
-            <button onclick="nextLevel()" class="pixel-df-btn-flame w-full py-3.5 text-xs sm:text-sm tracking-wider font-hud">
+            <button onclick="nextLevelWithTransition()" class="pixel-df-btn-flame w-full py-3.5 text-xs sm:text-sm tracking-wider font-hud">
                 SIGUIENTE NIVEL ➔
             </button>
         </div>
     </div>
 
-    <!-- ALERTA BALATRO -->
-    <div id="alert-modal" class="fixed top-8 sm:top-12 left-1/2 -translate-x-1/2 pixel-df-banner-crimson text-[8px] sm:text-xs px-4 py-2 sm:px-5 sm:py-3 z-50 hidden text-center max-w-[90vw] font-hud">
+    <!-- MODAL DERROTA (GAME OVER TRAS 5 ERRORES SEGUIDOS) -->
+    <div id="gameover-modal" class="fixed inset-0 bg-black/95 z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="pixel-df-panel max-w-xs sm:max-w-sm w-full p-4 sm:p-6 text-center border-red-700">
+            <div class="pixel-df-banner-crimson py-2.5 px-3 mb-3 inline-block w-full bg-gradient-to-b from-red-900 to-black">
+                <h2 class="text-xs sm:text-sm font-bold tracking-wider font-hud text-red-200">SIN INTENTOS</h2>
+            </div>
+            <div class="pixel-df-slot p-3 text-stone-300 mb-4 font-sub text-base sm:text-lg text-center leading-snug">
+                Has acumulado <span class="text-red-400 font-bold font-hud">5 FALLOS</span> consecutivos sin hallar factor común.
+            </div>
+            <button onclick="retryCurrentLevel()" class="pixel-df-btn-flame w-full py-3.5 text-xs sm:text-sm tracking-wider font-hud">
+                REINTENTAR NIVEL ➔
+            </button>
+        </div>
+    </div>
+
+    <!-- NOTIFICACIONES CENTRADAS, DURACIÓN CORTA Y DISMISS AL TOCAR -->
+    <div id="alert-modal" onclick="dismissAlert()" class="fixed top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 pixel-df-banner-crimson text-[9px] sm:text-xs px-5 py-3 z-50 hidden text-center max-w-[85vw] font-hud cursor-pointer shadow-2xl transition-opacity duration-150">
         <span id="alert-text"></span>
     </div>
 
@@ -659,12 +675,17 @@ GAME_HTML = f"""<!DOCTYPE html>
         let bgAudioEl = document.getElementById('bg-music');
         let bgSourceNode = null;
         let convolverNode = null;
+        let lowPassNode = null;
+        let highPassNode = null;
         let dryGain = null;
         let wetGain = null;
         let masterMusicGain = null;
         let isMuted = false;
 
-        function buildImpulseResponse(duration = 3.2, decay = 3.5) {{
+        // Volumen reducido un 25% (0.45 * 0.75 = 0.3375)
+        const DEFAULT_VOLUME = 0.3375;
+
+        function buildImpulseResponse(duration = 2.4, decay = 3.2) {{
             const rate = aCtx.sampleRate;
             const length = rate * duration;
             const impulse = aCtx.createBuffer(2, length, rate);
@@ -685,17 +706,34 @@ GAME_HTML = f"""<!DOCTYPE html>
                 aCtx = new (window.AudioContext || window.webkitAudioContext)();
                 if (bgAudioEl) {{
                     bgSourceNode = aCtx.createMediaElementSource(bgAudioEl);
+
+                    // Filtros para efecto teléfono/atrapado
+                    highPassNode = aCtx.createBiquadFilter();
+                    highPassNode.type = 'highpass';
+                    highPassNode.frequency.setValueAtTime(480, aCtx.currentTime); // Corta graves
+
+                    lowPassNode = aCtx.createBiquadFilter();
+                    lowPassNode.type = 'lowpass';
+                    lowPassNode.frequency.setValueAtTime(2800, aCtx.currentTime); // Corta agudos / encerrado
+                    lowPassNode.Q.setValueAtTime(1.5, aCtx.currentTime);
+
                     convolverNode = aCtx.createConvolver();
-                    convolverNode.buffer = buildImpulseResponse(3.2, 3.5);
+                    convolverNode.buffer = buildImpulseResponse(2.4, 3.2);
 
                     dryGain = aCtx.createGain();
                     wetGain = aCtx.createGain();
                     masterMusicGain = aCtx.createGain();
 
-                    masterMusicGain.gain.setValueAtTime(0.45, aCtx.currentTime);
+                    masterMusicGain.gain.setValueAtTime(DEFAULT_VOLUME, aCtx.currentTime);
 
-                    bgSourceNode.connect(dryGain);
-                    bgSourceNode.connect(convolverNode);
+                    // Cadena de enrutamiento
+                    bgSourceNode.connect(highPassNode);
+                    highPassNode.connect(lowPassNode);
+
+                    // Señal seca
+                    lowPassNode.connect(dryGain);
+                    // Señal con reverb
+                    lowPassNode.connect(convolverNode);
                     convolverNode.connect(wetGain);
 
                     dryGain.connect(masterMusicGain);
@@ -713,10 +751,17 @@ GAME_HTML = f"""<!DOCTYPE html>
             const now = aCtx.currentTime;
             if (enabled) {{
                 bgAudioEl.playbackRate = 0.78;
-                dryGain.gain.setValueAtTime(0.2, now);
-                wetGain.gain.setValueAtTime(0.85, now);
+                // Efecto teléfono (480Hz - 2800Hz)
+                highPassNode.frequency.setValueAtTime(480, now);
+                lowPassNode.frequency.setValueAtTime(2800, now);
+                dryGain.gain.setValueAtTime(0.40, now);
+                // 40% menos de reverb (0.85 * 0.60 = 0.51)
+                wetGain.gain.setValueAtTime(0.51, now);
             }} else {{
                 bgAudioEl.playbackRate = 1.0;
+                // Plano/completo para el juego
+                highPassNode.frequency.setValueAtTime(20, now);
+                lowPassNode.frequency.setValueAtTime(20000, now);
                 dryGain.gain.setValueAtTime(1.0, now);
                 wetGain.gain.setValueAtTime(0.0, now);
             }}
@@ -726,7 +771,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             isMuted = !isMuted;
             const btn = document.getElementById('btn-audio-mute');
             if (masterMusicGain) {{
-                masterMusicGain.gain.setValueAtTime(isMuted ? 0 : 0.45, aCtx.currentTime);
+                masterMusicGain.gain.setValueAtTime(isMuted ? 0 : DEFAULT_VOLUME, aCtx.currentTime);
             }} else if (bgAudioEl) {{
                 bgAudioEl.muted = isMuted;
             }}
@@ -849,7 +894,6 @@ GAME_HTML = f"""<!DOCTYPE html>
                 document.getElementById('game-ui').classList.remove('hidden');
                 document.getElementById('user-display-tag').textContent = `${{playerGender === 'boy' ? '[CHICO]' : '[CHICA]'}} ${{playerName}}`;
                 
-                // Conmutación limpia de display para los GIF
                 const bgReg = document.getElementById('bg-reg');
                 const bgGame = document.getElementById('bg-game');
                 if (bgReg) bgReg.style.display = 'none';
@@ -876,11 +920,15 @@ GAME_HTML = f"""<!DOCTYPE html>
             document.getElementById('tutorial-panel').classList.toggle('-translate-x-full');
         }}
 
+        /* ========================================================
+           ESTADO Y DIFICULTAD (+18% MÁS EXIGENTE ENTRE NIVELES)
+           ======================================================== */
         let level = 1;
         let round = 1;
         let score = 0;
         let hand = [];
         let nextCardId = 0;
+        let consecutiveErrors = 0; // Rastreador de fallos seguidos
         let levelStats = {{ optimalPossible: 0, actualCorrect: 0, errors: 0 }};
         let comodines = {{ reveal: 1, reroll: 1, skip: 1 }};
 
@@ -915,9 +963,10 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
 
         function generateTerm(forceFactor = null) {{
-            let maxCoef = Math.max(4, level * 3);
-            let maxX = Math.min(3, Math.ceil(level / 2));
-            let maxY = level > 2 ? Math.min(2, Math.floor(level / 3)) : 0;
+            // Escalamiento +18% más agresivo de coeficientes y exponentes
+            let maxCoef = Math.max(4, Math.floor(level * 3.54));
+            let maxX = Math.min(4, Math.ceil(level * 0.59));
+            let maxY = level > 2 ? Math.min(3, Math.floor(level * 0.39)) : 0;
 
             let c = Math.floor(Math.random() * maxCoef) + 1;
             if(Math.random() > 0.75) c *= -1;
@@ -974,8 +1023,9 @@ GAME_HTML = f"""<!DOCTYPE html>
             let plantedX = (plantedC === 1 || Math.random() > 0.4) ? 1 : 0;
             let forceFactor = {{ c: plantedC, x: plantedX, y: 0 }};
             
-            if(Math.random() < 0.1) forceFactor = null;
-            let forceCount = forceFactor ? (Math.floor(Math.random() * 4) + 3) : 0;
+            // Mayor variabilidad y menor probabilidad de mano regalada
+            if(Math.random() < 0.18) forceFactor = null;
+            let forceCount = forceFactor ? (Math.floor(Math.random() * 3) + 3) : 0;
 
             for(let i=0; i<needed; i++) {{
                 if(forceCount > 0) {{
@@ -1052,10 +1102,24 @@ GAME_HTML = f"""<!DOCTYPE html>
                 SFX.error();
                 handContainer.classList.add('animate-shake');
                 levelStats.errors++;
+                consecutiveErrors++;
                 setTimeout(() => handContainer.classList.remove('animate-shake'), 250);
+
+                // Sistema de 5 oportunidades
+                if(consecutiveErrors >= 5) {{
+                    triggerGameOver();
+                    return;
+                }} else if(consecutiveErrors === 3) {{
+                    showAlert("¡CUIDADO! TE QUEDAN 2 INTENTOS");
+                }} else if(consecutiveErrors === 4) {{
+                    showAlert("¡PELIGRO! TE QUEDA 1 INTENTO");
+                }}
+
                 return;
             }}
 
+            // Mano válida: resetea errores consecutivos
+            consecutiveErrors = 0;
             btnPlay.disabled = true;
             levelStats.actualCorrect += selected.length;
             
@@ -1087,6 +1151,22 @@ GAME_HTML = f"""<!DOCTYPE html>
                     startRound();
                 }}
             }}, 1100);
+        }}
+
+        function triggerGameOver() {{
+            setCryptAudioMode(true);
+            document.getElementById('gameover-modal').classList.remove('hidden');
+        }}
+
+        function retryCurrentLevel() {{
+            document.getElementById('gameover-modal').classList.add('hidden');
+            consecutiveErrors = 0;
+            round = 1;
+            hand = [];
+            levelStats = {{ optimalPossible: 0, actualCorrect: 0, errors: 0 }};
+            setCryptAudioMode(false);
+            startRound();
+            showAlert("[NIVEL REINICIADO]");
         }}
 
         function endLevel() {{
@@ -1143,14 +1223,25 @@ GAME_HTML = f"""<!DOCTYPE html>
             modal.classList.remove('hidden');
         }}
 
-        function nextLevel() {{
-            document.getElementById('level-modal').classList.add('hidden');
-            setCryptAudioMode(false);
-            level++;
-            round = 1;
-            hand = [];
-            levelStats = {{ optimalPossible: 0, actualCorrect: 0, errors: 0 }};
-            startRound();
+        // Transición cinemática idéntica a la inicial al pasar de nivel
+        function nextLevelWithTransition() {{
+            const fade = document.getElementById('fade-overlay');
+            fade.style.opacity = '1';
+
+            setTimeout(() => {{
+                document.getElementById('level-modal').classList.add('hidden');
+                setCryptAudioMode(false);
+                level++;
+                round = 1;
+                hand = [];
+                consecutiveErrors = 0;
+                levelStats = {{ optimalPossible: 0, actualCorrect: 0, errors: 0 }};
+                startRound();
+
+                setTimeout(() => {{
+                    fade.style.opacity = '0';
+                }}, 150);
+            }}, 400);
         }}
 
         function updateUI() {{
@@ -1163,15 +1254,29 @@ GAME_HTML = f"""<!DOCTYPE html>
             document.getElementById('btn-joker-skip').style.opacity = comodines.skip > 0 ? '1' : '0.4';
         }}
 
+        let alertTimeout = null;
+
         function showAlert(msg) {{
             const el = document.getElementById('alert-modal');
             document.getElementById('alert-text').innerHTML = msg;
+            
+            if (alertTimeout) clearTimeout(alertTimeout);
+            
             el.classList.remove('hidden');
             el.style.opacity = '1';
+
+            // Duración más corta (1.6 segundos)
+            alertTimeout = setTimeout(() => {{
+                dismissAlert();
+            }}, 1600);
+        }}
+
+        function dismissAlert() {{
+            const el = document.getElementById('alert-modal');
+            el.style.opacity = '0';
             setTimeout(() => {{
-                el.style.opacity = '0';
-                setTimeout(() => el.classList.add('hidden'), 200);
-            }}, 2600);
+                el.classList.add('hidden');
+            }}, 150);
         }}
 
         function useJoker(type) {{
