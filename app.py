@@ -1,5 +1,5 @@
 """
-Balatro Factor Común - Edición Pixel Art 16-Bit Auténtica
+Balatro Factor Común - Pixel Art Refinado 16-Bit
 Curso: IF0003 Matemática Básica para Informática Empresarial
 Universidad de Costa Rica - Recinto de Paraíso
 """
@@ -108,8 +108,8 @@ GAME_HTML = f"""
 
         :root {{
             --pixel-font-title: 'DaydreamFont', 'Press Start 2P', monospace;
-            --pixel-font-math: 'BalatroFont', 'KiwiSodaFont', 'Press Start 2P', monospace;
-            --pixel-font-body: 'KiwiSodaFont', 'VT323', monospace;
+            --pixel-font-card: 'BalatroFont', 'KiwiSodaFont', 'Press Start 2P', monospace;
+            --pixel-font-ui: 'KiwiSodaFont', 'VT323', monospace;
         }}
 
         * {{
@@ -153,7 +153,7 @@ GAME_HTML = f"""
 
         .bg-tint-overlay {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at center, rgba(20, 60, 42, 0.4) 0%, rgba(4, 14, 9, 0.9) 100%);
+            background: radial-gradient(circle at center, rgba(20, 60, 42, 0.4) 0%, rgba(4, 14, 9, 0.92) 100%);
             mix-blend-mode: multiply;
             pointer-events: none;
             z-index: -2;
@@ -163,53 +163,85 @@ GAME_HTML = f"""
         .filter-ronda-2 {{ filter: hue-rotate(50deg) saturate(160%) brightness(0.8) contrast(1.25); }}
         .filter-ronda-3 {{ filter: hue-rotate(150deg) saturate(130%) brightness(0.68) contrast(1.2); }}
 
-        /* CAJAS Y BOTONES EN PIXEL ART SÓLIDO */
-        .pixel-panel {{
-            background: #252b36;
-            border: 4px solid #0a0b0e;
+        /* ========================================================
+           BARRAS Y PANELES CON TEXTURA Y BISEL PIXEL ART (16-BIT)
+           ======================================================== */
+        .pixel-frame {{
+            background-color: #272d38;
+            background-image: 
+                radial-gradient(#1e232d 20%, transparent 20%),
+                radial-gradient(#1e232d 20%, transparent 20%);
+            background-size: 4px 4px;
+            background-position: 0 0, 2px 2px;
+            border: 4px solid #0b0c10;
             box-shadow: 
-                inset 3px 3px 0 #465166, 
-                inset -3px -3px 0 #13161c,
-                0 6px 0 #050608;
+                inset 3px 3px 0 #4f5b70, 
+                inset -3px -3px 0 #15181f,
+                0 6px 0 #07080a;
             position: relative;
         }}
 
-        .pixel-panel-inner {{
-            background: #11141a;
-            border: 3px solid #0a0b0e;
+        /* Remaches en las 4 esquinas para dar textura física */
+        .pixel-frame::before, .pixel-frame::after {{
+            content: '';
+            position: absolute;
+            width: 4px; height: 4px;
+            background: #9aa8bf;
+            border: 1px solid #000;
+            z-index: 10;
+        }}
+        .pixel-frame::before {{ top: 2px; left: 2px; }}
+        .pixel-frame::after {{ top: 2px; right: 2px; }}
+
+        .pixel-inner-slot {{
+            background: #11141b;
+            border: 3px solid #0a0b0f;
             box-shadow: inset 2px 2px 0 #000000;
         }}
 
         .pixel-badge-red {{
-            background: #d9383a;
+            background: #d63739;
             border: 3px solid #0a0b0e;
             box-shadow: 
-                inset 2px 2px 0 #f67375, 
-                inset -2px -2px 0 #851a1b,
-                0 4px 0 #4a0d0e;
+                inset 2px 2px 0 #f96d6f, 
+                inset -2px -2px 0 #7e1617,
+                0 4px 0 #450c0d;
             color: #ffffff;
             text-shadow: 2px 2px 0 #000000;
         }}
 
-        .pixel-btn-orange {{
+        .pixel-btn-play {{
             font-family: var(--pixel-font-title);
             background: #e85d26;
-            border: 4px solid #0a0b0e;
+            border: 4px solid #0b0c10;
             box-shadow: 
-                inset 3px 3px 0 #ff8c5c, 
-                inset -3px -3px 0 #8e3009,
-                0 6px 0 #4a1703;
+                inset 4px 4px 0 #ff905e, 
+                inset -4px -4px 0 #8b2d07,
+                0 7px 0 #431402;
             color: #ffffff;
             text-shadow: 2px 2px 0 #000000;
             transition: transform 0.05s steps(2);
         }}
-        .pixel-btn-orange:hover {{ background: #f86e36; }}
-        .pixel-btn-orange:active {{
+        .pixel-btn-play:hover {{ background: #f86e36; }}
+        .pixel-btn-play:active {{
             transform: translateY(4px);
             box-shadow: 
-                inset 3px 3px 0 #8e3009, 
-                inset -3px -3px 0 #ff8c5c,
-                0 2px 0 #4a1703;
+                inset 4px 4px 0 #8b2d07, 
+                inset -4px -4px 0 #ff905e,
+                0 3px 0 #431402;
+        }}
+
+        .pixel-btn-disabled {{
+            background: #20242d !important;
+            border: 4px solid #0b0c10 !important;
+            color: #555e70 !important;
+            box-shadow: 
+                inset 3px 3px 0 #2f3542, 
+                inset -3px -3px 0 #12141a,
+                0 5px 0 #07080a !important;
+            text-shadow: 1px 1px 0 #000 !important;
+            cursor: not-allowed;
+            transform: none !important;
         }}
 
         .pixel-btn-blue {{
@@ -225,45 +257,41 @@ GAME_HTML = f"""
         }}
 
         /* ========================================================
-           CARTAS PIXEL ART 16-BIT (ESTILO BALATRO COMPLETO)
+           CARTAS: PROPORCIONES BALATRO Y TIPOGRAFÍA AUTO-AJUSTABLE
            ======================================================== */
-        .balatro-pixel-card {{
-            width: 106px;
-            height: 152px;
+        .balatro-card-box {{
+            width: 104px;
+            height: 148px;
             background: #fbf8eb;
-            border: 4px solid #0d0f14;
-            /* Biselado duro de naipe físico en pixel art */
+            border: 4px solid #0e1015;
             box-shadow: 
                 inset 3px 3px 0 #ffffff,
-                inset -3px -3px 0 #c7bea9,
-                0 7px 0 #08090d;
+                inset -3px -3px 0 #c2b9a1,
+                0 7px 0 #07080a;
             position: relative;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 8px 6px;
             transition: transform 0.08s steps(3);
         }}
 
-        /* Borde interior pixelado */
-        .card-inner-pixel-box {{
+        .card-inner-frame {{
             position: absolute;
             top: 4px; left: 4px; right: 4px; bottom: 4px;
-            border: 2px solid #ddd5be;
+            border: 2px solid #ded6bf;
             pointer-events: none;
         }}
 
-        /* Esquina superior izquierda */
-        .pixel-pip-tl {{
+        .card-corner-tl {{
             position: absolute;
             top: 5px; left: 6px;
             display: flex; flex-direction: column; align-items: center;
             line-height: 1;
             pointer-events: none;
         }}
-
-        /* Esquina inferior derecha rotada */
-        .pixel-pip-br {{
+        .card-corner-br {{
             position: absolute;
             bottom: 5px; right: 6px;
             display: flex; flex-direction: column; align-items: center;
@@ -272,33 +300,46 @@ GAME_HTML = f"""
             pointer-events: none;
         }}
 
-        .pip-rank-pixel {{
+        .corner-rank-text {{
             font-family: var(--pixel-font-title);
-            font-size: 11px;
+            font-size: 10px;
+            font-weight: bold;
+        }}
+        .corner-suit-text {{
+            font-size: 10px;
+            margin-top: 1px;
+        }}
+
+        /* Contenedor central flexible que NUNCA desborda */
+        .card-math-container {{
+            max-width: 90%;
+            max-height: 70%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+            z-index: 2;
+        }}
+
+        .term-math-text {{
+            font-family: var(--pixel-font-card);
+            color: #171a22;
+            line-height: 1;
+            white-space: nowrap;
             letter-spacing: -0.5px;
             font-weight: bold;
         }}
 
-        .pip-suit-pixel {{
-            font-size: 11px;
-            margin-top: 1px;
-        }}
+        /* Escala responsiva de tipografía según longitud del término */
+        .len-1 {{ font-size: 2.1rem; }}
+        .len-2 {{ font-size: 1.85rem; }}
+        .len-3 {{ font-size: 1.55rem; }}
+        .len-4 {{ font-size: 1.35rem; }}
+        .len-5 {{ font-size: 1.15rem; }}
+        .len-many {{ font-size: 0.95rem; }}
 
-        /* Término algebraico central en pixel art */
-        .math-center-pixel {{
-            font-family: var(--pixel-font-math);
-            font-size: 2.2rem;
-            font-weight: bold;
-            color: #151821;
-            text-align: center;
-            padding: 0 4px;
-            line-height: 1;
-            z-index: 2;
-            letter-spacing: -1px;
-            text-shadow: 1px 1px 0 rgba(0,0,0,0.15);
-        }}
-
-        /* Animación de balanceo en pasos de pixel */
+        /* Animación de oscilación escalonada pixelada */
         @keyframes pixel-sway-1 {{
             0%, 100% {{ transform: translateY(0px); }}
             50% {{ transform: translateY(-7px); }}
@@ -316,37 +357,42 @@ GAME_HTML = f"""
         .idle-sway-2 {{ animation: pixel-sway-2 3.6s steps(5) infinite; }}
         .idle-sway-3 {{ animation: pixel-sway-3 4s steps(5) infinite; }}
 
-        .balatro-pixel-card:hover {{
+        .balatro-card-box:hover {{
             transform: translateY(-16px) !important;
             animation-play-state: paused;
             box-shadow: 
                 inset 3px 3px 0 #ffffff,
-                inset -3px -3px 0 #c7bea9,
-                0 14px 0 #08090d;
+                inset -3px -3px 0 #c2b9a1,
+                0 14px 0 #07080a;
             z-index: 20;
         }}
 
-        .balatro-pixel-card.selected {{
-            transform: translateY(-26px) !important;
+        .balatro-card-box.selected {{
+            transform: translateY(-24px) !important;
             animation-play-state: paused;
             border-color: #f1b31c;
             box-shadow: 
-                inset 3px 3px 0 #fff7b8,
-                inset -3px -3px 0 #a97705,
-                0 0 0 4px #f1b31c,
+                inset 3px 3px 0 #fff8c4,
+                inset -3px -3px 0 #ab7c07,
+                0 0 0 3px #f1b31c,
                 0 14px 0 #4f3600 !important;
             z-index: 30;
         }}
 
         @media (max-width: 640px) {{
-            .balatro-pixel-card {{ width: 86px !important; height: 124px !important; }}
-            .math-center-pixel {{ font-size: 1.55rem !important; }}
-            .pip-rank-pixel {{ font-size: 9px !important; }}
-            .pip-suit-pixel {{ font-size: 8px !important; }}
-            #hand-container {{ min-height: 190px !important; }}
+            .balatro-card-box {{ width: 84px !important; height: 122px !important; }}
+            .len-1 {{ font-size: 1.6rem !important; }}
+            .len-2 {{ font-size: 1.4rem !important; }}
+            .len-3 {{ font-size: 1.15rem !important; }}
+            .len-4 {{ font-size: 1.0rem !important; }}
+            .len-5 {{ font-size: 0.85rem !important; }}
+            .len-many {{ font-size: 0.75rem !important; }}
+            .corner-rank-text {{ font-size: 8px !important; }}
+            .corner-suit-text {{ font-size: 8px !important; }}
+            #hand-container {{ min-height: 180px !important; }}
         }}
 
-        /* FUEGO DE PUNTOS PIXEL */
+        /* FUEGO DE PUNTOS */
         @keyframes pixel-flame {{
             0%, 100% {{ transform: scale(1); }}
             50% {{ transform: scale(1.12); }}
@@ -367,7 +413,7 @@ GAME_HTML = f"""
 
         #fx-canvas {{ position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; }}
         .lb-scroll::-webkit-scrollbar {{ width: 6px; }}
-        .lb-scroll::-webkit-scrollbar-thumb {{ background: #465166; border: 1px solid #0a0b0e; }}
+        .lb-scroll::-webkit-scrollbar-thumb {{ background: #4f5b70; border: 1px solid #000; }}
     </style>
 </head>
 <body class="p-2 sm:p-4">
@@ -377,18 +423,18 @@ GAME_HTML = f"""
 
     <!-- INTRO MODAL -->
     <div id="intro-modal" class="fixed inset-0 bg-black/85 z-[1000] flex items-center justify-center p-4">
-        <div class="pixel-panel max-w-sm w-full p-6 text-center">
+        <div class="pixel-frame max-w-sm w-full p-6 text-center">
             <div class="pixel-badge-red py-3 px-4 mb-5">
                 <h1 class="text-xl sm:text-2xl tracking-wider">FACTOR COMÚN</h1>
-                <p class="text-[9px] tracking-widest mt-1 opacity-90">MATEMÁTICA BÁSICA • UCR</p>
+                <p class="text-[9px] tracking-widest mt-1 opacity-90 font-['KiwiSodaFont']">MATEMÁTICA BÁSICA • UCR</p>
             </div>
             
-            <div class="pixel-panel-inner p-4 mb-5 text-left">
+            <div class="pixel-inner-slot p-4 mb-5 text-left">
                 <label class="block text-[9px] text-gray-400 mb-2 tracking-wider">APODO DEL JUGADOR:</label>
-                <input type="text" id="username-input" class="w-full bg-[#08090c] border-2 border-[#313947] focus:border-[#f1b31c] text-white p-3 text-center uppercase text-xs outline-none" placeholder="TU NOMBRE" maxlength="12">
+                <input type="text" id="username-input" class="w-full bg-[#08090c] border-2 border-[#313947] focus:border-[#f1b31c] text-white font-['KiwiSodaFont'] text-lg p-2 text-center uppercase outline-none" placeholder="TU NOMBRE" maxlength="12">
             </div>
 
-            <button onclick="startGameFromIntro()" class="pixel-btn-orange w-full py-4 text-xs tracking-wider">
+            <button onclick="startGameFromIntro()" class="pixel-btn-play w-full py-4 text-xs tracking-wider">
                 ENTRAR AL JUEGO
             </button>
         </div>
@@ -401,76 +447,76 @@ GAME_HTML = f"""
         </button>
     </div>
     <div class="fixed bottom-3 right-3 z-40">
-        <button onclick="toggleLeaderboard()" class="pixel-btn-orange text-[9px] sm:text-[10px] px-3.5 py-2.5">
+        <button onclick="toggleLeaderboard()" class="pixel-frame text-[9px] sm:text-[10px] text-yellow-400 px-3.5 py-2.5">
             🏆 RANK
         </button>
     </div>
 
     <!-- PANEL TUTORIAL -->
-    <div id="tutorial-panel" class="fixed left-0 top-0 h-full w-72 sm:w-80 bg-[#191d24] border-r-4 border-black p-4 flex flex-col z-50 transform -translate-x-full transition-transform duration-200">
+    <div id="tutorial-panel" class="fixed left-0 top-0 h-full w-72 sm:w-80 bg-[#1e232d] border-r-4 border-black p-4 flex flex-col z-50 transform -translate-x-full transition-transform duration-200">
         <div class="flex justify-between items-center mb-4 border-b-2 border-white/20 pb-2">
             <div class="pixel-badge-red px-3 py-1 text-[9px]">CÓMO JUGAR</div>
             <button onclick="toggleTutorial()" class="text-white text-base">✕</button>
         </div>
-        <div class="pixel-panel-inner p-3 text-2xl text-center mb-3">
+        <div class="pixel-inner-slot p-3 text-2xl text-center mb-3">
             🍎🍉 <span class="text-red-400">+</span> 🍎🍌
         </div>
         <p class="text-[9px] text-yellow-300 text-center mb-3">SACA LO QUE SE REPITE (🍎)</p>
-        <div class="pixel-panel-inner p-3 text-2xl text-center mb-4">
+        <div class="pixel-inner-slot p-3 text-2xl text-center mb-4">
             🍎<span class="text-gray-400">(</span>🍉 <span class="text-red-400">+</span> 🍌<span class="text-gray-400">)</span>
         </div>
-        <div class="text-[13px] text-gray-300 leading-relaxed font-['KiwiSodaFont',monospace] space-y-2">
-            <p>1. Selecciona 2 o más cartas que compartan divisores o variables con exponentes comunes.</p>
-            <p>2. Presiona "JUGAR MANO" para acumular puntos calculados por el algoritmo.</p>
-            <p>3. Las cartas no jugadas permanecen en la mesa para la siguiente ronda.</p>
+        <div class="text-[14px] text-gray-300 leading-relaxed font-['KiwiSodaFont'] space-y-2">
+            <p>1. Selecciona 2 o más cartas que compartan divisores o variables comunes.</p>
+            <p>2. Presiona "JUGAR MANO" para multiplicar los puntos obtenidos.</p>
+            <p>3. Las cartas no jugadas permanecen en tu mano para la siguiente ronda.</p>
         </div>
     </div>
 
-    <!-- PANEL CLASIFICACIÓN -->
-    <aside id="leaderboard-panel" class="fixed right-0 top-0 h-full w-72 sm:w-80 bg-[#191d24] border-l-4 border-black p-4 flex flex-col z-50 transform translate-x-full transition-transform duration-200">
+    <!-- PANEL CLASIFICACIÓN CON RELIEVE Y TEXTURA -->
+    <aside id="leaderboard-panel" class="fixed right-0 top-0 h-full w-72 sm:w-80 bg-[#1e232d] border-l-4 border-black p-4 flex flex-col z-50 transform translate-x-full transition-transform duration-200 shadow-2xl">
         <div class="flex justify-between items-center mb-3 border-b-2 border-white/20 pb-2">
             <button onclick="toggleLeaderboard()" class="text-white text-base">✕</button>
             <div class="pixel-badge-red px-3 py-1 text-[9px]">POSICIONES</div>
         </div>
-        <div class="text-[9px] text-gray-400 mb-2 text-center">COMPITIENDO EN EL AULA</div>
+        <div class="text-[12px] text-gray-400 mb-2 text-center font-['KiwiSodaFont']">AULA COMPITIENDO EN TIEMPO REAL</div>
         <div id="leaderboard" class="flex-grow overflow-y-auto lb-scroll flex flex-col gap-1.5 pr-1"></div>
     </aside>
 
-    <!-- HEADER SUPERIOR -->
+    <!-- HEADER SUPERIOR CON PANELES TEXTURIZADOS -->
     <header class="flex justify-between items-center z-10 max-w-5xl mx-auto w-full gap-2 px-1">
-        <div class="pixel-panel px-3 py-2 text-center min-w-[95px] sm:min-w-[125px]">
-            <div class="text-[8px] sm:text-[9px] text-gray-400">NIVEL <span id="level-display" class="text-yellow-400 text-xs sm:text-sm">1</span></div>
-            <div class="text-[7px] sm:text-[8px] text-gray-300 mt-0.5">RONDA <span id="round-display" class="text-white">1</span>/3</div>
+        <div class="pixel-frame px-3 py-2 text-center min-w-[95px] sm:min-w-[125px]">
+            <div class="text-[8px] sm:text-[9px] text-gray-300">NIVEL <span id="level-display" class="text-yellow-400 text-xs sm:text-sm">1</span></div>
+            <div class="text-[7px] sm:text-[8px] text-gray-400 mt-0.5">RONDA <span id="round-display" class="text-white">1</span>/3</div>
         </div>
 
-        <!-- 3 Comodines Pixel -->
+        <!-- 3 Comodines Pixel Art -->
         <div class="flex justify-center gap-1.5 sm:gap-2.5">
-            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="pixel-panel p-2 text-base sm:text-lg relative active:translate-y-1">
+            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="pixel-frame p-2 text-base sm:text-lg relative active:translate-y-1">
                 👁️
                 <span id="qty-reveal" class="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] px-1 border border-black">1</span>
             </button>
-            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano" class="pixel-panel p-2 text-base sm:text-lg relative active:translate-y-1">
+            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano" class="pixel-frame p-2 text-base sm:text-lg relative active:translate-y-1">
                 🎲
                 <span id="qty-reroll" class="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] px-1 border border-black">1</span>
             </button>
-            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar nivel" class="pixel-panel p-2 text-base sm:text-lg relative active:translate-y-1 opacity-40">
+            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar nivel" class="pixel-frame p-2 text-base sm:text-lg relative active:translate-y-1 opacity-40">
                 ⏭️
                 <span id="qty-skip" class="absolute -top-2 -right-2 bg-yellow-500 text-black text-[8px] px-1 border border-black">0</span>
             </button>
         </div>
 
-        <div class="pixel-panel px-3 py-2 text-center min-w-[95px] sm:min-w-[125px]">
-            <div class="text-[8px] sm:text-[9px] text-gray-400">PUNTOS</div>
-            <div id="total-score" class="font-['KiwiSodaFont',monospace] text-xl sm:text-2xl text-yellow-400 leading-none mt-1">0</div>
+        <div class="pixel-frame px-3 py-2 text-center min-w-[95px] sm:min-w-[125px]">
+            <div class="text-[8px] sm:text-[9px] text-gray-300">PUNTOS</div>
+            <div id="total-score" class="font-['KiwiSodaFont'] text-xl sm:text-2xl text-yellow-400 leading-none mt-1">0</div>
             <div class="text-[7px] text-gray-400 mt-0.5">Rank: <span id="player-rank">#25</span></div>
         </div>
     </header>
 
-    <!-- ÁREA DE NAIPES PIXEL ART -->
+    <!-- ÁREA DE JUEGO -->
     <main class="flex-grow flex flex-col items-center justify-center relative w-full max-w-5xl mx-auto my-auto">
         <div id="hand-container" class="flex justify-center items-center flex-wrap gap-2.5 sm:gap-4 w-full px-2 mb-6"></div>
 
-        <button id="btn-play" onclick="playHand()" disabled class="pixel-panel bg-[#151820] text-gray-500 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed">
+        <button id="btn-play" onclick="playHand()" disabled class="pixel-frame pixel-btn-disabled px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest">
             JUGAR MANO
         </button>
 
@@ -481,20 +527,20 @@ GAME_HTML = f"""
 
     <!-- MODAL FIN DE NIVEL -->
     <div id="level-modal" class="fixed inset-0 bg-black/85 z-50 hidden flex items-center justify-center p-4">
-        <div class="pixel-panel max-w-sm w-full p-6 text-center">
+        <div class="pixel-frame max-w-sm w-full p-6 text-center">
             <div class="pixel-badge-red py-2 px-4 mb-4">
                 <h2 class="text-lg sm:text-xl">NIVEL COMPLETADO</h2>
             </div>
             <div class="flex justify-center gap-3 my-4" id="modal-stars"></div>
-            <p id="modal-desc" class="pixel-panel-inner p-3 text-gray-200 font-['KiwiSodaFont',monospace] text-base leading-relaxed mb-5"></p>
-            <button onclick="nextLevel()" class="pixel-btn-orange w-full py-3.5 text-xs tracking-wider">
+            <p id="modal-desc" class="pixel-inner-slot p-3 text-gray-200 font-['KiwiSodaFont'] text-base leading-relaxed mb-5"></p>
+            <button onclick="nextLevel()" class="pixel-btn-play w-full py-3.5 text-xs tracking-wider">
                 SIGUIENTE NIVEL ➔
             </button>
         </div>
     </div>
 
     <!-- ALERTA PIXEL -->
-    <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 pixel-badge-red font-['KiwiSodaFont',monospace] text-base px-5 py-2.5 z-50 hidden text-center max-w-[90vw]">
+    <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 pixel-badge-red font-['KiwiSodaFont'] text-base px-5 py-2.5 z-50 hidden text-center max-w-[90vw]">
         <span id="alert-text"></span>
     </div>
 
@@ -555,7 +601,7 @@ GAME_HTML = f"""
         window.onresize = () => {{ cvs.width = window.innerWidth; cvs.height = window.innerHeight; }};
         window.onresize();
         function spawnParticles(x, y, count=35) {{
-            const colors = ['#f1b31c', '#1d72b8', '#d9383a', '#ffffff'];
+            const colors = ['#f1b31c', '#1f78c1', '#d9383a', '#ffffff'];
             for(let i=0; i<count; i++) {{
                 const angle = Math.random() * Math.PI * 2; const speed = 2 + Math.random() * 7;
                 particles.push({{ x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed-2, color: colors[Math.floor(Math.random()*colors.length)], size: 4, life: 1.0, decay: 0.03 }});
@@ -612,10 +658,10 @@ GAME_HTML = f"""
                 
                 const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${{idx+1}}`;
                 const div = document.createElement('div');
-                div.className = `flex justify-between items-center text-sm p-1.5 ${{p.isPlayer ? 'bg-[#1f78c1] text-white border-2 border-white' : 'pixel-panel-inner text-gray-300'}}`;
+                div.className = `flex justify-between items-center text-sm p-1.5 ${{p.isPlayer ? 'bg-[#1f78c1] text-white border-2 border-white' : 'pixel-inner-slot text-gray-300'}}`;
                 div.innerHTML = `
-                    <span class="truncate max-w-[130px] font-['KiwiSodaFont',monospace]">${{medal}} ${{p.name}} ${{p.isPlayer ? '(TÚ)' : ''}}</span>
-                    <span class="text-yellow-400 font-['KiwiSodaFont',monospace] font-bold">${{p.score.toLocaleString()}}</span>
+                    <span class="truncate max-w-[130px] font-['KiwiSodaFont']">${{medal}} ${{p.name}} ${{p.isPlayer ? '(TÚ)' : ''}}</span>
+                    <span class="text-yellow-400 font-['KiwiSodaFont'] font-bold">${{p.score.toLocaleString()}}</span>
                 `;
                 container.appendChild(div);
             }});
@@ -660,19 +706,28 @@ GAME_HTML = f"""
 
         function gcd(a, b) {{ a=Math.abs(a); b=Math.abs(b); return b === 0 ? a : gcd(b, a % b); }}
 
+        // Formato matemático elegante usando superíndices Unicode reales (x², y³)
+        function toSuperscript(num) {{
+            const map = {{ '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵' }};
+            return num.toString().split('').map(d => map[d] || d).join('');
+        }}
+
         function formatTerm(c, x, y) {{
             let s = "";
-            if (c === -1 && (x>0||y>0)) s += "-";
-            else if (c !== 1 || (x===0&&y===0)) s += c;
+            if (c === -1 && (x > 0 || y > 0)) s += "-";
+            else if (c !== 1 || (x === 0 && y === 0)) s += c;
             
-            if (x === 1) s += "x"; else if (x > 1) s += `x^${{x}}`;
-            if (y === 1) s += "y"; else if (y > 1) s += `y^${{y}}`;
+            if (x === 1) s += "x"; 
+            else if (x > 1) s += `x${{toSuperscript(x)}}`;
+            
+            if (y === 1) s += "y"; 
+            else if (y > 1) s += `y${{toSuperscript(y)}}`;
             return s;
         }}
 
         function getCardCornerRank(card) {{
-            if (card.x > 0 && card.y === 0) return card.x === 1 ? "X" : `X${{card.x}}`;
-            if (card.y > 0 && card.x === 0) return card.y === 1 ? "Y" : `Y${{card.y}}`;
+            if (card.x > 0 && card.y === 0) return card.x === 1 ? "X" : `X${{toSuperscript(card.x)}}`;
+            if (card.y > 0 && card.x === 0) return card.y === 1 ? "Y" : `Y${{toSuperscript(card.y)}}`;
             if (card.x > 0 && card.y > 0) return "XY";
             return Math.abs(card.c).toString();
         }}
@@ -705,7 +760,7 @@ GAME_HTML = f"""
             if (c === 0) c = 1;
             const suits = ['♠', '♥', '♦', '♣'];
             const suit = suits[Math.floor(Math.random() * suits.length)];
-            const suitColor = (suit === '♥' || suit === '♦') ? '#d9383a' : '#1f78c1';
+            const suitColor = (suit === '♥' || suit === '♦') ? '#d63739' : '#1f78c1';
 
             return {{ c, x, y, str: formatTerm(c,x,y), suit, suitColor, selected: false, id: nextCardId++ }};
         }}
@@ -770,20 +825,31 @@ GAME_HTML = f"""
             hand.forEach((card, idx) => {{
                 const el = document.createElement('div');
                 const swayClass = idx % 3 === 0 ? 'idle-sway-1' : (idx % 3 === 1 ? 'idle-sway-2' : 'idle-sway-3');
-                el.className = `balatro-pixel-card ${{card.selected ? 'selected' : swayClass}}`;
+                el.className = `balatro-card-box ${{card.selected ? 'selected' : swayClass}}`;
                 
                 const cornerRank = getCardCornerRank(card);
+                
+                // Determinar clase de tamaño según longitud real del texto
+                let lenClass = "len-1";
+                const l = card.str.length;
+                if(l === 2) lenClass = "len-2";
+                else if(l === 3) lenClass = "len-3";
+                else if(l === 4) lenClass = "len-4";
+                else if(l === 5) lenClass = "len-5";
+                else if(l > 5) lenClass = "len-many";
 
                 el.innerHTML = `
-                    <div class="card-inner-pixel-box"></div>
-                    <div class="pixel-pip-tl" style="color: ${{card.suitColor}};">
-                        <span class="pip-rank-pixel">${{cornerRank}}</span>
-                        <span class="pip-suit-pixel">${{card.suit}}</span>
+                    <div class="card-inner-frame"></div>
+                    <div class="card-corner-tl" style="color: ${{card.suitColor}};">
+                        <span class="corner-rank-text">${{cornerRank}}</span>
+                        <span class="corner-suit-text">${{card.suit}}</span>
                     </div>
-                    <div class="math-center-pixel">${{card.str}}</div>
-                    <div class="pixel-pip-br" style="color: ${{card.suitColor}};">
-                        <span class="pip-rank-pixel">${{cornerRank}}</span>
-                        <span class="pip-suit-pixel">${{card.suit}}</span>
+                    <div class="card-math-container">
+                        <span class="term-math-text ${{lenClass}}">${{card.str}}</span>
+                    </div>
+                    <div class="card-corner-br" style="color: ${{card.suitColor}};">
+                        <span class="corner-rank-text">${{cornerRank}}</span>
+                        <span class="corner-suit-text">${{card.suit}}</span>
                     </div>
                 `;
                 
@@ -801,10 +867,10 @@ GAME_HTML = f"""
             const selected = hand.filter(c => c.selected);
             if(selected.length > 0) {{
                 btnPlay.disabled = false;
-                btnPlay.className = "pixel-btn-orange px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest cursor-pointer";
+                btnPlay.className = "pixel-btn-play px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest cursor-pointer";
             }} else {{
                 btnPlay.disabled = true;
-                btnPlay.className = "pixel-panel bg-[#151820] text-gray-500 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed";
+                btnPlay.className = "pixel-frame pixel-btn-disabled px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest";
             }}
         }}
 
