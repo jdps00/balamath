@@ -1,5 +1,5 @@
 """
-Balatro Factor Común - Versión Clásica Estable
+Balatro Factor Común - Edición UCR
 Curso: IF0003 Matemática Básica para Informática Empresarial
 Universidad de Costa Rica - Recinto de Paraíso
 """
@@ -61,32 +61,56 @@ for v_name in ["fakcpg.mp4", "faKcpg.mp4", "fakcpg.gif", "faKcpg.gif"]:
             video_mime = "image/gif"
         break
 
-# Tipografías locales
+# Audio de fondo
+audio_bg_b64 = get_base64_file("background.mp3")
+
+# Imágenes de selección de personajes
+ricky_b64 = get_base64_file("ricky.png")
+ariana_b64 = get_base64_file("ariana.png")
+
+# Tipografías
 balatro_font_b64 = get_base64_file("balatro.otf")
-daydream_font_b64 = get_base64_file("Daydream DEMO.otf") or get_base64_file("Daydream.otf")
-kiwisoda_font_b64 = get_base64_file("KiwiSoda.ttf") or get_base64_file("kiwisoda.ttf")
+dos_font_b64 = (
+    get_base64_file("Perfect DOS VGA 437 Win.ttf") or 
+    get_base64_file("Perfect DOS VGA 437.ttf") or
+    get_base64_file("perfect_dos_vga_437.ttf")
+)
 
 font_face_css = ""
-if daydream_font_b64:
+if dos_font_b64:
     font_face_css += f"""
     @font-face {{
-        font-family: 'DaydreamFont';
-        src: url(data:font/otf;base64,{daydream_font_b64}) format('opentype');
+        font-family: 'DosVgaFont';
+        src: url(data:font/ttf;base64,{dos_font_b64}) format('truetype');
+        font-weight: normal;
+        font-style: normal;
     }}
     """
-if kiwisoda_font_b64:
-    font_face_css += f"""
-    @font-face {{
-        font-family: 'KiwiSodaFont';
-        src: url(data:font/ttf;base64,{kiwisoda_font_b64}) format('truetype');
-    }}
+else:
+    font_face_css += """
+    @font-face {
+        font-family: 'DosVgaFont';
+        src: local('Courier New'), monospace;
+        font-weight: bold;
+    }
     """
+
 if balatro_font_b64:
     font_face_css += f"""
     @font-face {{
         font-family: 'BalatroFont';
         src: url(data:font/otf;base64,{balatro_font_b64}) format('opentype');
+        font-weight: normal;
+        font-style: normal;
     }}
+    """
+else:
+    font_face_css += """
+    @font-face {
+        font-family: 'BalatroFont';
+        src: local('Impact'), local('Arial Black'), sans-serif;
+        font-weight: bold;
+    }
     """
 
 video_html_tag = ""
@@ -102,6 +126,17 @@ if video_b64:
 else:
     video_html_tag = '<div id="bg-media" class="procedural-bg filter-ronda-1"></div>'
 
+audio_html_tag = ""
+if audio_bg_b64:
+    audio_html_tag = f"""
+    <audio id="bg-music" loop preload="auto">
+        <source src="data:audio/mp3;base64,{audio_bg_b64}" type="audio/mp3">
+    </audio>
+    """
+
+ricky_img_tag = f'<img src="data:image/png;base64,{ricky_b64}" class="w-full h-full object-contain pixelated" alt="Ricky" />' if ricky_b64 else '<div class="text-3xl">👦</div>'
+ariana_img_tag = f'<img src="data:image/png;base64,{ariana_b64}" class="w-full h-full object-contain pixelated" alt="Ariana" />' if ariana_b64 else '<div class="text-3xl">👧</div>'
+
 GAME_HTML = f"""<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -109,25 +144,27 @@ GAME_HTML = f"""<!DOCTYPE html>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Balatro: Factor Común</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-    
     <style>
         {font_face_css}
 
         :root {{
-            --font-balatro: 'BalatroFont', 'DaydreamFont', 'Press Start 2P', monospace;
-            --font-sub: 'DaydreamFont', 'KiwiSodaFont', monospace;
+            --font-dos: 'DosVgaFont', monospace;
+            --font-balatro: 'BalatroFont', sans-serif;
             --balatro-blue: #0077c8;
             --balatro-red: #ea2e35;
             --balatro-yellow: #f1b31c;
             --balatro-orange: #ef5b25;
-            --balatro-dark-box: #252830;
-            --balatro-dark-border: #14161a;
+            --balatro-card-bg: #fbf8eb;
         }}
 
         * {{
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
+        }}
+
+        .pixelated {{
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }}
 
         body {{
@@ -144,10 +181,10 @@ GAME_HTML = f"""<!DOCTYPE html>
             background-color: #0b1712;
         }}
 
+        .font-dos {{ font-family: var(--font-dos); }}
         .font-balatro {{ font-family: var(--font-balatro); }}
-        .font-sub {{ font-family: var(--font-sub); }}
 
-        /* VIDEO Y FONDO */
+        /* VIDEO Y FONDOS */
         .video-bg {{
             position: fixed;
             top: 50%; left: 50%;
@@ -178,7 +215,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         .filter-ronda-2 {{ filter: hue-rotate(60deg) saturate(150%) brightness(0.8) contrast(1.2); }}
         .filter-ronda-3 {{ filter: hue-rotate(150deg) saturate(135%) brightness(0.68) contrast(1.15); }}
 
-        /* PANELES DECORATIVOS */
+        /* PANELES BALATRO */
         .balatro-box {{
             background: #2b313b;
             border: 4px solid #171b21;
@@ -208,6 +245,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             border-radius: 8px;
             box-shadow: inset 0 4px 6px rgba(0,0,0,0.7);
             color: #ffffff;
+            font-family: var(--font-dos);
         }}
         .balatro-input:focus {{
             border-color: #f1b31c;
@@ -239,7 +277,28 @@ GAME_HTML = f"""<!DOCTYPE html>
             transition: transform 0.08s ease, box-shadow 0.08s ease;
         }}
 
-        /* CARTAS CLÁSICAS BALATRO */
+        /* SELECCIÓN DE PERSONAJE ESTILO POKÉMON */
+        .char-card {{
+            background: #1b2029;
+            border: 3px solid #14161d;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+            box-shadow: 0 4px 0 #0d0f14;
+        }}
+        .char-card:hover {{
+            transform: translateY(-4px);
+            border-color: #0077c8;
+            box-shadow: 0 8px 0 #0d0f14;
+        }}
+        .char-card.selected {{
+            border-color: #f1b31c;
+            box-shadow: 0 0 0 3px #f1b31c, 0 6px 0 #8c6000;
+            background: #252e3d;
+            transform: translateY(-4px);
+        }}
+
+        /* CARTAS BALATRO */
         .balatro-card {{
             width: 104px;
             height: 148px;
@@ -269,6 +328,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             display: flex; flex-direction: column; align-items: center;
             line-height: 0.95;
             pointer-events: none;
+            font-family: var(--font-dos);
         }}
         .card-pip-br {{
             position: absolute;
@@ -277,15 +337,15 @@ GAME_HTML = f"""<!DOCTYPE html>
             line-height: 0.95;
             transform: rotate(180deg);
             pointer-events: none;
+            font-family: var(--font-dos);
         }}
 
         .pip-val {{
-            font-family: var(--font-balatro);
-            font-size: 13px;
+            font-size: 15px;
             font-weight: bold;
         }}
         .pip-suit {{
-            font-size: 11px;
+            font-size: 12px;
             margin-top: 1px;
         }}
 
@@ -300,7 +360,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
 
         .term-main {{
-            font-family: var(--font-balatro);
+            font-family: var(--font-dos);
             color: #1a1c22;
             text-align: center;
             line-height: 1;
@@ -310,10 +370,9 @@ GAME_HTML = f"""<!DOCTYPE html>
             text-shadow: 1px 1px 0 rgba(0,0,0,0.12);
         }}
 
-        /* Escala proporcional de fuentes */
-        .len-1 {{ font-size: 2.1rem; }}
-        .len-2 {{ font-size: 1.85rem; }}
-        .len-3 {{ font-size: 1.55rem; }}
+        .len-1 {{ font-size: 2.2rem; }}
+        .len-2 {{ font-size: 1.95rem; }}
+        .len-3 {{ font-size: 1.65rem; }}
         .len-4 {{ font-size: 1.35rem; }}
         .len-5 {{ font-size: 1.15rem; }}
         .len-many {{ font-size: 0.95rem; }}
@@ -351,14 +410,14 @@ GAME_HTML = f"""<!DOCTYPE html>
 
         @media (max-width: 640px) {{
             .balatro-card {{ width: 84px !important; height: 122px !important; }}
-            .len-1 {{ font-size: 1.55rem !important; }}
-            .len-2 {{ font-size: 1.35rem !important; }}
+            .len-1 {{ font-size: 1.6rem !important; }}
+            .len-2 {{ font-size: 1.4rem !important; }}
             .len-3 {{ font-size: 1.15rem !important; }}
             .len-4 {{ font-size: 0.95rem !important; }}
             .len-5 {{ font-size: 0.82rem !important; }}
             .len-many {{ font-size: 0.72rem !important; }}
-            .pip-val {{ font-size: 10px !important; }}
-            .pip-suit {{ font-size: 9px !important; }}
+            .pip-val {{ font-size: 12px !important; }}
+            .pip-suit {{ font-size: 10px !important; }}
             #hand-container {{ min-height: 200px !important; }}
         }}
 
@@ -367,7 +426,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             50% {{ text-shadow: 0 0 22px #ff5a00, 0 -10px 28px #ff9c00, 0 -15px 32px #ffce00; transform: scale(1.1); }}
             100% {{ text-shadow: 0 0 10px #ff5a00, 0 -5px 15px #ff9c00, 0 -10px 20px #ffce00; transform: scale(1); }}
         }}
-        .score-flame {{ color: #fff; animation: flame-flicker 0.6s infinite alternate; font-family: var(--font-balatro); }}
+        .score-flame {{ color: #fff; animation: flame-flicker 0.6s infinite alternate; font-family: var(--font-dos); }}
 
         @keyframes shake {{
             0%, 100% {{ transform: translateX(0); }}
@@ -379,102 +438,123 @@ GAME_HTML = f"""<!DOCTYPE html>
         .animate-shake {{ animation: shake 0.35s ease-in-out; }}
 
         #fx-canvas {{ position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; }}
-        .lb-scroll::-webkit-scrollbar {{ width: 5px; }}
-        .lb-scroll::-webkit-scrollbar-thumb {{ background: #3c4452; border-radius: 4px; }}
     </style>
 </head>
 <body class="p-2 sm:p-4">
     {video_html_tag}
+    {audio_html_tag}
     <div class="bg-tint-overlay"></div>
     <canvas id="fx-canvas"></canvas>
 
-    <!-- INTRO MODAL -->
+    <!-- INTRO MODAL ESTILO BALATRO: PASO 1 (NOMBRE) Y PASO 2 (GÉNERO POKÉMON) -->
     <div id="intro-modal" class="fixed inset-0 bg-black/85 z-[1000] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="balatro-box max-w-sm w-full p-6 text-center">
+            
             <div class="balatro-header-badge py-3 px-4 mb-5 transform -rotate-1 inline-block w-full">
-                <h1 class="text-2xl sm:text-3xl tracking-wide">FACTOR COMÚN</h1>
-                <p class="text-[9px] opacity-90 tracking-widest mt-1">MATEMÁTICA BÁSICA • UCR</p>
+                <h1 class="text-2xl sm:text-3xl tracking-wide font-balatro">FACTOR COMÚN</h1>
+                <p class="text-[11px] opacity-90 tracking-widest mt-1 font-dos">MATEMÁTICA BÁSICA • UCR</p>
             </div>
             
-            <div class="balatro-box-inner p-4 mb-5 text-left">
-                <label class="block text-[10px] text-gray-400 mb-2 tracking-wider">APODO DEL JUGADOR:</label>
-                <input type="text" id="username-input" class="balatro-input w-full p-3 text-center uppercase tracking-wider text-sm font-bold" placeholder="TU NOMBRE" maxlength="12">
+            <!-- PASO 1: NOMBRE -->
+            <div id="step-name">
+                <div class="balatro-box-inner p-4 mb-5 text-left">
+                    <label class="block text-xs text-gray-300 mb-2 tracking-wider font-dos">APODO DEL JUGADOR:</label>
+                    <input type="text" id="username-input" class="balatro-input w-full p-3 text-center uppercase tracking-wider text-base font-bold font-dos" placeholder="TU NOMBRE" maxlength="12">
+                </div>
+                <button onclick="goToGenderStep()" class="balatro-btn-orange w-full py-4 text-sm font-bold tracking-wider font-balatro">
+                    CONTINUAR ➔
+                </button>
             </div>
 
-            <button onclick="startGameFromIntro()" class="balatro-btn-orange w-full py-4 text-sm font-bold tracking-wider">
-                ENTRAR AL JUEGO
-            </button>
+            <!-- PASO 2: ELECCIÓN DE PERSONAJE POKÉMON -->
+            <div id="step-gender" class="hidden">
+                <div class="balatro-box-inner p-3 mb-4 text-center">
+                    <p class="text-xs text-yellow-300 font-dos mb-3">¿ERES CHICO O CHICA?</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div id="opt-boy" onclick="selectGender('boy')" class="char-card p-2 flex flex-col items-center">
+                            <div class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center mb-1">
+                                {ricky_img_tag}
+                            </div>
+                            <span class="text-xs font-bold text-gray-300 font-dos">CHICO</span>
+                        </div>
+                        <div id="opt-girl" onclick="selectGender('girl')" class="char-card p-2 flex flex-col items-center">
+                            <div class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center mb-1">
+                                {ariana_img_tag}
+                            </div>
+                            <span class="text-xs font-bold text-gray-300 font-dos">CHICA</span>
+                        </div>
+                    </div>
+                </div>
+                <button id="btn-start-game" onclick="startGame()" disabled class="balatro-box bg-[#1b1e25] text-gray-500 w-full py-3.5 text-sm font-bold tracking-wider opacity-40 cursor-not-allowed font-balatro">
+                    ENTRAR AL JUEGO
+                </button>
+            </div>
+
         </div>
     </div>
 
     <!-- BOTONES INFERIORES -->
     <div class="fixed bottom-3 left-3 z-40">
-        <button onclick="toggleTutorial()" class="balatro-btn-blue text-[10px] sm:text-xs px-3.5 py-2.5">
+        <button onclick="toggleTutorial()" class="balatro-btn-blue text-xs sm:text-sm px-4 py-2 font-dos">
             💡 TUTO
         </button>
     </div>
     <div class="fixed bottom-3 right-3 z-40">
-        <button onclick="toggleLeaderboard()" class="balatro-btn-orange text-[10px] sm:text-xs px-3.5 py-2.5">
+        <!-- RANK DESHABILITADO -->
+        <button onclick="showRankNotice()" class="balatro-box bg-[#1b1e25] border-[#101318] text-gray-500 text-xs sm:text-sm px-4 py-2 cursor-pointer relative font-dos" title="Módulo en desarrollo por otro compañero">
             🏆 RANK
+            <span class="absolute -top-2 -right-2 bg-yellow-500 text-black text-[9px] font-bold px-1 rounded-sm border border-black">DEV</span>
         </button>
     </div>
 
     <!-- PANEL TUTORIAL -->
     <div id="tutorial-panel" class="fixed left-0 top-0 h-full w-72 bg-[#1b1f26] border-r-4 border-[#121418] p-4 flex flex-col z-50 transform -translate-x-full transition-transform duration-300 shadow-2xl">
         <div class="flex justify-between items-center mb-4 border-b-2 border-white/10 pb-2">
-            <div class="balatro-header-badge px-3 py-1 text-[10px]">CÓMO JUGAR</div>
+            <div class="balatro-header-badge px-3 py-1 text-xs font-dos">CÓMO JUGAR</div>
             <button onclick="toggleTutorial()" class="text-white text-lg font-bold">✕</button>
         </div>
         <div class="balatro-box-inner p-3 text-2xl text-center mb-3">
             🍎🍉 <span class="text-red-400">+</span> 🍎🍌
         </div>
-        <p class="text-[10px] text-yellow-300 text-center mb-3">SACA LO QUE SE REPITE (🍎)</p>
+        <p class="text-xs text-yellow-300 text-center mb-3 font-dos">SACA LO QUE SE REPITE (🍎)</p>
         <div class="balatro-box-inner p-3 text-2xl text-center mb-4">
             🍎<span class="text-gray-400">(</span>🍉 <span class="text-red-400">+</span> 🍌<span class="text-gray-400">)</span>
         </div>
-        <div class="text-[10px] text-gray-300 leading-relaxed font-sub space-y-2">
+        <div class="text-xs text-gray-300 leading-relaxed font-dos space-y-2">
             <p>1. Selecciona 2 o más cartas que compartan divisores o variables comunes.</p>
             <p>2. Presiona "JUGAR MANO" para acumular fichas multiplicadas.</p>
-            <p>3. Deja cartas útiles en la mesa para la siguiente ronda.</p>
+            <p>3. Las cartas no seleccionadas permanecen en tu mano para la siguiente ronda.</p>
         </div>
     </div>
 
-    <!-- PANEL CLASIFICACIÓN -->
-    <aside id="leaderboard-panel" class="fixed right-0 top-0 h-full w-72 bg-[#1b1f26] border-l-4 border-[#121418] p-4 flex flex-col z-50 transform translate-x-full transition-transform duration-300 shadow-2xl">
-        <div class="flex justify-between items-center mb-3 border-b-2 border-white/10 pb-2">
-            <button onclick="toggleLeaderboard()" class="text-white text-lg font-bold">✕</button>
-            <div class="balatro-header-badge px-3 py-1 text-[10px]">POSICIONES</div>
-        </div>
-        <div class="text-[9px] text-gray-400 mb-2 text-center">COMPITIENDO EN EL AULA</div>
-        <div id="leaderboard" class="flex-grow overflow-y-auto lb-scroll flex flex-col gap-1.5 pr-1"></div>
-    </aside>
-
     <!-- HEADER SUPERIOR -->
     <header class="flex justify-between items-center z-10 max-w-5xl mx-auto w-full gap-2 px-1">
-        <div class="balatro-box px-3.5 py-2 text-center min-w-[95px] sm:min-w-[120px]">
-            <div class="text-[8px] sm:text-[10px] text-gray-400">NIVEL <span id="level-display" class="text-yellow-400 text-sm sm:text-base">1</span></div>
-            <div class="text-[7px] sm:text-[9px] text-gray-300 mt-0.5">RONDA <span id="round-display" class="text-white">1</span>/3</div>
+        <div class="balatro-box px-3.5 py-2 text-center min-w-[100px] sm:min-w-[130px]">
+            <div class="text-xs text-gray-400 font-dos">NIVEL <span id="level-display" class="text-yellow-400 text-base font-dos">1</span></div>
+            <div class="text-xs text-gray-300 mt-0.5 font-dos">RONDA <span id="round-display" class="text-white">1</span>/3</div>
         </div>
 
+        <!-- 3 Comodines -->
         <div class="flex justify-center gap-1.5 sm:gap-2.5">
             <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="balatro-box p-2 sm:p-2.5 text-base sm:text-xl relative active:translate-y-1">
                 👁️
-                <span id="qty-reveal" class="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] px-1 rounded-full border border-black">1</span>
+                <span id="qty-reveal" class="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] px-1.5 rounded-full border border-black font-dos">1</span>
             </button>
             <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano" class="balatro-box p-2 sm:p-2.5 text-base sm:text-xl relative active:translate-y-1">
                 🎲
-                <span id="qty-reroll" class="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] px-1 rounded-full border border-black">1</span>
+                <span id="qty-reroll" class="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] px-1.5 rounded-full border border-black font-dos">1</span>
             </button>
-            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar nivel" class="balatro-box p-2 sm:p-2.5 text-base sm:text-xl relative active:translate-y-1 opacity-40">
+            <!-- Comodín que salta UNA RONDA -->
+            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar 1 Ronda" class="balatro-box p-2 sm:p-2.5 text-base sm:text-xl relative active:translate-y-1 opacity-40">
                 ⏭️
-                <span id="qty-skip" class="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] px-1 rounded-full border border-black">0</span>
+                <span id="qty-skip" class="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] px-1.5 rounded-full border border-black font-dos">0</span>
             </button>
         </div>
 
-        <div class="balatro-box px-3.5 py-2 text-center min-w-[95px] sm:min-w-[120px]">
-            <div class="text-[8px] sm:text-[10px] text-gray-400">PUNTOS</div>
-            <div id="total-score" class="text-sm sm:text-lg text-yellow-400 mt-0.5">0</div>
-            <div class="text-[7px] text-gray-400">Rank: <span id="player-rank">#25</span></div>
+        <div class="balatro-box px-3.5 py-2 text-center min-w-[100px] sm:min-w-[130px]">
+            <div class="text-xs text-gray-400 font-dos">PUNTOS</div>
+            <div id="total-score" class="text-base sm:text-xl text-yellow-400 mt-0.5 font-dos font-bold">0</div>
+            <div id="user-display-tag" class="text-[10px] text-gray-400 truncate max-w-[90px] mx-auto font-dos">JUGADOR</div>
         </div>
     </header>
 
@@ -482,7 +562,7 @@ GAME_HTML = f"""<!DOCTYPE html>
     <main class="flex-grow flex flex-col items-center justify-center relative w-full max-w-5xl mx-auto my-auto">
         <div id="hand-container" class="flex justify-center items-center flex-wrap gap-2.5 sm:gap-4 w-full px-2 mb-6"></div>
 
-        <button id="btn-play" onclick="playHand()" disabled class="balatro-box bg-[#1b1e25] text-gray-500 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed">
+        <button id="btn-play" onclick="playHand()" disabled class="balatro-box bg-[#1b1e25] text-gray-500 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed font-balatro">
             JUGAR MANO
         </button>
 
@@ -495,18 +575,18 @@ GAME_HTML = f"""<!DOCTYPE html>
     <div id="level-modal" class="fixed inset-0 bg-black/85 z-50 hidden flex items-center justify-center backdrop-blur-sm p-4">
         <div class="balatro-box max-w-sm w-full p-6 text-center">
             <div class="balatro-header-badge py-2 px-4 mb-4 transform -rotate-1 inline-block w-full">
-                <h2 class="text-xl sm:text-2xl">NIVEL COMPLETADO</h2>
+                <h2 class="text-xl sm:text-2xl font-balatro">NIVEL COMPLETADO</h2>
             </div>
             <div class="flex justify-center gap-3 my-4" id="modal-stars"></div>
-            <p id="modal-desc" class="balatro-box-inner p-3 text-gray-300 text-[10px] leading-relaxed mb-5 font-sub"></p>
-            <button onclick="nextLevel()" class="balatro-btn-orange w-full py-3.5 text-xs tracking-wider">
+            <p id="modal-desc" class="balatro-box-inner p-3 text-gray-200 text-xs leading-relaxed mb-5 font-dos"></p>
+            <button onclick="nextLevel()" class="balatro-btn-orange w-full py-3.5 text-xs tracking-wider font-balatro">
                 SIGUIENTE NIVEL ➔
             </button>
         </div>
     </div>
 
     <!-- ALERTA BALATRO -->
-    <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 balatro-header-badge text-[10px] sm:text-xs px-5 py-3 z-50 hidden transition-opacity text-center max-w-[90vw]">
+    <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 balatro-header-badge text-xs sm:text-sm px-5 py-3 z-50 hidden transition-opacity text-center max-w-[90vw] font-dos">
         <span id="alert-text"></span>
     </div>
 
@@ -534,32 +614,13 @@ GAME_HTML = f"""<!DOCTYPE html>
             winRound: () => {{ playTone(440, 'sine', 0.3, 0.2); setTimeout(() => playTone(659, 'sine', 0.3, 0.2), 150); }}
         }};
 
-        let isBgmPlaying = false;
-        function playBGM() {{
-            if(isBgmPlaying) return;
-            isBgmPlaying = true;
-            if(aCtx.state === 'suspended') aCtx.resume();
-            
-            const notes = [220, 261.63, 329.63, 392.00, 440, 392.00, 329.63, 261.63]; 
-            let step = 0;
-            
-            setInterval(() => {{
-                if(aCtx.state === 'suspended') return;
-                const freq = notes[step % notes.length];
-                step++;
-                
-                const osc = aCtx.createOscillator();
-                const gain = aCtx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(freq, aCtx.currentTime);
-                gain.gain.setValueAtTime(0.012, aCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.0001, aCtx.currentTime + 0.35);
-                
-                osc.connect(gain);
-                gain.connect(aCtx.destination);
-                osc.start();
-                osc.stop(aCtx.currentTime + 0.35);
-            }}, 270);
+        // Reproducción de background.mp3
+        function startBackgroundMusic() {{
+            const bgm = document.getElementById('bg-music');
+            if (bgm) {{
+                bgm.volume = 0.45;
+                bgm.play().catch(() => {{}});
+            }}
         }}
 
         const cvs = document.getElementById('fx-canvas'); const ctx = cvs.getContext('2d');
@@ -585,78 +646,53 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
         renderParticles();
 
-        const names = ["Andrey_U", "Fabiola_P", "Bryan_Q", "Daniela_CR", "Nath_V", "Isaac_H", "Carlos_S", "M_Estela", "K_Navas", "Diego_R", "K_Mora", "Josue_B", "Maria_F", "Valeria_G", "Seidy_T", "Allan_P", "Cesar_O", "Monica_V", "Lucia_Z", "R_Arias", "Erick_L", "S_Díaz", "Karla_C", "Luis_M"];
-        let leaderboardData = [];
-        let playerName = "ESTUDIANTE";
-        
-        function initLeaderboard() {{
-            leaderboardData = names.map(n => ({{ name: n, score: Math.floor(Math.random() * 1100 + 400), level: 1 }}));
-            leaderboardData.push({{ name: playerName, score: score, level: level, isPlayer: true }});
-            updateLeaderboardUI();
-            setInterval(simulateClassroomActivity, 4000);
+        let playerName = "JUGADOR";
+        let playerGender = null;
+
+        function goToGenderStep() {{
+            const input = document.getElementById('username-input').value.trim();
+            if(input) playerName = input.toUpperCase();
+            document.getElementById('step-name').classList.add('hidden');
+            document.getElementById('step-gender').classList.remove('hidden');
+            SFX.select();
         }}
 
-        function simulateClassroomActivity() {{
-            leaderboardData.forEach(p => {{
-                if(!p.isPlayer && Math.random() > 0.45) {{
-                    p.score += Math.floor(Math.random() * 300 * Math.max(1, p.level));
-                    if(p.score > 2000 * p.level) p.level++;
-                }}
-            }});
-            updateLeaderboardUI();
-        }}
-
-        function updateLeaderboardUI() {{
-            const playerEntry = leaderboardData.find(p => p.isPlayer);
-            if(playerEntry) {{
-                playerEntry.score = score;
-                playerEntry.level = level;
+        function selectGender(gender) {{
+            playerGender = gender;
+            document.getElementById('opt-boy').classList.remove('selected');
+            document.getElementById('opt-girl').classList.remove('selected');
+            
+            if(gender === 'boy') {{
+                document.getElementById('opt-boy').classList.add('selected');
+            }} else {{
+                document.getElementById('opt-girl').classList.add('selected');
             }}
 
-            leaderboardData.sort((a,b) => b.score - a.score);
-            const container = document.getElementById('leaderboard');
-            if(!container) return;
-            container.innerHTML = '';
+            const btn = document.getElementById('btn-start-game');
+            btn.disabled = false;
+            btn.className = "balatro-btn-orange w-full py-3.5 text-sm font-bold tracking-wider cursor-pointer font-balatro";
+            SFX.select();
+        }}
 
-            let playerRank = 25;
-            leaderboardData.forEach((p, idx) => {{
-                if(p.isPlayer) playerRank = idx + 1;
-                
-                const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${{idx+1}}`;
-                const div = document.createElement('div');
-                div.className = `flex justify-between items-center text-[10px] p-2 rounded ${{p.isPlayer ? 'bg-[#0077c8] text-white font-bold border border-cyan-300' : 'balatro-box-inner text-gray-300'}}`;
-                div.innerHTML = `
-                    <span class="truncate max-w-[130px]">${{medal}} ${{p.name}} ${{p.isPlayer ? '(TÚ)' : ''}}</span>
-                    <span class="text-yellow-400 font-bold">${{p.score.toLocaleString()}}</span>
-                `;
-                container.appendChild(div);
-            }});
+        function startGame() {{
+            if (!playerGender) return;
+            document.getElementById('intro-modal').classList.add('hidden');
+            document.getElementById('user-display-tag').textContent = `${{playerGender === 'boy' ? '👦' : '👧'}} ${{playerName}}`;
+            
+            SFX.winRound();
+            startBackgroundMusic();
+            startRound();
+            updateUI();
+        }}
 
-            const rankEl = document.getElementById('player-rank');
-            if (rankEl) rankEl.textContent = `#${{playerRank}}`;
+        function showRankNotice() {{
+            SFX.hover();
+            showAlert("🏆 Módulo de Ranking en integración por compañero de equipo.");
         }}
 
         function toggleTutorial() {{
             SFX.hover();
             document.getElementById('tutorial-panel').classList.toggle('-translate-x-full');
-        }}
-
-        function toggleLeaderboard() {{
-            SFX.hover();
-            document.getElementById('leaderboard-panel').classList.toggle('translate-x-full');
-        }}
-
-        function startGameFromIntro() {{
-            const input = document.getElementById('username-input').value.trim();
-            if(input) playerName = input.toUpperCase();
-            
-            document.getElementById('intro-modal').classList.add('hidden');
-            SFX.select();
-            playBGM();
-            
-            initLeaderboard();
-            startRound();
-            updateUI();
         }}
 
         let level = 1;
@@ -665,7 +701,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         let hand = [];
         let nextCardId = 0;
         let levelStats = {{ optimalPossible: 0, actualCorrect: 0, errors: 0 }};
-        let comodines = {{ reveal: 1, reroll: 1, skip: 0 }};
+        let comodines = {{ reveal: 1, reroll: 1, skip: 1 }};
 
         const handContainer = document.getElementById('hand-container');
         const btnPlay = document.getElementById('btn-play');
@@ -747,7 +783,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             for(let i=1; i < (1<<n); i++) {{
                 let subset = [];
                 for(let j=0; j<n; j++) {{
-                    if((i & (1<<j))) subset.push(hand[j]);
+                    if((i & (1<<j))) subset.push(currentHand[j]);
                 }}
                 if(subset.length > 1) {{
                     const info = getCommonFactorInfo(subset);
@@ -831,10 +867,10 @@ GAME_HTML = f"""<!DOCTYPE html>
             const selected = hand.filter(c => c.selected);
             if(selected.length > 0) {{
                 btnPlay.disabled = false;
-                btnPlay.className = "balatro-btn-orange px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest cursor-pointer";
+                btnPlay.className = "balatro-btn-orange px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest cursor-pointer font-balatro";
             }} else {{
                 btnPlay.disabled = true;
-                btnPlay.className = "balatro-box bg-[#1b1e25] text-gray-500 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed";
+                btnPlay.className = "balatro-box bg-[#1b1e25] text-gray-500 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed font-balatro";
             }}
         }}
 
@@ -914,9 +950,9 @@ GAME_HTML = f"""<!DOCTYPE html>
             if(stars === 3) {{
                 comodines.skip++;
                 updateUI();
-                desc.innerHTML = `¡PRECISIÓN PERFECTA!<br>Ganaste un comodín SALTAR NIVEL.<br>Bono: +${{bonusScore.toLocaleString()}} pts`;
+                desc.innerHTML = `¡PRECISIÓN PERFECTA!<br>Ganaste un comodín SALTAR RONDA.<br>Bono: +${{bonusScore.toLocaleString()}} pts`;
             }} else {{
-                desc.innerHTML = `Precisión: ${{Math.round(precision*100)}}%. Hubo términos sin factorizar.<br>Bono: +${{bonusScore.toLocaleString()}} pts`;
+                desc.innerHTML = `Precisión: ${{Math.round(precision*100)}}%.<br>Bono obtenido: +${{bonusScore.toLocaleString()}} pts`;
             }}
 
             modal.classList.remove('hidden');
@@ -988,10 +1024,16 @@ GAME_HTML = f"""<!DOCTYPE html>
             else if (type === 'skip') {{
                 comodines.skip--;
                 SFX.winRound();
-                levelStats.actualCorrect = 1; 
-                levelStats.optimalPossible = 1;
-                levelStats.errors = 0;
-                endLevel();
+                showAlert("⏭️ ¡RONDA SALTADA!");
+                
+                round++;
+                if(round > 3) {{
+                    levelStats.actualCorrect = Math.max(1, levelStats.actualCorrect);
+                    levelStats.optimalPossible = Math.max(1, levelStats.optimalPossible);
+                    endLevel();
+                }} else {{
+                    startRound();
+                }}
             }}
             updateUI();
         }}
