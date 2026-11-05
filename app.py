@@ -1,5 +1,6 @@
 """
-Balatro Factor Común - Pixel Art Refinado 16-Bit
+Arcana Alquimia / Balatro: Factor Común - Motor Canvas Pixel Art Nativo (16-Bit)
+Resolución virtual de 480x270 reescalada por entero (Crisp Pixels)
 Curso: IF0003 Matemática Básica para Informática Empresarial
 Universidad de Costa Rica - Recinto de Paraíso
 """
@@ -10,7 +11,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="Balatro: Factor Común | IF0003",
+    page_title="Factor Común Pixel Art | IF0003",
     page_icon="🃏",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -24,10 +25,17 @@ st.markdown(
     header {visibility: hidden;}
     .block-container {
         padding: 0 !important;
+        margin: 0 !important;
         max-width: 100% !important;
     }
     .stApp {
-        background-color: #050a08;
+        background-color: #0b0c10;
+    }
+    iframe {
+        border: none !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        overflow: hidden !important;
     }
     </style>
     """,
@@ -93,43 +101,35 @@ if video_b64:
 else:
     video_html_tag = '<div id="bg-media" class="procedural-bg filter-ronda-1"></div>'
 
-GAME_HTML = f"""
-<!DOCTYPE html>
+GAME_HTML = f"""<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Balatro Factor Común</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-    
+    <title>Factor Común Pixel Art</title>
     <style>
         {font_face_css}
 
         :root {{
-            --pixel-font-title: 'DaydreamFont', 'Press Start 2P', monospace;
-            --pixel-font-card: 'BalatroFont', 'KiwiSodaFont', 'Press Start 2P', monospace;
-            --pixel-font-ui: 'KiwiSodaFont', 'VT323', monospace;
+            --font-head: 'DaydreamFont', monospace;
+            --font-math: 'BalatroFont', 'KiwiSodaFont', monospace;
+            --font-ui: 'KiwiSodaFont', monospace;
         }}
 
         * {{
             box-sizing: border-box;
+            margin: 0; padding: 0;
+            user-select: none;
             -webkit-tap-highlight-color: transparent;
-            image-rendering: pixelated;
         }}
 
-        body {{
-            color: #ffffff;
-            font-family: var(--pixel-font-title);
+        body, html {{
+            width: 100%; height: 100%;
             overflow: hidden;
-            user-select: none;
-            margin: 0;
-            height: 100vh;
-            width: 100vw;
+            background-color: #05070a;
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            background-color: #070e0b;
+            align-items: center;
+            justify-content: center;
         }}
 
         .video-bg {{
@@ -138,7 +138,7 @@ GAME_HTML = f"""
             min-width: 100%; min-height: 100%;
             width: auto; height: auto;
             transform: translate(-50%, -50%) scale(1.05);
-            z-index: -3;
+            z-index: 1;
             object-fit: cover;
             pointer-events: none;
             transition: filter 1s steps(4);
@@ -148,600 +148,133 @@ GAME_HTML = f"""
         .procedural-bg {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: radial-gradient(circle at center, #1b4d36, #07120c);
-            z-index: -3;
+            z-index: 1;
         }}
 
         .bg-tint-overlay {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at center, rgba(20, 60, 42, 0.4) 0%, rgba(4, 14, 9, 0.92) 100%);
+            background: radial-gradient(circle at center, rgba(16, 45, 32, 0.45) 0%, rgba(3, 8, 6, 0.92) 100%);
             mix-blend-mode: multiply;
             pointer-events: none;
-            z-index: -2;
+            z-index: 2;
         }}
 
         .filter-ronda-1 {{ filter: hue-rotate(95deg) saturate(140%) brightness(0.72) contrast(1.2); }}
         .filter-ronda-2 {{ filter: hue-rotate(50deg) saturate(160%) brightness(0.8) contrast(1.25); }}
         .filter-ronda-3 {{ filter: hue-rotate(150deg) saturate(130%) brightness(0.68) contrast(1.2); }}
 
-        /* ========================================================
-           BARRAS Y PANELES CON TEXTURA Y BISEL PIXEL ART (16-BIT)
-           ======================================================== */
-        .pixel-frame {{
-            background-color: #272d38;
-            background-image: 
-                radial-gradient(#1e232d 20%, transparent 20%),
-                radial-gradient(#1e232d 20%, transparent 20%);
-            background-size: 4px 4px;
-            background-position: 0 0, 2px 2px;
-            border: 4px solid #0b0c10;
-            box-shadow: 
-                inset 3px 3px 0 #4f5b70, 
-                inset -3px -3px 0 #15181f,
-                0 6px 0 #07080a;
+        /* LIENZO DE BAJA RESOLUCIÓN NATIVO */
+        #game-canvas {{
             position: relative;
-        }}
-
-        /* Remaches en las 4 esquinas para dar textura física */
-        .pixel-frame::before, .pixel-frame::after {{
-            content: '';
-            position: absolute;
-            width: 4px; height: 4px;
-            background: #9aa8bf;
-            border: 1px solid #000;
-            z-index: 10;
-        }}
-        .pixel-frame::before {{ top: 2px; left: 2px; }}
-        .pixel-frame::after {{ top: 2px; right: 2px; }}
-
-        .pixel-inner-slot {{
-            background: #11141b;
-            border: 3px solid #0a0b0f;
-            box-shadow: inset 2px 2px 0 #000000;
-        }}
-
-        .pixel-badge-red {{
-            background: #d63739;
-            border: 3px solid #0a0b0e;
-            box-shadow: 
-                inset 2px 2px 0 #f96d6f, 
-                inset -2px -2px 0 #7e1617,
-                0 4px 0 #450c0d;
-            color: #ffffff;
-            text-shadow: 2px 2px 0 #000000;
-        }}
-
-        .pixel-btn-play {{
-            font-family: var(--pixel-font-title);
-            background: #e85d26;
-            border: 4px solid #0b0c10;
-            box-shadow: 
-                inset 4px 4px 0 #ff905e, 
-                inset -4px -4px 0 #8b2d07,
-                0 7px 0 #431402;
-            color: #ffffff;
-            text-shadow: 2px 2px 0 #000000;
-            transition: transform 0.05s steps(2);
-        }}
-        .pixel-btn-play:hover {{ background: #f86e36; }}
-        .pixel-btn-play:active {{
-            transform: translateY(4px);
-            box-shadow: 
-                inset 4px 4px 0 #8b2d07, 
-                inset -4px -4px 0 #ff905e,
-                0 3px 0 #431402;
-        }}
-
-        .pixel-btn-disabled {{
-            background: #20242d !important;
-            border: 4px solid #0b0c10 !important;
-            color: #555e70 !important;
-            box-shadow: 
-                inset 3px 3px 0 #2f3542, 
-                inset -3px -3px 0 #12141a,
-                0 5px 0 #07080a !important;
-            text-shadow: 1px 1px 0 #000 !important;
-            cursor: not-allowed;
-            transform: none !important;
-        }}
-
-        .pixel-btn-blue {{
-            font-family: var(--pixel-font-title);
-            background: #1f78c1;
-            border: 3px solid #0a0b0e;
-            box-shadow: 
-                inset 2px 2px 0 #5aa7e8, 
-                inset -2px -2px 0 #0d4472,
-                0 5px 0 #06233d;
-            color: #ffffff;
-            text-shadow: 2px 2px 0 #000000;
-        }}
-
-        /* ========================================================
-           CARTAS: PROPORCIONES BALATRO Y TIPOGRAFÍA AUTO-AJUSTABLE
-           ======================================================== */
-        .balatro-card-box {{
-            width: 104px;
-            height: 148px;
-            background: #fbf8eb;
-            border: 4px solid #0e1015;
-            box-shadow: 
-                inset 3px 3px 0 #ffffff,
-                inset -3px -3px 0 #c2b9a1,
-                0 7px 0 #07080a;
-            position: relative;
+            z-index: 5;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            width: 100vw;
+            height: 100vh;
+            object-fit: contain;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8px 6px;
-            transition: transform 0.08s steps(3);
         }}
-
-        .card-inner-frame {{
-            position: absolute;
-            top: 4px; left: 4px; right: 4px; bottom: 4px;
-            border: 2px solid #ded6bf;
-            pointer-events: none;
-        }}
-
-        .card-corner-tl {{
-            position: absolute;
-            top: 5px; left: 6px;
-            display: flex; flex-direction: column; align-items: center;
-            line-height: 1;
-            pointer-events: none;
-        }}
-        .card-corner-br {{
-            position: absolute;
-            bottom: 5px; right: 6px;
-            display: flex; flex-direction: column; align-items: center;
-            line-height: 1;
-            transform: rotate(180deg);
-            pointer-events: none;
-        }}
-
-        .corner-rank-text {{
-            font-family: var(--pixel-font-title);
-            font-size: 10px;
-            font-weight: bold;
-        }}
-        .corner-suit-text {{
-            font-size: 10px;
-            margin-top: 1px;
-        }}
-
-        /* Contenedor central flexible que NUNCA desborda */
-        .card-math-container {{
-            max-width: 90%;
-            max-height: 70%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            overflow: hidden;
-            z-index: 2;
-        }}
-
-        .term-math-text {{
-            font-family: var(--pixel-font-card);
-            color: #171a22;
-            line-height: 1;
-            white-space: nowrap;
-            letter-spacing: -0.5px;
-            font-weight: bold;
-        }}
-
-        /* Escala responsiva de tipografía según longitud del término */
-        .len-1 {{ font-size: 2.1rem; }}
-        .len-2 {{ font-size: 1.85rem; }}
-        .len-3 {{ font-size: 1.55rem; }}
-        .len-4 {{ font-size: 1.35rem; }}
-        .len-5 {{ font-size: 1.15rem; }}
-        .len-many {{ font-size: 0.95rem; }}
-
-        /* Animación de oscilación escalonada pixelada */
-        @keyframes pixel-sway-1 {{
-            0%, 100% {{ transform: translateY(0px); }}
-            50% {{ transform: translateY(-7px); }}
-        }}
-        @keyframes pixel-sway-2 {{
-            0%, 100% {{ transform: translateY(-5px); }}
-            50% {{ transform: translateY(3px); }}
-        }}
-        @keyframes pixel-sway-3 {{
-            0%, 100% {{ transform: translateY(2px); }}
-            50% {{ transform: translateY(-6px); }}
-        }}
-
-        .idle-sway-1 {{ animation: pixel-sway-1 3s steps(5) infinite; }}
-        .idle-sway-2 {{ animation: pixel-sway-2 3.6s steps(5) infinite; }}
-        .idle-sway-3 {{ animation: pixel-sway-3 4s steps(5) infinite; }}
-
-        .balatro-card-box:hover {{
-            transform: translateY(-16px) !important;
-            animation-play-state: paused;
-            box-shadow: 
-                inset 3px 3px 0 #ffffff,
-                inset -3px -3px 0 #c2b9a1,
-                0 14px 0 #07080a;
-            z-index: 20;
-        }}
-
-        .balatro-card-box.selected {{
-            transform: translateY(-24px) !important;
-            animation-play-state: paused;
-            border-color: #f1b31c;
-            box-shadow: 
-                inset 3px 3px 0 #fff8c4,
-                inset -3px -3px 0 #ab7c07,
-                0 0 0 3px #f1b31c,
-                0 14px 0 #4f3600 !important;
-            z-index: 30;
-        }}
-
-        @media (max-width: 640px) {{
-            .balatro-card-box {{ width: 84px !important; height: 122px !important; }}
-            .len-1 {{ font-size: 1.6rem !important; }}
-            .len-2 {{ font-size: 1.4rem !important; }}
-            .len-3 {{ font-size: 1.15rem !important; }}
-            .len-4 {{ font-size: 1.0rem !important; }}
-            .len-5 {{ font-size: 0.85rem !important; }}
-            .len-many {{ font-size: 0.75rem !important; }}
-            .corner-rank-text {{ font-size: 8px !important; }}
-            .corner-suit-text {{ font-size: 8px !important; }}
-            #hand-container {{ min-height: 180px !important; }}
-        }}
-
-        /* FUEGO DE PUNTOS */
-        @keyframes pixel-flame {{
-            0%, 100% {{ transform: scale(1); }}
-            50% {{ transform: scale(1.12); }}
-        }}
-        .score-flame-pixel {{
-            color: #ffffff;
-            font-family: var(--pixel-font-title);
-            text-shadow: 3px 3px 0 #d9383a, -3px -3px 0 #f1b31c, 3px -3px 0 #e85d26;
-            animation: pixel-flame 0.25s steps(2) infinite;
-        }}
-
-        @keyframes shake-pixel {{
-            0%, 100% {{ transform: translateX(0); }}
-            25% {{ transform: translateX(-8px); }}
-            75% {{ transform: translateX(8px); }}
-        }}
-        .animate-shake {{ animation: shake-pixel 0.22s steps(4); }}
-
-        #fx-canvas {{ position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; }}
-        .lb-scroll::-webkit-scrollbar {{ width: 6px; }}
-        .lb-scroll::-webkit-scrollbar-thumb {{ background: #4f5b70; border: 1px solid #000; }}
     </style>
 </head>
-<body class="p-2 sm:p-4">
+<body>
     {video_html_tag}
     <div class="bg-tint-overlay"></div>
-    <canvas id="fx-canvas"></canvas>
-
-    <!-- INTRO MODAL -->
-    <div id="intro-modal" class="fixed inset-0 bg-black/85 z-[1000] flex items-center justify-center p-4">
-        <div class="pixel-frame max-w-sm w-full p-6 text-center">
-            <div class="pixel-badge-red py-3 px-4 mb-5">
-                <h1 class="text-xl sm:text-2xl tracking-wider">FACTOR COMÚN</h1>
-                <p class="text-[9px] tracking-widest mt-1 opacity-90 font-['KiwiSodaFont']">MATEMÁTICA BÁSICA • UCR</p>
-            </div>
-            
-            <div class="pixel-inner-slot p-4 mb-5 text-left">
-                <label class="block text-[9px] text-gray-400 mb-2 tracking-wider">APODO DEL JUGADOR:</label>
-                <input type="text" id="username-input" class="w-full bg-[#08090c] border-2 border-[#313947] focus:border-[#f1b31c] text-white font-['KiwiSodaFont'] text-lg p-2 text-center uppercase outline-none" placeholder="TU NOMBRE" maxlength="12">
-            </div>
-
-            <button onclick="startGameFromIntro()" class="pixel-btn-play w-full py-4 text-xs tracking-wider">
-                ENTRAR AL JUEGO
-            </button>
-        </div>
-    </div>
-
-    <!-- BOTONES INFERIORES -->
-    <div class="fixed bottom-3 left-3 z-40">
-        <button onclick="toggleTutorial()" class="pixel-btn-blue text-[9px] sm:text-[10px] px-3.5 py-2.5">
-            💡 TUTO
-        </button>
-    </div>
-    <div class="fixed bottom-3 right-3 z-40">
-        <button onclick="toggleLeaderboard()" class="pixel-frame text-[9px] sm:text-[10px] text-yellow-400 px-3.5 py-2.5">
-            🏆 RANK
-        </button>
-    </div>
-
-    <!-- PANEL TUTORIAL -->
-    <div id="tutorial-panel" class="fixed left-0 top-0 h-full w-72 sm:w-80 bg-[#1e232d] border-r-4 border-black p-4 flex flex-col z-50 transform -translate-x-full transition-transform duration-200">
-        <div class="flex justify-between items-center mb-4 border-b-2 border-white/20 pb-2">
-            <div class="pixel-badge-red px-3 py-1 text-[9px]">CÓMO JUGAR</div>
-            <button onclick="toggleTutorial()" class="text-white text-base">✕</button>
-        </div>
-        <div class="pixel-inner-slot p-3 text-2xl text-center mb-3">
-            🍎🍉 <span class="text-red-400">+</span> 🍎🍌
-        </div>
-        <p class="text-[9px] text-yellow-300 text-center mb-3">SACA LO QUE SE REPITE (🍎)</p>
-        <div class="pixel-inner-slot p-3 text-2xl text-center mb-4">
-            🍎<span class="text-gray-400">(</span>🍉 <span class="text-red-400">+</span> 🍌<span class="text-gray-400">)</span>
-        </div>
-        <div class="text-[14px] text-gray-300 leading-relaxed font-['KiwiSodaFont'] space-y-2">
-            <p>1. Selecciona 2 o más cartas que compartan divisores o variables comunes.</p>
-            <p>2. Presiona "JUGAR MANO" para multiplicar los puntos obtenidos.</p>
-            <p>3. Las cartas no jugadas permanecen en tu mano para la siguiente ronda.</p>
-        </div>
-    </div>
-
-    <!-- PANEL CLASIFICACIÓN CON RELIEVE Y TEXTURA -->
-    <aside id="leaderboard-panel" class="fixed right-0 top-0 h-full w-72 sm:w-80 bg-[#1e232d] border-l-4 border-black p-4 flex flex-col z-50 transform translate-x-full transition-transform duration-200 shadow-2xl">
-        <div class="flex justify-between items-center mb-3 border-b-2 border-white/20 pb-2">
-            <button onclick="toggleLeaderboard()" class="text-white text-base">✕</button>
-            <div class="pixel-badge-red px-3 py-1 text-[9px]">POSICIONES</div>
-        </div>
-        <div class="text-[12px] text-gray-400 mb-2 text-center font-['KiwiSodaFont']">AULA COMPITIENDO EN TIEMPO REAL</div>
-        <div id="leaderboard" class="flex-grow overflow-y-auto lb-scroll flex flex-col gap-1.5 pr-1"></div>
-    </aside>
-
-    <!-- HEADER SUPERIOR CON PANELES TEXTURIZADOS -->
-    <header class="flex justify-between items-center z-10 max-w-5xl mx-auto w-full gap-2 px-1">
-        <div class="pixel-frame px-3 py-2 text-center min-w-[95px] sm:min-w-[125px]">
-            <div class="text-[8px] sm:text-[9px] text-gray-300">NIVEL <span id="level-display" class="text-yellow-400 text-xs sm:text-sm">1</span></div>
-            <div class="text-[7px] sm:text-[8px] text-gray-400 mt-0.5">RONDA <span id="round-display" class="text-white">1</span>/3</div>
-        </div>
-
-        <!-- 3 Comodines Pixel Art -->
-        <div class="flex justify-center gap-1.5 sm:gap-2.5">
-            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="pixel-frame p-2 text-base sm:text-lg relative active:translate-y-1">
-                👁️
-                <span id="qty-reveal" class="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] px-1 border border-black">1</span>
-            </button>
-            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano" class="pixel-frame p-2 text-base sm:text-lg relative active:translate-y-1">
-                🎲
-                <span id="qty-reroll" class="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] px-1 border border-black">1</span>
-            </button>
-            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar nivel" class="pixel-frame p-2 text-base sm:text-lg relative active:translate-y-1 opacity-40">
-                ⏭️
-                <span id="qty-skip" class="absolute -top-2 -right-2 bg-yellow-500 text-black text-[8px] px-1 border border-black">0</span>
-            </button>
-        </div>
-
-        <div class="pixel-frame px-3 py-2 text-center min-w-[95px] sm:min-w-[125px]">
-            <div class="text-[8px] sm:text-[9px] text-gray-300">PUNTOS</div>
-            <div id="total-score" class="font-['KiwiSodaFont'] text-xl sm:text-2xl text-yellow-400 leading-none mt-1">0</div>
-            <div class="text-[7px] text-gray-400 mt-0.5">Rank: <span id="player-rank">#25</span></div>
-        </div>
-    </header>
-
-    <!-- ÁREA DE JUEGO -->
-    <main class="flex-grow flex flex-col items-center justify-center relative w-full max-w-5xl mx-auto my-auto">
-        <div id="hand-container" class="flex justify-center items-center flex-wrap gap-2.5 sm:gap-4 w-full px-2 mb-6"></div>
-
-        <button id="btn-play" onclick="playHand()" disabled class="pixel-frame pixel-btn-disabled px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest">
-            JUGAR MANO
-        </button>
-
-        <div id="flame-score-container" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 hidden opacity-0 transition-opacity duration-200 z-40 pointer-events-none text-center">
-            <div id="flame-score" class="text-3xl sm:text-5xl score-flame-pixel tracking-wider">0</div>
-        </div>
-    </main>
-
-    <!-- MODAL FIN DE NIVEL -->
-    <div id="level-modal" class="fixed inset-0 bg-black/85 z-50 hidden flex items-center justify-center p-4">
-        <div class="pixel-frame max-w-sm w-full p-6 text-center">
-            <div class="pixel-badge-red py-2 px-4 mb-4">
-                <h2 class="text-lg sm:text-xl">NIVEL COMPLETADO</h2>
-            </div>
-            <div class="flex justify-center gap-3 my-4" id="modal-stars"></div>
-            <p id="modal-desc" class="pixel-inner-slot p-3 text-gray-200 font-['KiwiSodaFont'] text-base leading-relaxed mb-5"></p>
-            <button onclick="nextLevel()" class="pixel-btn-play w-full py-3.5 text-xs tracking-wider">
-                SIGUIENTE NIVEL ➔
-            </button>
-        </div>
-    </div>
-
-    <!-- ALERTA PIXEL -->
-    <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 pixel-badge-red font-['KiwiSodaFont'] text-base px-5 py-2.5 z-50 hidden text-center max-w-[90vw]">
-        <span id="alert-text"></span>
-    </div>
+    <canvas id="game-canvas" width="480" height="270"></canvas>
 
     <script>
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+
+        const V_WIDTH = 480;
+        const V_HEIGHT = 270;
+
+        // Audio procedural
         const aCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playTone(freq, type, dur, vol=0.1) {{
-            try {{
+        function playTone(freq, type, dur, vol=0.1) {
+            try {
                 if(aCtx.state === 'suspended') aCtx.resume();
-                const osc = aCtx.createOscillator(); const gain = aCtx.createGain();
-                osc.type = type; osc.frequency.setValueAtTime(freq, aCtx.currentTime);
-                gain.gain.setValueAtTime(vol, aCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.0001, aCtx.currentTime + dur);
-                osc.connect(gain); gain.connect(aCtx.destination);
-                osc.start(); osc.stop(aCtx.currentTime + dur);
-            }} catch(e) {{}}
-        }}
-
-        const SFX = {{
-            hover: () => playTone(320, 'sine', 0.08, 0.04),
-            select: () => playTone(540, 'triangle', 0.12, 0.12),
-            error: () => {{ playTone(130, 'sawtooth', 0.25, 0.25); setTimeout(() => playTone(90, 'sawtooth', 0.35, 0.25), 100); }},
-            flamePop: () => {{ playTone(180, 'sawtooth', 0.28, 0.25); setTimeout(() => playTone(240, 'sawtooth', 0.2, 0.2), 60); }},
-            star: () => {{ playTone(880, 'sine', 0.3, 0.2); setTimeout(()=>playTone(1100, 'sine', 0.4, 0.2), 100); }},
-            discard: () => playTone(240, 'triangle', 0.15, 0.15),
-            winRound: () => {{ playTone(440, 'sine', 0.3, 0.2); setTimeout(() => playTone(659, 'sine', 0.3, 0.2), 150); }}
-        }};
-
-        let isBgmPlaying = false;
-        function playBGM() {{
-            if(isBgmPlaying) return;
-            isBgmPlaying = true;
-            if(aCtx.state === 'suspended') aCtx.resume();
-            
-            const notes = [220, 261.63, 329.63, 392.00, 440, 392.00, 329.63, 261.63]; 
-            let step = 0;
-            
-            setInterval(() => {{
-                if(aCtx.state === 'suspended') return;
-                const freq = notes[step % notes.length];
-                step++;
-                
                 const osc = aCtx.createOscillator();
                 const gain = aCtx.createGain();
-                osc.type = 'triangle';
+                osc.type = type;
                 osc.frequency.setValueAtTime(freq, aCtx.currentTime);
-                gain.gain.setValueAtTime(0.012, aCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.0001, aCtx.currentTime + 0.35);
-                
+                gain.gain.setValueAtTime(vol, aCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, aCtx.currentTime + dur);
                 osc.connect(gain);
                 gain.connect(aCtx.destination);
                 osc.start();
-                osc.stop(aCtx.currentTime + 0.35);
-            }}, 270);
-        }}
+                osc.stop(aCtx.currentTime + dur);
+            } catch(e) {}
+        }
 
-        const cvs = document.getElementById('fx-canvas'); const ctx = cvs.getContext('2d');
-        let particles = [];
-        window.onresize = () => {{ cvs.width = window.innerWidth; cvs.height = window.innerHeight; }};
-        window.onresize();
-        function spawnParticles(x, y, count=35) {{
-            const colors = ['#f1b31c', '#1f78c1', '#d9383a', '#ffffff'];
-            for(let i=0; i<count; i++) {{
-                const angle = Math.random() * Math.PI * 2; const speed = 2 + Math.random() * 7;
-                particles.push({{ x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed-2, color: colors[Math.floor(Math.random()*colors.length)], size: 4, life: 1.0, decay: 0.03 }});
-            }}
-        }}
-        function renderParticles() {{
-            ctx.clearRect(0,0,cvs.width,cvs.height);
-            for(let i=particles.length-1; i>=0; i--) {{
-                const p = particles[i];
-                p.x += p.vx; p.y += p.vy; p.vy += 0.18; p.life -= p.decay;
-                if(p.life<=0){{ particles.splice(i,1); continue; }}
-                ctx.fillStyle = p.color; ctx.globalAlpha = p.life; ctx.fillRect(Math.floor(p.x), Math.floor(p.y), p.size, p.size);
-            }}
-            ctx.globalAlpha = 1; requestAnimationFrame(renderParticles);
-        }}
-        renderParticles();
+        const SFX = {
+            hover: () => playTone(340, 'sine', 0.05, 0.03),
+            select: () => playTone(560, 'triangle', 0.1, 0.12),
+            error: () => { playTone(130, 'sawtooth', 0.2, 0.25); setTimeout(() => playTone(90, 'sawtooth', 0.25, 0.25), 90); },
+            flamePop: () => { playTone(200, 'sawtooth', 0.25, 0.25); setTimeout(() => playTone(300, 'sawtooth', 0.2, 0.2), 60); },
+            star: () => { playTone(880, 'sine', 0.25, 0.2); setTimeout(()=>playTone(1174, 'sine', 0.35, 0.2), 90); },
+            discard: () => playTone(240, 'triangle', 0.15, 0.12),
+            winRound: () => { playTone(440, 'sine', 0.25, 0.2); setTimeout(() => playTone(659, 'sine', 0.3, 0.2), 140); }
+        };
 
-        const names = ["Andrey_U", "Fabiola_P", "Bryan_Q", "Daniela_CR", "Nath_V", "Isaac_H", "Carlos_S", "M_Estela", "K_Navas", "Diego_R", "K_Mora", "Josue_B", "Maria_F", "Valeria_G", "Seidy_T", "Allan_P", "Cesar_O", "Monica_V", "Lucia_Z", "R_Arias", "Erick_L", "S_Díaz", "Karla_C", "Luis_M"];
-        let leaderboardData = [];
-        let playerName = "ESTUDIANTE";
-        
-        function initLeaderboard() {{
-            leaderboardData = names.map(n => ({{ name: n, score: Math.floor(Math.random() * 1100 + 400), level: 1 }}));
-            leaderboardData.push({{ name: playerName, score: score, level: level, isPlayer: true }});
-            updateLeaderboardUI();
-            setInterval(simulateClassroomActivity, 4000);
-        }}
-
-        function simulateClassroomActivity() {{
-            leaderboardData.forEach(p => {{
-                if(!p.isPlayer && Math.random() > 0.45) {{
-                    p.score += Math.floor(Math.random() * 300 * Math.max(1, p.level));
-                    if(p.score > 2000 * p.level) p.level++;
-                }}
-            }});
-            updateLeaderboardUI();
-        }}
-
-        function updateLeaderboardUI() {{
-            const playerEntry = leaderboardData.find(p => p.isPlayer);
-            if(playerEntry) {{
-                playerEntry.score = score;
-                playerEntry.level = level;
-            }}
-
-            leaderboardData.sort((a,b) => b.score - a.score);
-            const container = document.getElementById('leaderboard');
-            if(!container) return;
-            container.innerHTML = '';
-
-            let playerRank = 25;
-            leaderboardData.forEach((p, idx) => {{
-                if(p.isPlayer) playerRank = idx + 1;
-                
-                const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${{idx+1}}`;
-                const div = document.createElement('div');
-                div.className = `flex justify-between items-center text-sm p-1.5 ${{p.isPlayer ? 'bg-[#1f78c1] text-white border-2 border-white' : 'pixel-inner-slot text-gray-300'}}`;
-                div.innerHTML = `
-                    <span class="truncate max-w-[130px] font-['KiwiSodaFont']">${{medal}} ${{p.name}} ${{p.isPlayer ? '(TÚ)' : ''}}</span>
-                    <span class="text-yellow-400 font-['KiwiSodaFont'] font-bold">${{p.score.toLocaleString()}}</span>
-                `;
-                container.appendChild(div);
-            }});
-
-            const rankEl = document.getElementById('player-rank');
-            if (rankEl) rankEl.textContent = `#${{playerRank}}`;
-        }}
-
-        function toggleTutorial() {{
-            SFX.hover();
-            document.getElementById('tutorial-panel').classList.toggle('-translate-x-full');
-        }}
-
-        function toggleLeaderboard() {{
-            SFX.hover();
-            document.getElementById('leaderboard-panel').classList.toggle('translate-x-full');
-        }}
-
-        function startGameFromIntro() {{
-            const input = document.getElementById('username-input').value.trim();
-            if(input) playerName = input.toUpperCase();
-            
-            document.getElementById('intro-modal').classList.add('hidden');
-            SFX.select();
-            playBGM();
-            
-            initLeaderboard();
-            startRound();
-            updateUI();
-        }}
-
+        // Estado del Juego
+        let gameState = 'INTRO'; // 'INTRO', 'PLAY', 'LEVEL_COMPLETE'
         let level = 1;
         let round = 1;
         let score = 0;
         let hand = [];
         let nextCardId = 0;
-        let levelStats = {{ optimalPossible: 0, actualCorrect: 0, errors: 0 }};
-        let comodines = {{ reveal: 1, reroll: 1, skip: 0 }};
+        let playerName = 'ESTUDIANTE';
+        let comodines = { reveal: 1, reroll: 1, skip: 0 };
+        let levelStats = { optimalPossible: 0, actualCorrect: 0, errors: 0 };
+        let alertMessage = null;
+        let alertTimer = 0;
+        let shakeFrames = 0;
+        let starsWon = 0;
+        let bonusWon = 0;
 
-        const handContainer = document.getElementById('hand-container');
-        const btnPlay = document.getElementById('btn-play');
+        // Ranking simulado
+        const names = ["K_Navas", "Allan_P", "Monica_V", "Bryan_Q", "Maria_F", "Daniela_CR", "Josue_B", "Fabiola_P", "Diego_R", "Valeria_G", "M_Estela", "R_Arias", "Luis_M", "Isaac_H", "Carlos_S", "Andrey_U", "Nath_V", "Seidy_T", "Cesar_O", "Lucia_Z", "Erick_L", "S_Díaz", "Karla_C"];
+        let leaderboard = names.map(n => ({ name: n, score: Math.floor(Math.random() * 900 + 500) }));
+        leaderboard.push({ name: playerName, score: 0, isPlayer: true });
 
-        function gcd(a, b) {{ a=Math.abs(a); b=Math.abs(b); return b === 0 ? a : gcd(b, a % b); }}
+        setInterval(() => {
+            leaderboard.forEach(p => {
+                if(!p.isPlayer && Math.random() > 0.45) {
+                    p.score += Math.floor(Math.random() * 250);
+                }
+            });
+            const me = leaderboard.find(p => p.isPlayer);
+            if(me) { me.score = score; me.name = playerName; }
+            leaderboard.sort((a,b) => b.score - a.score);
+        }, 3500);
 
-        // Formato matemático elegante usando superíndices Unicode reales (x², y³)
-        function toSuperscript(num) {{
-            const map = {{ '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵' }};
+        function gcd(a, b) { a=Math.abs(a); b=Math.abs(b); return b === 0 ? a : gcd(b, a % b); }
+
+        function toSuperscript(num) {
+            const map = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵' };
             return num.toString().split('').map(d => map[d] || d).join('');
-        }}
+        }
 
-        function formatTerm(c, x, y) {{
+        function formatTerm(c, x, y) {
             let s = "";
             if (c === -1 && (x > 0 || y > 0)) s += "-";
             else if (c !== 1 || (x === 0 && y === 0)) s += c;
-            
             if (x === 1) s += "x"; 
-            else if (x > 1) s += `x${{toSuperscript(x)}}`;
-            
+            else if (x > 1) s += `x${toSuperscript(x)}`;
             if (y === 1) s += "y"; 
-            else if (y > 1) s += `y${{toSuperscript(y)}}`;
+            else if (y > 1) s += `y${toSuperscript(y)}`;
             return s;
-        }}
+        }
 
-        function getCardCornerRank(card) {{
-            if (card.x > 0 && card.y === 0) return card.x === 1 ? "X" : `X${{toSuperscript(card.x)}}`;
-            if (card.y > 0 && card.x === 0) return card.y === 1 ? "Y" : `Y${{toSuperscript(card.y)}}`;
-            if (card.x > 0 && card.y > 0) return "XY";
-            return Math.abs(card.c).toString();
-        }}
+        function getCornerRank(c, x, y) {
+            if (x > 0 && y === 0) return x === 1 ? "X" : `X${toSuperscript(x)}`;
+            if (y > 0 && x === 0) return y === 1 ? "Y" : `Y${toSuperscript(y)}`;
+            if (x > 0 && y > 0) return "XY";
+            return Math.abs(c).toString();
+        }
 
-        function updateBackgroundForRound() {{
-            const bg = document.getElementById('bg-media');
-            if(!bg) return;
-            bg.classList.remove('filter-ronda-1', 'filter-ronda-2', 'filter-ronda-3');
-            if(round === 1) bg.classList.add('filter-ronda-1');
-            else if (round === 2) bg.classList.add('filter-ronda-2');
-            else if (round === 3) bg.classList.add('filter-ronda-3');
-        }}
-
-        function generateTerm(forceFactor = null) {{
+        function generateTerm(forceFactor = null) {
             let maxCoef = Math.max(4, level * 3);
             let maxX = Math.min(3, Math.ceil(level / 2));
             let maxY = level > 2 ? Math.min(2, Math.floor(level / 3)) : 0;
@@ -751,301 +284,578 @@ GAME_HTML = f"""
             let x = Math.floor(Math.random() * (maxX + 1));
             let y = Math.floor(Math.random() * (maxY + 1));
 
-            if (forceFactor) {{
+            if (forceFactor) {
                 c = forceFactor.c * (Math.floor(Math.random()*3)+1);
                 x = forceFactor.x + Math.floor(Math.random()*2);
                 y = forceFactor.y + (forceFactor.y>0 ? Math.floor(Math.random()*2) : 0);
-            }}
-
+            }
             if (c === 0) c = 1;
+
             const suits = ['♠', '♥', '♦', '♣'];
             const suit = suits[Math.floor(Math.random() * suits.length)];
             const suitColor = (suit === '♥' || suit === '♦') ? '#d63739' : '#1f78c1';
 
-            return {{ c, x, y, str: formatTerm(c,x,y), suit, suitColor, selected: false, id: nextCardId++ }};
-        }}
+            return {
+                id: nextCardId++,
+                c, x, y,
+                str: formatTerm(c, x, y),
+                corner: getCornerRank(c, x, y),
+                suit, suitColor,
+                selected: false,
+                swayOffset: Math.random() * 10
+            };
+        }
 
-        function getCommonFactorInfo(cards) {{
+        function getCommonFactorInfo(cards) {
             if(cards.length < 2) return null;
             let commC = cards[0].c, commX = cards[0].x, commY = cards[0].y;
-            for(let i=1; i<cards.length; i++){{
+            for(let i=1; i<cards.length; i++){
                 commC = gcd(commC, cards[i].c);
                 commX = Math.min(commX, cards[i].x);
                 commY = Math.min(commY, cards[i].y);
-            }}
-            return {{ c: commC, x: commX, y: commY, isValid: commC > 1 || commX > 0 || commY > 0 }};
-        }}
+            }
+            return { c: commC, x: commX, y: commY, isValid: commC > 1 || commX > 0 || commY > 0 };
+        }
 
-        function calculateOptimalPlays(currentHand) {{
+        function calculateOptimalPlays(currentHand) {
             let maxSubset = 0;
             const n = currentHand.length;
-            for(let i=1; i < (1<<n); i++) {{
+            for(let i=1; i < (1<<n); i++) {
                 let subset = [];
-                for(let j=0; j<n; j++) {{
-                    if((i & (1<<j))) subset.push(hand[j]);
-                }}
-                if(subset.length > 1) {{
+                for(let j=0; j<n; j++) if((i & (1<<j))) subset.push(currentHand[j]);
+                if(subset.length > 1) {
                     const info = getCommonFactorInfo(subset);
                     if(info.isValid && subset.length > maxSubset) maxSubset = subset.length;
-                }}
-            }}
+                }
+            }
             return maxSubset;
-        }}
+        }
 
-        function startRound() {{
-            document.getElementById('level-display').textContent = level;
-            document.getElementById('round-display').textContent = round;
-            
+        function updateBackgroundForRound() {
+            const bg = document.getElementById('bg-media');
+            if(!bg) return;
+            bg.classList.remove('filter-ronda-1', 'filter-ronda-2', 'filter-ronda-3');
+            if(round === 1) bg.classList.add('filter-ronda-1');
+            else if (round === 2) bg.classList.add('filter-ronda-2');
+            else if (round === 3) bg.classList.add('filter-ronda-3');
+        }
+
+        function startRound() {
             updateBackgroundForRound();
-            
             let needed = 6 - hand.length;
             let plantedC = (Math.random() > 0.5) ? (Math.floor(Math.random()*3)+2) : 1;
             let plantedX = (plantedC === 1 || Math.random() > 0.4) ? 1 : 0;
-            let forceFactor = {{ c: plantedC, x: plantedX, y: 0 }};
-            
+            let forceFactor = { c: plantedC, x: plantedX, y: 0 };
             if(Math.random() < 0.1) forceFactor = null;
             let forceCount = forceFactor ? (Math.floor(Math.random() * 4) + 3) : 0;
 
-            for(let i=0; i<needed; i++) {{
-                if(forceCount > 0) {{
+            for(let i=0; i<needed; i++) {
+                if(forceCount > 0) {
                     hand.push(generateTerm(forceFactor));
                     forceCount--;
-                }} else {{
+                } else {
                     hand.push(generateTerm(null));
-                }}
-            }}
-
+                }
+            }
             levelStats.optimalPossible += calculateOptimalPlays(hand);
-            renderCards();
-            updateUI();
-        }}
+        }
 
-        function renderCards() {{
-            handContainer.innerHTML = '';
-            hand.forEach((card, idx) => {{
-                const el = document.createElement('div');
-                const swayClass = idx % 3 === 0 ? 'idle-sway-1' : (idx % 3 === 1 ? 'idle-sway-2' : 'idle-sway-3');
-                el.className = `balatro-card-box ${{card.selected ? 'selected' : swayClass}}`;
-                
-                const cornerRank = getCardCornerRank(card);
-                
-                // Determinar clase de tamaño según longitud real del texto
-                let lenClass = "len-1";
-                const l = card.str.length;
-                if(l === 2) lenClass = "len-2";
-                else if(l === 3) lenClass = "len-3";
-                else if(l === 4) lenClass = "len-4";
-                else if(l === 5) lenClass = "len-5";
-                else if(l > 5) lenClass = "len-many";
-
-                el.innerHTML = `
-                    <div class="card-inner-frame"></div>
-                    <div class="card-corner-tl" style="color: ${{card.suitColor}};">
-                        <span class="corner-rank-text">${{cornerRank}}</span>
-                        <span class="corner-suit-text">${{card.suit}}</span>
-                    </div>
-                    <div class="card-math-container">
-                        <span class="term-math-text ${{lenClass}}">${{card.str}}</span>
-                    </div>
-                    <div class="card-corner-br" style="color: ${{card.suitColor}};">
-                        <span class="corner-rank-text">${{cornerRank}}</span>
-                        <span class="corner-suit-text">${{card.suit}}</span>
-                    </div>
-                `;
-                
-                el.onclick = () => {{
-                    card.selected = !card.selected;
-                    if(card.selected) SFX.select(); else SFX.hover();
-                    renderCards();
-                    updatePlayButton();
-                }};
-                handContainer.appendChild(el);
-            }});
-        }}
-
-        function updatePlayButton() {{
-            const selected = hand.filter(c => c.selected);
-            if(selected.length > 0) {{
-                btnPlay.disabled = false;
-                btnPlay.className = "pixel-btn-play px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest cursor-pointer";
-            }} else {{
-                btnPlay.disabled = true;
-                btnPlay.className = "pixel-frame pixel-btn-disabled px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest";
-            }}
-        }}
-
-        function playHand() {{
+        function playHand() {
             const selected = hand.filter(c => c.selected);
             const info = getCommonFactorInfo(selected);
 
-            if(selected.length < 2 || !info || !info.isValid) {{
+            if(selected.length < 2 || !info || !info.isValid) {
                 SFX.error();
-                handContainer.classList.add('animate-shake');
+                shakeFrames = 15;
                 levelStats.errors++;
-                setTimeout(() => handContainer.classList.remove('animate-shake'), 220);
                 return;
-            }}
+            }
 
-            btnPlay.disabled = true;
             levelStats.actualCorrect += selected.length;
-            
             let basePts = 50 * level;
             let mult = selected.length * selected.length;
             let handScore = basePts * mult;
             score += handScore;
             
-            document.getElementById('total-score').textContent = score.toLocaleString();
-            
             SFX.flamePop();
-            const flameScore = document.getElementById('flame-score');
-            const flameContainer = document.getElementById('flame-score-container');
-            flameScore.textContent = "+" + handScore.toLocaleString();
-            flameContainer.classList.remove('hidden');
-            flameContainer.style.opacity = '1';
-            spawnParticles(window.innerWidth/2, window.innerHeight/2, 40);
+            alertMessage = `+${handScore} PUNTOS`;
+            alertTimer = 60;
 
             hand = hand.filter(c => !c.selected);
+            round++;
+            if(round > 3) {
+                endLevel();
+            } else {
+                startRound();
+            }
+        }
 
-            setTimeout(() => {{
-                flameContainer.style.opacity = '0';
-                setTimeout(() => flameContainer.classList.add('hidden'), 150);
-                
-                round++;
-                if(round > 3) {{
-                    endLevel();
-                }} else {{
-                    startRound();
-                }}
-            }}, 1100);
-        }}
-
-        function endLevel() {{
+        function endLevel() {
             let precision = levelStats.optimalPossible > 0 ? (levelStats.actualCorrect / levelStats.optimalPossible) : 1;
             precision -= (levelStats.errors * 0.1);
             if(precision < 0) precision = 0;
 
-            let stars = 0;
-            if(precision >= 0.88) stars = 3;
-            else if (precision >= 0.5) stars = 2;
-            else if (precision >= 0.2) stars = 1;
+            starsWon = 0;
+            if(precision >= 0.88) starsWon = 3;
+            else if (precision >= 0.5) starsWon = 2;
+            else if (precision >= 0.2) starsWon = 1;
 
-            const modal = document.getElementById('level-modal');
-            const starContainer = document.getElementById('modal-stars');
-            const desc = document.getElementById('modal-desc');
+            bonusWon = starsWon * 1000 * level;
+            score += bonusWon;
+            if(starsWon === 3) comodines.skip++;
 
-            starContainer.innerHTML = '';
-            for(let i=0; i<3; i++) {{
-                setTimeout(() => SFX.star(), i * 250);
-                if(i < stars) {{
-                    starContainer.innerHTML += `<span class="text-yellow-400 text-3xl sm:text-4xl">★</span>`;
-                }} else {{
-                    starContainer.innerHTML += `<span class="text-gray-600 text-3xl sm:text-4xl">★</span>`;
-                }}
-            }}
+            SFX.star();
+            gameState = 'LEVEL_COMPLETE';
+        }
 
-            let bonusScore = stars * 1000 * level;
-            score += bonusScore;
-            document.getElementById('total-score').textContent = score.toLocaleString();
-
-            if(stars === 3) {{
-                comodines.skip++;
-                updateUI();
-                desc.innerHTML = `¡PRECISIÓN PERFECTA!<br>Ganaste un comodín SALTAR NIVEL.<br>Bono: +${{bonusScore.toLocaleString()}} pts`;
-            }} else {{
-                desc.innerHTML = `Precisión: ${{Math.round(precision*100)}}%. Hubo términos sin factorizar.<br>Bono: +${{bonusScore.toLocaleString()}} pts`;
-            }}
-
-            modal.classList.remove('hidden');
-        }}
-
-        function nextLevel() {{
-            document.getElementById('level-modal').classList.add('hidden');
+        function nextLevel() {
             level++;
             round = 1;
             hand = [];
-            levelStats = {{ optimalPossible: 0, actualCorrect: 0, errors: 0 }};
+            levelStats = { optimalPossible: 0, actualCorrect: 0, errors: 0 };
+            gameState = 'PLAY';
             startRound();
-        }}
+        }
 
-        function updateUI() {{
-            document.getElementById('qty-reveal').textContent = comodines.reveal;
-            document.getElementById('qty-reroll').textContent = comodines.reroll;
-            document.getElementById('qty-skip').textContent = comodines.skip;
-            
-            document.getElementById('btn-joker-reveal').style.opacity = comodines.reveal > 0 ? '1' : '0.4';
-            document.getElementById('btn-joker-reroll').style.opacity = comodines.reroll > 0 ? '1' : '0.4';
-            document.getElementById('btn-joker-skip').style.opacity = comodines.skip > 0 ? '1' : '0.4';
-        }}
+        // ========================================================
+        // DIBUJADO DE PIXEL ART PROCEDURAL EN CANVAS (ESTILO REFERENCIAS)
+        // ========================================================
 
-        function showAlert(msg) {{
-            const el = document.getElementById('alert-modal');
-            document.getElementById('alert-text').innerHTML = msg;
-            el.classList.remove('hidden');
-            el.style.opacity = '1';
-            setTimeout(() => {{
-                el.style.opacity = '0';
-                setTimeout(() => el.classList.add('hidden'), 200);
-            }}, 2600);
-        }}
+        // Marco con muescas a 45° en las 4 esquinas (tarot/rol táctico)
+        function drawChamferedBox(ctx, x, y, w, h, cut, fillCol, borderCol, shadowCol) {
+            // Sombra sólida
+            if (shadowCol) {
+                ctx.fillStyle = shadowCol;
+                ctx.beginPath();
+                ctx.moveTo(x + cut + 2, y + 4);
+                ctx.lineTo(x + w - cut + 2, y + 4);
+                ctx.lineTo(x + w + 2, y + cut + 4);
+                ctx.lineTo(x + w + 2, y + h - cut + 4);
+                ctx.lineTo(x + w - cut + 2, y + h + 4);
+                ctx.lineTo(x + cut + 2, y + h + 4);
+                ctx.lineTo(x + 2, y + h - cut + 4);
+                ctx.lineTo(x + 2, y + cut + 4);
+                ctx.closePath();
+                ctx.fill();
+            }
 
-        function useJoker(type) {{
-            if(comodines[type] <= 0) return;
-            
-            if(type === 'reveal') {{
+            // Borde exterior
+            ctx.fillStyle = borderCol;
+            ctx.beginPath();
+            ctx.moveTo(x + cut, y);
+            ctx.lineTo(x + w - cut, y);
+            ctx.lineTo(x + w, y + cut);
+            ctx.lineTo(x + w, y + h - cut);
+            ctx.lineTo(x + w - cut, y + h);
+            ctx.lineTo(x + cut, y + h);
+            ctx.lineTo(x, y + h - cut);
+            ctx.lineTo(x, y + cut);
+            ctx.closePath();
+            ctx.fill();
+
+            // Relleno interior
+            ctx.fillStyle = fillCol;
+            ctx.beginPath();
+            ctx.moveTo(x + cut + 1, y + 2);
+            ctx.lineTo(x + w - cut - 1, y + 2);
+            ctx.lineTo(x + w - 2, y + cut + 1);
+            ctx.lineTo(x + w - 2, y + h - cut - 1);
+            ctx.lineTo(x + w - cut - 1, y + h - 2);
+            ctx.lineTo(x + cut + 1, y + h - 2);
+            ctx.lineTo(x + 2, y + h - cut - 1);
+            ctx.lineTo(x + 2, y + cut + 1);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // DIBUJO DE CARTA (Inspiración Tarot / Runa 16-Bit)
+        function drawPixelCard(card, x, y, w, h, isHovered) {
+            let shakeX = 0;
+            if (shakeFrames > 0) {
+                shakeX = (shakeFrames % 2 === 0 ? 3 : -3);
+            }
+
+            const elevY = card.selected ? -16 : (isHovered ? -8 : 0);
+            const drawX = Math.floor(x + shakeX);
+            const drawY = Math.floor(y + elevY);
+
+            // 1. Chasis exterior oscuro de madera/hierro
+            const borderCol = card.selected ? '#f1b31c' : '#14171d';
+            const shadowCol = card.selected ? '#754d03' : '#080a0e';
+            const bodyCol = '#252932';
+            drawChamferedBox(ctx, drawX, drawY, w, h, 6, bodyCol, borderCol, shadowCol);
+
+            // 2. Ventana interior de pergamino rúnico
+            const pad = 5;
+            const innerX = drawX + pad;
+            const innerY = drawY + pad;
+            const innerW = w - (pad * 2);
+            const innerH = h - (pad * 2);
+
+            ctx.fillStyle = card.selected ? '#fff9e6' : '#e8dfcb';
+            ctx.fillRect(innerX, innerY, innerW, innerH);
+
+            // Dithering/trama rústica en la base del pergamino
+            ctx.fillStyle = card.selected ? '#faedbe' : '#d2c6aa';
+            for (let py = innerY + innerH - 14; py < innerY + innerH; py += 2) {
+                for (let px = innerX; px < innerX + innerW; px += 2) {
+                    ctx.fillRect(px, py, 1, 1);
+                }
+            }
+
+            // Filete decorativo de tarot interior (marco doble pixelado)
+            ctx.strokeStyle = card.selected ? '#d49b14' : '#8f7d63';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(innerX + 3, innerY + 3, innerW - 6, innerH - 6);
+
+            // Muescas ornamentales en las 4 esquinas del ribete
+            ctx.fillStyle = card.selected ? '#d49b14' : '#8f7d63';
+            ctx.fillRect(innerX + 3, innerY + 3, 3, 3);
+            ctx.fillRect(innerX + innerW - 6, innerY + 3, 3, 3);
+            ctx.fillRect(innerX + 3, innerY + innerH - 6, 3, 3);
+            ctx.fillRect(innerX + innerW - 6, innerY + innerH - 6, 3, 3);
+
+            // 3. Gemas de esquina con Rango y Palo
+            ctx.font = '6px var(--font-head)';
+            ctx.fillStyle = card.suitColor;
+            ctx.textAlign = 'left';
+            ctx.fillText(card.corner, innerX + 5, innerY + 12);
+            ctx.font = '8px monospace';
+            ctx.fillText(card.suit, innerX + 5, innerY + 22);
+
+            // Invertido inferior derecho
+            ctx.save();
+            ctx.translate(innerX + innerW - 5, innerY + innerH - 5);
+            ctx.rotate(Math.PI);
+            ctx.font = '6px var(--font-head)';
+            ctx.fillStyle = card.suitColor;
+            ctx.textAlign = 'left';
+            ctx.fillText(card.corner, 0, 7);
+            ctx.font = '8px monospace';
+            ctx.fillText(card.suit, 0, 17);
+            ctx.restore();
+
+            // 4. Placa de Estandarte / Pergamino Central para el Monomio
+            const bannerW = innerW - 12;
+            const bannerH = 34;
+            const bannerX = innerX + 6;
+            const bannerY = innerY + (innerH / 2) - (bannerH / 2);
+
+            // Placa
+            ctx.fillStyle = '#1b1d24';
+            ctx.fillRect(bannerX, bannerY, bannerW, bannerH);
+            ctx.strokeStyle = card.selected ? '#f1b31c' : '#454e60';
+            ctx.strokeRect(bannerX, bannerY, bannerW, bannerH);
+
+            // Remaches de la placa
+            ctx.fillStyle = card.selected ? '#ffd966' : '#8898b5';
+            ctx.fillRect(bannerX + 1, bannerY + 1, 2, 2);
+            ctx.fillRect(bannerX + bannerW - 3, bannerY + 1, 2, 2);
+            ctx.fillRect(bannerX + 1, bannerY + bannerH - 3, 2, 2);
+            ctx.fillRect(bannerX + bannerW - 3, bannerY + bannerH - 3, 2, 2);
+
+            // 5. Monomio algebraico (autoescalado)
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            let fSize = 16;
+            if (card.str.length === 3) fSize = 14;
+            else if (card.str.length === 4) fSize = 12;
+            else if (card.str.length >= 5) fSize = 10;
+
+            ctx.font = `bold ${fSize}px var(--font-math)`;
+            ctx.fillStyle = '#000000';
+            ctx.fillText(card.str, bannerX + (bannerW / 2) + 1, bannerY + (bannerH / 2) + 1);
+            ctx.fillStyle = card.selected ? '#ffd447' : '#ffffff';
+            ctx.fillText(card.str, bannerX + (bannerW / 2), bannerY + (bannerH / 2));
+        }
+
+        // Layout de cartas en pantalla
+        const CARD_W = 54;
+        const CARD_H = 88;
+        const GAP = 12;
+        const TOTAL_HAND_W = (6 * CARD_W) + (5 * GAP);
+        const START_X = Math.floor((V_WIDTH - TOTAL_HAND_W) / 2);
+        const START_Y = 102;
+
+        let mouseX = -1;
+        let mouseY = -1;
+
+        // Bucle de Renderizado
+        let ticks = 0;
+        function render() {
+            ticks++;
+            if (shakeFrames > 0) shakeFrames--;
+
+            ctx.clearRect(0, 0, V_WIDTH, V_HEIGHT);
+
+            if (gameState === 'INTRO') {
+                // Modal de bienvenida en baja resolución
+                const modalW = 220;
+                const modalH = 150;
+                const modalX = Math.floor((V_WIDTH - modalW) / 2);
+                const modalY = Math.floor((V_HEIGHT - modalH) / 2);
+
+                drawChamferedBox(ctx, modalX, modalY, modalW, modalH, 6, '#1e222a', '#0d0f14', '#05070a');
+
+                // Título
+                drawChamferedBox(ctx, modalX + 12, modalY + 12, modalW - 24, 32, 4, '#d63739', '#540f10', null);
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = '10px var(--font-head)';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText('FACTOR COMUN', modalX + (modalW / 2), modalY + 24);
+                ctx.font = '6px var(--font-head)';
+                ctx.fillStyle = '#ffc5c6';
+                ctx.fillText('MATEMATICA BASICA UCR', modalX + (modalW / 2), modalY + 36);
+
+                // Campo de usuario
+                ctx.fillStyle = '#101217';
+                ctx.fillRect(modalX + 24, modalY + 60, modalW - 48, 24);
+                ctx.strokeStyle = '#434c5f';
+                ctx.strokeRect(modalX + 24, modalY + 60, modalW - 48, 24);
+
+                ctx.font = '12px var(--font-ui)';
+                ctx.fillStyle = '#ffd447';
+                ctx.fillText(playerName, modalX + (modalW / 2), modalY + 73);
+
+                // Botón Iniciar
+                drawChamferedBox(ctx, modalX + 24, modalY + 98, modalW - 48, 28, 4, '#e85d26', '#4a1703', '#280c01');
+                ctx.font = '8px var(--font-head)';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText('ENTRAR AL JUEGO', modalX + (modalW / 2), modalY + 112);
+
+            } else if (gameState === 'PLAY' || gameState === 'LEVEL_COMPLETE') {
+                // 1. Barra Superior (Nivel, Comodines, Puntaje)
+                // Nivel / Ronda
+                drawChamferedBox(ctx, 10, 8, 80, 30, 4, '#1b1f28', '#0b0c10', '#06070a');
+                ctx.textAlign = 'center';
+                ctx.font = '6px var(--font-head)';
+                ctx.fillStyle = '#9ca8ba';
+                ctx.fillText(`NIVEL ${level}`, 50, 18);
+                ctx.fillStyle = '#f1b31c';
+                ctx.fillText(`RONDA ${round}/3`, 50, 29);
+
+                // 3 Comodines de Reliquia
+                const jokers = [
+                    { id: 'reveal', icon: '👁️', qty: comodines.reveal, col: '#1f78c1' },
+                    { id: 'reroll', icon: '🎲', qty: comodines.reroll, col: '#8b38c2' },
+                    { id: 'skip', icon: '⏭️', qty: comodines.skip, col: '#c48914' }
+                ];
+                jokers.forEach((j, idx) => {
+                    const jx = 186 + (idx * 38);
+                    drawChamferedBox(ctx, jx, 8, 30, 30, 4, '#1b1f28', '#0b0c10', '#06070a');
+                    ctx.font = '12px monospace';
+                    ctx.fillText(j.icon, jx + 15, 23);
+                    // Badge contador
+                    ctx.fillStyle = j.qty > 0 ? '#d63739' : '#444';
+                    ctx.fillRect(jx + 20, 5, 12, 10);
+                    ctx.font = '6px var(--font-head)';
+                    ctx.fillStyle = '#fff';
+                    ctx.fillText(j.qty.toString(), jx + 26, 12);
+                });
+
+                // Puntos y Rango
+                drawChamferedBox(ctx, 390, 8, 80, 30, 4, '#1b1f28', '#0b0c10', '#06070a');
+                ctx.textAlign = 'center';
+                ctx.font = '6px var(--font-head)';
+                ctx.fillStyle = '#9ca8ba';
+                ctx.fillText('PUNTOS', 430, 17);
+                ctx.font = '12px var(--font-ui)';
+                ctx.fillStyle = '#ffd447';
+                ctx.fillText(score.toLocaleString(), 430, 29);
+
+                // 2. Renderizado de las 6 Cartas de Tarot
+                hand.forEach((card, idx) => {
+                    const cx = START_X + (idx * (CARD_W + GAP));
+                    const cy = START_Y;
+                    const isHover = (mouseX >= cx && mouseX <= cx + CARD_W && mouseY >= cy - 20 && mouseY <= cy + CARD_H);
+                    drawPixelCard(card, cx, cy, CARD_W, CARD_H, isHover);
+                });
+
+                // 3. Botón "JUGAR MANO" (Placa de piedra labrada estilo BLITZ)
+                const selCount = hand.filter(c => c.selected).length;
+                const canPlay = selCount >= 2;
+                const btnW = 140;
+                const btnH = 26;
+                const btnX = Math.floor((V_WIDTH - btnW) / 2);
+                const btnY = 222;
+
+                const btnFill = canPlay ? '#e85d26' : '#232731';
+                const btnBorder = canPlay ? '#4a1703' : '#0e1015';
+                const btnShadow = canPlay ? '#280c01' : '#07080a';
+                drawChamferedBox(ctx, btnX, btnY, btnW, btnH, 4, btnFill, btnBorder, btnShadow);
+
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = '8px var(--font-head)';
+                ctx.fillStyle = canPlay ? '#ffffff' : '#626b7c';
+                ctx.fillText('JUGAR MANO', btnX + (btnW / 2), btnY + (btnH / 2) + 1);
+
+                // 4. Mensajes de Puntos o Alertas Flotantes
+                if (alertTimer > 0) {
+                    alertTimer--;
+                    ctx.font = '10px var(--font-head)';
+                    ctx.fillStyle = '#ffd447';
+                    ctx.fillText(alertMessage, Math.floor(V_WIDTH / 2), 85);
+                }
+
+                // 5. Modal de Fin de Nivel
+                if (gameState === 'LEVEL_COMPLETE') {
+                    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                    ctx.fillRect(0, 0, V_WIDTH, V_HEIGHT);
+
+                    const mw = 220;
+                    const mh = 135;
+                    const mx = Math.floor((V_WIDTH - mw) / 2);
+                    const my = Math.floor((V_HEIGHT - mh) / 2);
+
+                    drawChamferedBox(ctx, mx, my, mw, mh, 6, '#1e222a', '#0d0f14', '#05070a');
+                    drawChamferedBox(ctx, mx + 12, my + 10, mw - 24, 26, 4, '#d63739', '#540f10', null);
+
+                    ctx.font = '9px var(--font-head)';
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText('NIVEL COMPLETADO', mx + (mw / 2), my + 23);
+
+                    // Estrellas pixeladas
+                    let starStr = '';
+                    for (let s = 0; s < 3; s++) {
+                        starStr += (s < starsWon ? '★ ' : '☆ ');
+                    }
+                    ctx.font = '18px monospace';
+                    ctx.fillStyle = '#f1b31c';
+                    ctx.fillText(starStr.trim(), mx + (mw / 2), my + 54);
+
+                    ctx.font = '11px var(--font-ui)';
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText(`+${bonusWon.toLocaleString()} BONO DE PRECISION`, mx + (mw / 2), my + 76);
+
+                    // Botón Siguiente
+                    drawChamferedBox(ctx, mx + 30, my + 92, mw - 60, 26, 4, '#e85d26', '#4a1703', '#280c01');
+                    ctx.font = '8px var(--font-head)';
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText('SIGUIENTE NIVEL', mx + (mw / 2), my + 106);
+                }
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // Mapeo preciso de clics al lienzo virtual 480x270
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = V_WIDTH / rect.width;
+            const scaleY = V_HEIGHT / rect.height;
+            mouseX = Math.floor((e.clientX - rect.left) * scaleX);
+            mouseY = Math.floor((e.clientY - rect.top) * scaleY);
+        });
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = V_WIDTH / rect.width;
+            const scaleY = V_HEIGHT / rect.height;
+            const cx = Math.floor((e.clientX - rect.left) * scaleX);
+            const cy = Math.floor((e.clientY - rect.top) * scaleY);
+
+            if (gameState === 'INTRO') {
+                const modalW = 220;
+                const modalH = 150;
+                const modalX = Math.floor((V_WIDTH - modalW) / 2);
+                const modalY = Math.floor((V_HEIGHT - modalH) / 2);
+
+                // Botón Iniciar
+                if (cx >= modalX + 24 && cx <= modalX + modalW - 24 && cy >= modalY + 98 && cy <= modalY + 126) {
+                    SFX.select();
+                    gameState = 'PLAY';
+                    startRound();
+                }
+            } else if (gameState === 'LEVEL_COMPLETE') {
+                const mw = 220;
+                const mh = 135;
+                const mx = Math.floor((V_WIDTH - mw) / 2);
+                const my = Math.floor((V_HEIGHT - mh) / 2);
+                if (cx >= mx + 30 && cx <= mx + mw - 30 && cy >= my + 92 && cy <= my + 118) {
+                    SFX.select();
+                    nextLevel();
+                }
+            } else if (gameState === 'PLAY') {
+                // Clic en cartas
+                hand.forEach((card, idx) => {
+                    const cardX = START_X + (idx * (CARD_W + GAP));
+                    const cardY = START_Y;
+                    if (cx >= cardX && cx <= cardX + CARD_W && cy >= cardY - 20 && cy <= cardY + CARD_H) {
+                        card.selected = !card.selected;
+                        if (card.selected) SFX.select();
+                        else SFX.hover();
+                    }
+                });
+
+                // Clic en JUGAR MANO
+                const btnW = 140;
+                const btnH = 26;
+                const btnX = Math.floor((V_WIDTH - btnW) / 2);
+                const btnY = 222;
+                if (cx >= btnX && cx <= btnX + btnW && cy >= btnY && cy <= btnY + btnH) {
+                    playHand();
+                }
+
+                // Clic en Comodines
+                const jokers = ['reveal', 'reroll', 'skip'];
+                jokers.forEach((type, idx) => {
+                    const jx = 186 + (idx * 38);
+                    if (cx >= jx && cx <= jx + 30 && cy >= 8 && cy <= 38) {
+                        useJoker(type);
+                    }
+                });
+            }
+        });
+
+        function useJoker(type) {
+            if (comodines[type] <= 0) return;
+            if (type === 'reveal') {
                 comodines.reveal--;
                 let bestFactor = null;
                 let maxSubset = 1;
                 const n = hand.length;
-                for(let i=1; i < (1<<n); i++) {{
+                for (let i = 1; i < (1 << n); i++) {
                     let subset = [];
-                    for(let j=0; j<n; j++) if((i & (1<<j))) subset.push(hand[j]);
-                    if(subset.length > 1) {{
+                    for (let j = 0; j < n; j++) if ((i & (1 << j))) subset.push(hand[j]);
+                    if (subset.length > 1) {
                         const info = getCommonFactorInfo(subset);
-                        if(info.isValid && subset.length > maxSubset) {{
+                        if (info.isValid && subset.length > maxSubset) {
                             maxSubset = subset.length;
                             bestFactor = formatTerm(info.c, info.x, info.y);
-                        }}
-                    }}
-                }}
+                        }
+                    }
+                }
                 SFX.select();
-                if(maxSubset > 1) {{
-                    showAlert(`🔎 FACTOR DOMINANTE: <b>${{bestFactor}}</b> (en ${{maxSubset}} cartas)`);
-                }} else {{
-                    showAlert(`🔎 No hay factores comunes detectables en esta mano.`);
-                }}
-            }} 
-            else if (type === 'reroll') {{
+                if (maxSubset > 1) {
+                    alertMessage = `FACTOR: ${bestFactor} (${maxSubset} CARTAS)`;
+                } else {
+                    alertMessage = `SIN FACTOR COMUN`;
+                }
+                alertTimer = 90;
+            } else if (type === 'reroll') {
                 comodines.reroll--;
                 SFX.discard();
                 hand = [];
                 startRound();
-                showAlert("🎲 ¡MANO CAMBIADA!");
-            }}
-            else if (type === 'skip') {{
+                alertMessage = '¡MANO CAMBIADA!';
+                alertTimer = 60;
+            } else if (type === 'skip') {
                 comodines.skip--;
                 SFX.winRound();
-                levelStats.actualCorrect = 1; 
+                levelStats.actualCorrect = 1;
                 levelStats.optimalPossible = 1;
                 levelStats.errors = 0;
                 endLevel();
-            }}
-            updateUI();
-        }}
+            }
+        }
+
+        // Iniciar bucle
+        requestAnimationFrame(render);
     </script>
 </body>
 </html>
 """
 
 components.html(GAME_HTML, height=720, scrolling=False)
-
-with st.sidebar:
-    st.header("🧮 Balatro: Factor Común")
-    st.caption("UCR • IF0003 Matemática Básica")
-    st.markdown(
-        """
-        **Mecánica Didáctica:**
-        - **3 Rondas por Nivel:** Escala la complejidad de los monomios.
-        - **Factor Común Monomio:** Hallar MCD numérico y variable de menor exponente.
-        - **Reutilización:** Cartas no jugadas pasan a la siguiente ronda.
-        """
-    )
