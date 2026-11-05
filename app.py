@@ -50,7 +50,7 @@ def get_base64_file(filename):
             return base64.b64encode(f.read()).decode("utf-8")
     return None
 
-# Video o fondo animado
+# Video de fondo
 video_b64 = None
 video_mime = "video/mp4"
 for v_name in ["background_gif.gif", "background.gif", "fakcpg.mp4", "faKcpg.mp4", "fakcpg.gif", "faKcpg.gif"]:
@@ -399,7 +399,8 @@ GAME_HTML = f"""<!DOCTYPE html>
         </button>
     </div>
     <div class="fixed bottom-3 right-3 z-40">
-        <button onclick="showRankNotice()" class="hud-box-3d text-[10px] sm:text-xs text-gray-400 px-3.5 py-2 font-pixel-hud relative cursor-pointer" title="Módulo en desarrollo">
+        <!-- RANKING EN DESARROLLO -->
+        <button onclick="showRankNotice()" class="hud-box-3d text-[10px] sm:text-xs text-gray-400 px-3.5 py-2 font-pixel-hud relative cursor-pointer" title="Módulo en desarrollo por compañero">
             [ RANK ]
             <span class="absolute -top-2 -right-2 bg-yellow-500 text-black text-[8px] font-bold px-1 border border-black">DEV</span>
         </button>
@@ -438,16 +439,19 @@ GAME_HTML = f"""<!DOCTYPE html>
 
         <!-- COMODINES 3D (CERO EMOJIS, TEXTO ARCADE CLARO) -->
         <div class="flex justify-center gap-2 sm:gap-3">
+            <!-- REVELAR FACTOR -->
             <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="btn-joker-3d px-3 py-2 text-center relative active:translate-y-1">
                 <span class="block text-[10px] sm:text-xs text-cyan-300 font-pixel-hud font-bold">REVELAR</span>
                 <span id="qty-reveal" class="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-sm border border-black font-pixel-hud">1</span>
             </button>
 
+            <!-- CAMBIAR MANO -->
             <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano" class="btn-joker-3d px-3 py-2 text-center relative active:translate-y-1">
                 <span class="block text-[10px] sm:text-xs text-purple-300 font-pixel-hud font-bold">REVOLVER</span>
                 <span id="qty-reroll" class="absolute -top-2 -right-2 bg-purple-600 text-white text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-sm border border-black font-pixel-hud">1</span>
             </button>
 
+            <!-- SALTAR 1 RONDA -->
             <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar 1 ronda" class="btn-joker-3d px-3 py-2 text-center relative active:translate-y-1 opacity-40">
                 <span class="block text-[10px] sm:text-xs text-yellow-300 font-pixel-hud font-bold">SALTAR</span>
                 <span id="qty-skip" class="absolute -top-2 -right-2 bg-yellow-500 text-black text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-sm border border-black font-pixel-hud">0</span>
