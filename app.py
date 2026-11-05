@@ -28,7 +28,7 @@ st.markdown(
         max-width: 100% !important;
     }
     .stApp {
-        background-color: #050608;
+        background-color: #030406;
     }
     iframe {
         border: none !important;
@@ -50,7 +50,7 @@ def get_base64_file(filename):
             return base64.b64encode(f.read()).decode("utf-8")
     return None
 
-# Fondos GIF por estado
+# Fondos GIF por estado (Se mantienen exactamente iguales)
 bg_game_b64 = get_base64_file("background_gif.gif") or get_base64_file("background.gif")
 bg_reg_b64 = get_base64_file("background_gif_2.gif") or get_base64_file("background_2.gif") or bg_game_b64
 
@@ -61,7 +61,7 @@ audio_bg_b64 = get_base64_file("background.mp3")
 ricky_b64 = get_base64_file("ricky.png")
 ariana_b64 = get_base64_file("ariana.png")
 
-# Tipografías locales (para las cartas y fallbacks)
+# Tipografías locales
 balatro_font_b64 = get_base64_file("balatro.otf")
 dos_font_b64 = (
     get_base64_file("Perfect DOS VGA 437 Win.ttf") or 
@@ -106,7 +106,7 @@ else:
     }
     """
 
-bg_game_tag = f'<img id="bg-game" class="screen-bg hidden" src="data:image/gif;base64,{bg_game_b64}" alt="Game BG" />' if bg_game_b64 else '<div id="bg-game" class="screen-bg hidden procedural-game"></div>'
+bg_game_tag = f'<img id="bg-game" class="screen-bg hidden" src="data:image/gif;base64,{bg_game_game_b64}" alt="Game BG" />' if (bg_game_b64 and 'bg_game_game_b64' in locals()) else (f'<img id="bg-game" class="screen-bg hidden" src="data:image/gif;base64,{bg_game_b64}" alt="Game BG" />' if bg_game_b64 else '<div id="bg-game" class="screen-bg hidden procedural-game"></div>')
 bg_reg_tag = f'<img id="bg-reg" class="screen-bg" src="data:image/gif;base64,{bg_reg_b64}" alt="Register BG" />' if bg_reg_b64 else '<div id="bg-reg" class="screen-bg procedural-reg"></div>'
 
 audio_html_tag = ""
@@ -125,7 +125,7 @@ GAME_HTML = f"""<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Balatro: Factor Común 8-Bit</title>
+    <title>Balatro: Factor Común 8-Bit Dark Fantasy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
     
@@ -137,14 +137,22 @@ GAME_HTML = f"""<!DOCTYPE html>
             --font-sub: 'VT323', monospace;
             --font-dos: 'DosVgaFont', 'Press Start 2P', monospace;
             --font-balatro: 'BalatroFont', 'Press Start 2P', sans-serif;
-            --color-dark-iron: #0b0d12;
-            --color-border-dark: #191e28;
-            --color-blood-red: #c92a35;
+            
+            /* Paleta Dark Fantasy Pixel Art */
+            --df-obsidian: #090a0f;
+            --df-iron-slate: #151922;
+            --df-iron-light: #2b3242;
+            --df-crypt-stone: #1e1b18;
+            --df-gold-relic: #d4a340;
+            --df-gold-dark: #6e4e13;
+            --df-blood-crimson: #8b1820;
+            --df-blood-light: #c52834;
+            --df-parchment: #c8b99c;
+            --df-mystic-cyan: #228b96;
+            --df-mystic-purple: #6a3489;
+            
+            /* Configuración cartas original */
             --color-card-cream: #ece5d3;
-            --color-gold: #f4b41b;
-            --color-orange: #d95829;
-            --hud-bg: #1c222d;
-            --hud-border: #050608;
         }}
 
         * {{
@@ -159,7 +167,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
 
         body {{
-            color: #f0e6d2;
+            color: var(--df-parchment);
             font-family: var(--font-hud);
             overflow: hidden;
             user-select: none;
@@ -169,7 +177,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            background-color: #050608;
+            background-color: #040508;
         }}
 
         .font-hud {{ font-family: var(--font-hud); }}
@@ -177,7 +185,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         .font-dos {{ font-family: var(--font-dos); }}
         .font-balatro {{ font-family: var(--font-balatro); }}
 
-        /* FONDOS */
+        /* FONDOS (INTACTOS) */
         .screen-bg {{
             position: fixed;
             top: 50%; left: 50%;
@@ -190,132 +198,176 @@ GAME_HTML = f"""<!DOCTYPE html>
             image-rendering: pixelated;
         }}
 
-        .procedural-reg {{
-            background: radial-gradient(circle at center, #181d26, #07090d);
-        }}
-        .procedural-game {{
-            background: radial-gradient(circle at center, #1b3d2b, #050c07);
-        }}
+        .procedural-reg {{ background: radial-gradient(circle at center, #181d26, #07090d); }}
+        .procedural-game {{ background: radial-gradient(circle at center, #1b3d2b, #050c07); }}
 
+        /* TRAMA DARK FANTASY + SCANLINES CRT */
         .bg-dark-overlay {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at center, rgba(10, 14, 18, 0.45) 0%, rgba(3, 4, 6, 0.92) 100%);
+            background: 
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%),
+                radial-gradient(circle at center, rgba(14, 11, 22, 0.4) 0%, rgba(2, 3, 5, 0.94) 100%);
+            background-size: 100% 4px, 100% 100%;
             pointer-events: none;
             z-index: -2;
         }}
 
         /* ========================================================
-           PANELES 3D Y BOTONES (BISEL PIXELADO DURO)
+           GUI PIXEL ART DARK FANTASY: HIERRO, RUNAS Y PIEDRA
            ======================================================== */
-        .pixel-box-8bit {{
-            background: var(--hud-bg);
-            border: 4px solid var(--hud-border);
+        
+        /* Cajas de piedra de calabozo con remaches pixelados */
+        .pixel-df-panel {{
+            background: #11141c;
+            border: 4px solid #000000;
             box-shadow: 
-                inset 3px 3px 0 #3b4455,
-                inset -3px -3px 0 #101216,
-                0 8px 0 #050608;
+                inset 4px 4px 0 #2e3648,
+                inset -4px -4px 0 #08090d,
+                0 0 0 2px #3c2a1e,
+                0 8px 0 #000000;
             position: relative;
         }}
 
-        .pixel-inner-slot {{
-            background: #0f1217;
-            border: 3px solid #050608;
-            box-shadow: inset 2px 2px 0 #000000;
+        /* Remaches en las 4 esquinas de los paneles principales */
+        .pixel-df-panel::before {{
+            content: "◆";
+            position: absolute;
+            top: 3px; left: 4px;
+            font-size: 7px;
+            color: #d4a340;
+            text-shadow: 1px 1px 0 #000;
+            pointer-events: none;
+        }}
+        .pixel-df-panel::after {{
+            content: "◆";
+            position: absolute;
+            top: 3px; right: 4px;
+            font-size: 7px;
+            color: #d4a340;
+            text-shadow: 1px 1px 0 #000;
+            pointer-events: none;
         }}
 
-        .pixel-badge-red {{
-            background: var(--color-blood-red);
-            border: 4px solid #050608;
+        /* Hueco o altar tallado hundido */
+        .pixel-df-slot {{
+            background: #080a0e;
+            border: 3px solid #000000;
             box-shadow: 
-                inset 3px 3px 0 #ec4b56,
-                inset -3px -3px 0 #6e0d14,
-                0 6px 0 #050608;
-            color: #ffffff;
+                inset 3px 3px 0 #000000,
+                inset -2px -2px 0 #1b202c;
+        }}
+
+        /* Estandarte de Sangre / Pergamino Profano */
+        .pixel-df-banner-crimson {{
+            background: linear-gradient(180deg, #9b1c24 0%, #590d12 100%);
+            border: 4px solid #000000;
+            box-shadow: 
+                inset 3px 3px 0 #d9434d,
+                inset -3px -3px 0 #280306,
+                0 0 0 1px #ff8a7a,
+                0 6px 0 #000000;
+            color: #f7e8ce;
             text-shadow: 2px 2px 0 #000000;
         }}
 
-        .pixel-btn-action {{
+        /* Botón de Acción Principal: Fuego y Cobre Demoníaco */
+        .pixel-df-btn-flame {{
             font-family: var(--font-hud);
-            background: var(--color-orange);
-            border: 4px solid #050608;
+            background: linear-gradient(180deg, #d35422 0%, #872506 100%);
+            border: 4px solid #000000;
             box-shadow: 
-                inset 3px 3px 0 #f07b51,
-                inset -3px -3px 0 #7b2408,
-                0 8px 0 #050608;
+                inset 3px 3px 0 #ff8a50,
+                inset -3px -3px 0 #3a0e02,
+                0 0 0 2px #d4a340,
+                0 8px 0 #000000;
             color: #ffffff;
             text-shadow: 2px 2px 0 #000000;
             transition: transform 0.05s steps(2), box-shadow 0.05s steps(2);
+            cursor: pointer;
         }}
-        .pixel-btn-action:hover {{ background: #e86333; }}
-        .pixel-btn-action:active {{
+        .pixel-df-btn-flame:hover {{
+            background: linear-gradient(180deg, #ea632b 0%, #9e2e0a 100%);
+        }}
+        .pixel-df-btn-flame:active {{
             transform: translateY(6px);
             box-shadow: 
-                inset 3px 3px 0 #7b2408,
-                inset -3px -3px 0 #f07b51,
-                0 2px 0 #050608;
+                inset 3px 3px 0 #3a0e02,
+                inset -3px -3px 0 #ff8a50,
+                0 0 0 2px #d4a340,
+                0 2px 0 #000000;
         }}
 
-        .pixel-btn-blue {{
+        /* Botón Secundario Rúnico / Pergamino */
+        .pixel-df-btn-arcane {{
             font-family: var(--font-hud);
-            background: #12588c;
-            border: 3px solid #050608;
+            background: #172233;
+            border: 3px solid #000000;
             box-shadow: 
-                inset 2px 2px 0 #2a83c7,
-                inset -2px -2px 0 #092c47,
-                0 5px 0 #050608;
-            color: #ffffff;
+                inset 2px 2px 0 #384e6f,
+                inset -2px -2px 0 #090e17,
+                0 5px 0 #000000;
+            color: #a7c8e8;
             text-shadow: 2px 2px 0 #000000;
-            transition: transform 0.05s steps(2), box-shadow 0.05s steps(2);
+            transition: transform 0.05s steps(2);
         }}
-        .pixel-btn-blue:active {{
+        .pixel-df-btn-arcane:hover {{ background: #1e2c42; }}
+        .pixel-df-btn-arcane:active {{
             transform: translateY(3px);
-            box-shadow: 
-                inset 2px 2px 0 #092c47,
-                inset -2px -2px 0 #2a83c7,
-                0 2px 0 #050608;
+            box-shadow: inset 2px 2px 0 #090e17, inset -2px -2px 0 #384e6f, 0 2px 0 #000;
         }}
 
-        .btn-joker-3d {{
+        /* Tótems / Comodines Alquímicos */
+        .btn-relic-slot {{
             font-family: var(--font-hud);
-            background: #1e2531;
-            border: 3px solid #050608;
-            border-radius: 4px;
-            box-shadow: inset 2px 2px 0 #3b465c, inset -2px -2px 0 #0d1016, 0 5px 0 #050608;
-            transition: transform 0.05s steps(2), box-shadow 0.05s steps(2);
+            background: #131720;
+            border: 3px solid #000000;
+            box-shadow: 
+                inset 2px 2px 0 #2d3648,
+                inset -2px -2px 0 #06070a,
+                0 5px 0 #000000;
+            transition: transform 0.05s steps(2);
         }}
-        .btn-joker-3d:active {{
+        .btn-relic-slot:hover {{
+            border-color: #3f3123;
+        }}
+        .btn-relic-slot:active {{
             transform: translateY(3px);
-            box-shadow: inset 2px 2px 0 #0d1016, inset -2px -2px 0 #3b465c, 0 2px 0 #050608;
+            box-shadow: inset 2px 2px 0 #06070a, inset -2px -2px 0 #2d3648, 0 2px 0 #000000;
         }}
 
-        /* SELECCIÓN DE PERSONAJE POKÉMON 8-BIT */
-        .char-slot-8bit {{
-            background: #0f1217;
-            border: 3px solid #050608;
-            box-shadow: inset 2px 2px 0 #283142;
+        /* Nicho de Héroes / Personajes */
+        .char-slot-crypt {{
+            background: #090c12;
+            border: 3px solid #000000;
+            box-shadow: 
+                inset 3px 3px 0 #1b212e,
+                inset -2px -2px 0 #040507,
+                0 4px 0 #000;
             cursor: pointer;
             transition: transform 0.08s steps(2);
         }}
-        .char-slot-8bit:hover {{
-            border-color: var(--color-gold);
-            background: #1a202c;
+        .char-slot-crypt:hover {{
+            border-color: #d4a340;
+            background: #141a24;
             transform: translateY(-2px);
         }}
-        .char-slot-8bit.selected {{
-            border-color: var(--color-gold);
-            background: #232b3b;
-            box-shadow: inset 0 0 0 2px var(--color-gold), 0 4px 0 #000000;
+        .char-slot-crypt.selected {{
+            border-color: #d4a340;
+            background: #1b2230;
+            box-shadow: 
+                inset 0 0 0 2px #d4a340,
+                0 0 10px rgba(212, 163, 64, 0.4),
+                0 5px 0 #000000;
         }}
 
         /* ========================================================
-           CARTAS 8-BIT / DARK FANTASY (EXACTAMENTE INTACTAS)
+           CARTAS 8-BIT / BALATRO (CONSERVADAS 100% INTACTAS)
            ======================================================== */
         .card-8bit {{
             width: 104px;
             height: 150px;
             background: var(--color-card-cream);
             border: 4px solid #000000;
-            /* Bisel duro de pixel art */
             box-shadow: 
                 inset 3px 3px 0 #ffffff,
                 inset -3px -3px 0 #b3a992,
@@ -328,7 +380,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             transition: transform 0.08s steps(3);
         }}
 
-        /* Marco interior rústico punteado */
         .card-frame-inner {{
             position: absolute;
             top: 4px; left: 4px; right: 4px; bottom: 4px;
@@ -336,7 +387,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             pointer-events: none;
         }}
 
-        /* Esquinas */
         .pip-corner-tl {{
             position: absolute;
             top: 6px; left: 7px;
@@ -365,7 +415,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             margin-top: 1px;
         }}
 
-        /* Contenedor central del monomio */
         .term-box-center {{
             max-width: 86%;
             display: flex;
@@ -393,7 +442,6 @@ GAME_HTML = f"""<!DOCTYPE html>
         .len-5 {{ font-size: 1.1rem; }}
         .len-many {{ font-size: 0.9rem; }}
 
-        /* Oscilación escalonada en píxeles */
         @keyframes sway-8bit-1 {{
             0%, 100% {{ transform: translateY(0px); }}
             50% {{ transform: translateY(-7px); }}
@@ -446,13 +494,13 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
 
         @keyframes flame-flicker-8bit {{
-            0%, 100% {{ transform: scale(1); }}
-            50% {{ transform: scale(1.12); }}
+            0%, 100% {{ transform: scale(1); filter: brightness(1); }}
+            50% {{ transform: scale(1.12); filter: brightness(1.25); }}
         }}
         .score-flame {{
-            color: #ffffff;
+            color: #ffe6a3;
             font-family: var(--font-hud);
-            text-shadow: 3px 3px 0 #9e1a22, -3px -3px 0 #d85a1a;
+            text-shadow: 3px 3px 0 #9e1a22, -3px -3px 0 #d85a1a, 0 0 12px rgba(216, 90, 26, 0.8);
             animation: flame-flicker-8bit 0.25s steps(2) infinite;
         }}
 
@@ -473,128 +521,126 @@ GAME_HTML = f"""<!DOCTYPE html>
     <div class="bg-dark-overlay"></div>
     <canvas id="fx-canvas"></canvas>
 
-    <!-- INTRO MODAL CON RELIEVE 3D -->
-    <div id="intro-modal" class="fixed inset-0 bg-black/85 z-[1000] flex items-center justify-center p-4">
-        <div class="pixel-box-8bit max-w-sm w-full p-6 text-center">
+    <!-- INTRO / REGISTRO: ESTILO NÉBULA OSCURA -->
+    <div id="intro-modal" class="fixed inset-0 bg-black/90 z-[1000] flex items-center justify-center p-4">
+        <div class="pixel-df-panel max-w-sm w-full p-6 text-center">
             
-            <div class="pixel-badge-red py-3 px-4 mb-5 transform -rotate-1 inline-block w-full">
-                <h1 class="text-base sm:text-lg tracking-wider font-hud">FACTOR COMÚN</h1>
-                <p class="text-[9px] opacity-90 tracking-widest mt-1 font-hud">DARK FANTASY • UCR</p>
+            <div class="pixel-df-banner-crimson py-3 px-4 mb-5 transform -rotate-1 inline-block w-full">
+                <h1 class="text-xs sm:text-base tracking-wider font-hud text-[#fff1d0]">FACTOR COMÚN</h1>
+                <p class="text-[8px] opacity-90 tracking-widest mt-1 font-hud text-amber-200">DARK FANTASY • IF0003</p>
             </div>
             
             <!-- PASO 1: NOMBRE -->
             <div id="step-name">
-                <div class="pixel-inner-slot p-4 mb-5 text-left">
-                    <label class="block text-[10px] text-gray-400 mb-2 tracking-wider font-hud">APODO DEL JUGADOR:</label>
-                    <input type="text" id="username-input" class="w-full bg-[#050608] border-2 border-[#222834] text-[#f4b41b] p-3 text-center uppercase tracking-wider text-sm font-bold font-hud outline-none focus:border-[#f4b41b]" placeholder="TU NOMBRE" maxlength="12">
+                <div class="pixel-df-slot p-4 mb-5 text-left">
+                    <label class="block text-[9px] text-[#a99878] mb-2 tracking-wider font-hud">NOMBRE DEL INVOCADOR:</label>
+                    <input type="text" id="username-input" class="w-full bg-[#050608] border-2 border-[#333d4f] text-[#d4a340] p-3 text-center uppercase tracking-wider text-sm font-bold font-hud outline-none focus:border-[#d4a340]" placeholder="TU NOMBRE" maxlength="12">
                 </div>
-                <button onclick="goToGenderStep()" class="pixel-btn-action w-full py-4 text-xs font-bold tracking-wider">
+                <button onclick="goToGenderStep()" class="pixel-df-btn-flame w-full py-4 text-xs font-bold tracking-wider">
                     CONTINUAR ➔
                 </button>
             </div>
 
-            <!-- PASO 2: ELECCIÓN DE PERSONAJE POKÉMON -->
+            <!-- PASO 2: ELECCIÓN DE PERSONAJE -->
             <div id="step-gender" class="hidden">
-                <div class="pixel-inner-slot p-3 mb-4 text-center">
-                    <p class="text-[10px] text-yellow-300 font-hud mb-3">ELIGE TU PERSONAJE</p>
+                <div class="pixel-df-slot p-3 mb-4 text-center">
+                    <p class="text-[9px] text-[#d4a340] font-hud mb-3 tracking-wider">SELECCIONA TU HERMANO DE SANGRE</p>
                     <div class="grid grid-cols-2 gap-3">
-                        <div id="opt-boy" onclick="selectGender('boy')" class="char-slot-8bit p-2 flex flex-col items-center">
+                        <div id="opt-boy" onclick="selectGender('boy')" class="char-slot-crypt p-2 flex flex-col items-center">
                             <div class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center mb-1">
                                 {ricky_img_tag}
                             </div>
-                            <span class="text-[10px] font-bold text-gray-300 font-hud">[CHICO]</span>
+                            <span class="text-[9px] font-bold text-gray-300 font-hud">[CHICO]</span>
                         </div>
-                        <div id="opt-girl" onclick="selectGender('girl')" class="char-slot-8bit p-2 flex flex-col items-center">
+                        <div id="opt-girl" onclick="selectGender('girl')" class="char-slot-crypt p-2 flex flex-col items-center">
                             <div class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center mb-1">
                                 {ariana_img_tag}
                             </div>
-                            <span class="text-[10px] font-bold text-gray-300 font-hud">[CHICA]</span>
+                            <span class="text-[9px] font-bold text-gray-300 font-hud">[CHICA]</span>
                         </div>
                     </div>
                 </div>
-                <button id="btn-start-game" onclick="startGame()" disabled class="pixel-box-8bit bg-[#12161f] text-gray-500 w-full py-3.5 text-xs font-bold tracking-wider opacity-40 cursor-not-allowed">
-                    ENTRAR AL JUEGO ➔
+                <button id="btn-start-game" onclick="startGame()" disabled class="pixel-df-panel bg-[#0d0f14] text-stone-600 w-full py-3.5 text-xs font-bold tracking-wider opacity-40 cursor-not-allowed">
+                    INICIAR PACTO ➔
                 </button>
             </div>
 
         </div>
     </div>
 
-    <!-- BOTONES INFERIORES -->
+    <!-- BOTONES AUXILIARES INFERIORES -->
     <div class="fixed bottom-3 left-3 z-40">
-        <button onclick="toggleTutorial()" class="pixel-btn-blue text-[10px] sm:text-xs px-3.5 py-2 font-hud">
-            [ ? ] TUTO
+        <button onclick="toggleTutorial()" class="pixel-df-btn-arcane text-[9px] sm:text-xs px-3.5 py-2 font-hud flex items-center gap-1.5">
+            <span class="text-amber-400">❖</span> TOMO [?]
         </button>
     </div>
     <div class="fixed bottom-3 right-3 z-40">
-        <!-- RANK DESHABILITADO -->
-        <button onclick="showRankNotice()" class="pixel-box-8bit bg-[#131720] border-[#000] text-gray-400 text-[10px] sm:text-xs px-3.5 py-2 cursor-pointer relative font-hud" title="Módulo en desarrollo por compañero">
-            [ RANK ]
-            <span class="absolute -top-2 -right-2 bg-yellow-500 text-black text-[8px] font-bold px-1 border border-black">DEV</span>
+        <button onclick="showRankNotice()" class="pixel-df-panel bg-[#0d1017] text-stone-400 text-[9px] sm:text-xs px-3.5 py-2 cursor-pointer relative font-hud">
+            [ CRÓNICA ]
+            <span class="absolute -top-2 -right-2 bg-[#8b1820] text-amber-200 text-[7px] font-bold px-1.5 py-0.5 border border-black">DEV</span>
         </button>
     </div>
 
-    <!-- PANEL TUTORIAL -->
-    <div id="tutorial-panel" class="fixed left-0 top-0 h-full w-72 sm:w-80 bg-[#12161f] border-r-4 border-black p-4 flex flex-col z-50 transform -translate-x-full transition-transform duration-200 shadow-2xl">
-        <div class="flex justify-between items-center mb-4 border-b-2 border-white/10 pb-2">
-            <div class="pixel-badge-red px-3 py-1 text-[10px] font-hud">GUÍA FACTORIZACIÓN</div>
-            <button onclick="toggleTutorial()" class="text-white text-xs font-bold font-hud">[ X ]</button>
+    <!-- TOMO DE GUÍA / TUTORIAL -->
+    <div id="tutorial-panel" class="fixed left-0 top-0 h-full w-72 sm:w-80 bg-[#0d1017] border-r-4 border-black p-4 flex flex-col z-50 transform -translate-x-full transition-transform duration-200 shadow-2xl">
+        <div class="flex justify-between items-center mb-4 border-b-2 border-[#2b3548] pb-2">
+            <div class="pixel-df-banner-crimson px-3 py-1 text-[9px] font-hud">TOMO: FACTOR COMÚN</div>
+            <button onclick="toggleTutorial()" class="text-amber-200 text-xs font-bold font-hud hover:text-white">[ ✕ ]</button>
         </div>
-        <div class="pixel-inner-slot p-3 text-2xl text-center mb-3 font-sub">
+        <div class="pixel-df-slot p-3 text-2xl text-center mb-3 font-sub text-stone-200">
             4x² + 6x
         </div>
-        <p class="text-[9px] text-[#f4b41b] text-center mb-3 font-hud">MCD = 2, VARIABLE COMÚN = x</p>
-        <div class="pixel-inner-slot p-3 text-2xl text-center mb-4 font-sub text-emerald-400">
+        <p class="text-[8px] text-[#d4a340] text-center mb-3 font-hud">MCD = 2 | VARIABLE = x</p>
+        <div class="pixel-df-slot p-3 text-2xl text-center mb-4 font-sub text-emerald-400 border border-emerald-900/60">
             2x · (2x + 3)
         </div>
-        <div class="text-base text-gray-300 leading-snug font-sub space-y-2">
-            <p>1. Selecciona 2 o más cartas que compartan divisores o variables comunes.</p>
-            <p>2. Presiona "JUGAR MANO" para acumular fichas multiplicadas.</p>
-            <p>3. Las cartas no seleccionadas permanecen en tu mano para la siguiente ronda.</p>
+        <div class="text-base text-stone-300 leading-snug font-sub space-y-2">
+            <p>1. Selecciona 2 o más runas que compartan divisores o variables comunes.</p>
+            <p>2. Presiona "JUGAR MANO" para canalizar fichas multiplicadas.</p>
+            <p>3. Las runas descartadas permanecerán en tu mano para la siguiente ronda.</p>
         </div>
     </div>
 
     <!-- ========================================================
-         HEADER SUPERIOR CON DISTRIBUCIÓN VERTICAL Y RELIEVE 3D
+         HEADER SUPERIOR: RELICARIOS DARK FANTASY
          ======================================================== -->
     <header class="flex justify-between items-center z-10 max-w-5xl mx-auto w-full gap-2 px-1">
-        <!-- CAJA DE NIVEL Y RONDA (DISTRIBUCIÓN VERTICAL) -->
-        <div class="pixel-box-8bit px-3.5 py-2.5 text-center min-w-[110px] sm:min-w-[140px] flex flex-col items-center justify-center">
-            <span class="text-[9px] sm:text-[10px] text-gray-400 font-hud tracking-wider">NIVEL</span>
-            <span id="level-display" class="text-base sm:text-2xl text-[#f4b41b] font-hud font-bold leading-tight my-0.5">1</span>
-            <span class="text-[8px] sm:text-[9px] text-gray-300 font-hud tracking-wider">RONDA <span id="round-display" class="text-white">1</span>/3</span>
+        <!-- CAJA DE NIVEL Y RONDA -->
+        <div class="pixel-df-panel px-3.5 py-2.5 text-center min-w-[110px] sm:min-w-[140px] flex flex-col items-center justify-center">
+            <span class="text-[8px] sm:text-[9px] text-[#8e98aa] font-hud tracking-wider">CALABOZO</span>
+            <span id="level-display" class="text-base sm:text-2xl text-[#d4a340] font-hud font-bold leading-tight my-0.5">1</span>
+            <span class="text-[7px] sm:text-[8px] text-[#c8b99c] font-hud tracking-wider">RONDA <span id="round-display" class="text-white">1</span>/3</span>
         </div>
 
-        <!-- 3 COMODINES EN TEXTO ARCADE CLARO (CERO EMOJIS) -->
+        <!-- RELICARIOS / COMODINES EN TEXTO ARCADE -->
         <div class="flex justify-center gap-2 sm:gap-3">
-            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="btn-joker-3d px-3 py-2 text-center relative active:translate-y-1">
-                <span class="block text-[10px] sm:text-xs text-cyan-300 font-hud font-bold">REVELAR</span>
-                <span id="qty-reveal" class="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-sm border border-black font-hud">1</span>
+            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="btn-relic-slot px-3 py-2 text-center relative">
+                <span class="block text-[9px] sm:text-[11px] text-cyan-400 font-hud font-bold">REVELAR</span>
+                <span id="qty-reveal" class="absolute -top-2 -right-2 bg-[#8b1820] text-amber-200 text-[8px] px-1.5 py-0.5 border border-black font-hud">1</span>
             </button>
-            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano" class="btn-joker-3d px-3 py-2 text-center relative active:translate-y-1">
-                <span class="block text-[10px] sm:text-xs text-purple-300 font-hud font-bold">REVOLVER</span>
-                <span id="qty-reroll" class="absolute -top-2 -right-2 bg-purple-600 text-white text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-sm border border-black font-hud">1</span>
+            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Revolver mano" class="btn-relic-slot px-3 py-2 text-center relative">
+                <span class="block text-[9px] sm:text-[11px] text-purple-400 font-hud font-bold">REVOLVER</span>
+                <span id="qty-reroll" class="absolute -top-2 -right-2 bg-[#51237a] text-purple-200 text-[8px] px-1.5 py-0.5 border border-black font-hud">1</span>
             </button>
-            <!-- Comodín que salta 1 RONDA -->
-            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar 1 Ronda" class="btn-joker-3d px-3 py-2 text-center relative active:translate-y-1 opacity-40">
-                <span class="block text-[10px] sm:text-xs text-yellow-300 font-hud font-bold">SALTAR</span>
-                <span id="qty-skip" class="absolute -top-2 -right-2 bg-yellow-500 text-black text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-sm border border-black font-hud">0</span>
+            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar 1 Ronda" class="btn-relic-slot px-3 py-2 text-center relative opacity-40">
+                <span class="block text-[9px] sm:text-[11px] text-amber-400 font-hud font-bold">SALTAR</span>
+                <span id="qty-skip" class="absolute -top-2 -right-2 bg-[#8b6508] text-amber-100 text-[8px] px-1.5 py-0.5 border border-black font-hud">0</span>
             </button>
         </div>
 
-        <!-- CAJA DE PUNTOS Y JUGADOR (DISTRIBUCIÓN VERTICAL) -->
-        <div class="pixel-box-8bit px-3.5 py-2.5 text-center min-w-[110px] sm:min-w-[140px] flex flex-col items-center justify-center">
-            <span class="text-[9px] sm:text-[10px] text-gray-400 font-hud tracking-wider">PUNTOS</span>
-            <span id="total-score" class="text-base sm:text-xl text-[#f4b41b] font-hud font-bold leading-tight my-0.5">0</span>
-            <span id="user-display-tag" class="text-[8px] sm:text-[9px] text-gray-300 font-hud truncate max-w-[95px]">JUGADOR</span>
+        <!-- CAJA DE PUNTOS Y JUGADOR -->
+        <div class="pixel-df-panel px-3.5 py-2.5 text-center min-w-[110px] sm:min-w-[140px] flex flex-col items-center justify-center">
+            <span class="text-[8px] sm:text-[9px] text-[#8e98aa] font-hud tracking-wider">ALMAS</span>
+            <span id="total-score" class="text-base sm:text-xl text-[#d4a340] font-hud font-bold leading-tight my-0.5">0</span>
+            <span id="user-display-tag" class="text-[7px] sm:text-[8px] text-[#c8b99c] font-hud truncate max-w-[95px]">JUGADOR</span>
         </div>
     </header>
 
-    <!-- ÁREA DE CARTAS 8-BIT -->
+    <!-- ÁREA DE CARTAS -->
     <main class="flex-grow flex flex-col items-center justify-center relative w-full max-w-5xl mx-auto my-auto">
         <div id="hand-container" class="flex justify-center items-center flex-wrap gap-2.5 sm:gap-4 w-full px-2 mb-6"></div>
 
-        <button id="btn-play" onclick="playHand()" disabled class="pixel-box-8bit bg-[#10131a] text-gray-500 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed font-hud">
+        <button id="btn-play" onclick="playHand()" disabled class="pixel-df-panel bg-[#0d0f14] text-stone-600 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed font-hud">
             JUGAR MANO
         </button>
 
@@ -603,34 +649,28 @@ GAME_HTML = f"""<!DOCTYPE html>
         </div>
     </main>
 
-    <!-- ========================================================
-         MODAL FIN DE NIVEL REDISEÑADO (BANNER ROJO Y RELIEVE 3D)
-         ======================================================== -->
-    <div id="level-modal" class="fixed inset-0 bg-black/85 z-50 hidden flex items-center justify-center p-4">
-        <div class="pixel-box-8bit max-w-sm w-full p-6 text-center">
+    <!-- MODAL FIN DE NIVEL -->
+    <div id="level-modal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4">
+        <div class="pixel-df-panel max-w-sm w-full p-6 text-center">
             
-            <!-- BANNER SUPERIOR ROJO EN RELIEVE -->
-            <div class="pixel-badge-red py-3 px-4 mb-4 transform -rotate-1 inline-block w-full">
-                <h2 class="text-xs sm:text-sm font-bold tracking-wider font-hud">NIVEL COMPLETADO</h2>
+            <div class="pixel-df-banner-crimson py-3 px-4 mb-4 transform -rotate-1 inline-block w-full">
+                <h2 class="text-xs sm:text-sm font-bold tracking-wider font-hud">SELLO COMPLETADO</h2>
             </div>
             
-            <!-- ESTRELLAS TIPOGRÁFICAS LIMPIAS -->
             <div class="flex justify-center gap-3 my-3 text-2xl sm:text-3xl font-hud" id="modal-stars"></div>
             
-            <!-- CAJA INTERIOR HUNDIDA EN #0f1217 -->
-            <div class="pixel-inner-slot p-3 text-gray-200 mb-5 font-sub text-lg sm:text-xl leading-snug text-left">
+            <div class="pixel-df-slot p-3 text-stone-200 mb-5 font-sub text-lg sm:text-xl leading-snug text-left">
                 <div id="modal-desc" class="space-y-1"></div>
             </div>
             
-            <!-- BOTÓN NARANJA TÁCTIL 3D CON RELIEVE DE 8PX -->
-            <button onclick="nextLevel()" class="pixel-btn-action w-full py-4 text-xs sm:text-sm tracking-wider font-hud">
-                SIGUIENTE NIVEL ➔
+            <button onclick="nextLevel()" class="pixel-df-btn-flame w-full py-4 text-xs sm:text-sm tracking-wider font-hud">
+                DESCENDER MÁS ➔
             </button>
         </div>
     </div>
 
-    <!-- ALERTA BALATRO -->
-    <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 pixel-badge-red text-[10px] sm:text-xs px-5 py-3 z-50 hidden text-center max-w-[90vw] font-hud">
+    <!-- ALERTA BALATRO OSCURA -->
+    <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 pixel-df-banner-crimson text-[9px] sm:text-xs px-5 py-3 z-50 hidden text-center max-w-[90vw] font-hud">
         <span id="alert-text"></span>
     </div>
 
@@ -649,13 +689,13 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
 
         const SFX = {{
-            hover: () => playTone(320, 'sine', 0.08, 0.04),
-            select: () => playTone(540, 'triangle', 0.12, 0.12),
-            error: () => {{ playTone(130, 'sawtooth', 0.25, 0.25); setTimeout(() => playTone(90, 'sawtooth', 0.35, 0.25), 100); }},
-            flamePop: () => {{ playTone(180, 'sawtooth', 0.28, 0.25); setTimeout(() => playTone(240, 'sawtooth', 0.2, 0.2), 60); }},
-            star: () => {{ playTone(880, 'sine', 0.3, 0.2); setTimeout(()=>playTone(1100, 'sine', 0.4, 0.2), 100); }},
-            discard: () => playTone(240, 'triangle', 0.15, 0.15),
-            winRound: () => {{ playTone(440, 'sine', 0.3, 0.2); setTimeout(() => playTone(659, 'sine', 0.3, 0.2), 150); }}
+            hover: () => playTone(300, 'sine', 0.08, 0.04),
+            select: () => playTone(510, 'triangle', 0.12, 0.12),
+            error: () => {{ playTone(120, 'sawtooth', 0.25, 0.25); setTimeout(() => playTone(80, 'sawtooth', 0.35, 0.25), 100); }},
+            flamePop: () => {{ playTone(170, 'sawtooth', 0.28, 0.25); setTimeout(() => playTone(230, 'sawtooth', 0.2, 0.2), 60); }},
+            star: () => {{ playTone(860, 'sine', 0.3, 0.2); setTimeout(()=>playTone(1080, 'sine', 0.4, 0.2), 100); }},
+            discard: () => playTone(220, 'triangle', 0.15, 0.15),
+            winRound: () => {{ playTone(420, 'sine', 0.3, 0.2); setTimeout(() => playTone(630, 'sine', 0.3, 0.2), 150); }}
         }};
 
         function startBackgroundMusic() {{
@@ -671,7 +711,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         window.onresize = () => {{ cvs.width = window.innerWidth; cvs.height = window.innerHeight; }};
         window.onresize();
         function spawnParticles(x, y, count=35) {{
-            const colors = ['#f4b41b', '#1b629b', '#c92a35', '#ffffff'];
+            const colors = ['#d4a340', '#8b1820', '#d35422', '#ffffff'];
             for(let i=0; i<count; i++) {{
                 const angle = Math.random() * Math.PI * 2; const speed = 2 + Math.random() * 7;
                 particles.push({{ x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed-2, color: colors[Math.floor(Math.random()*colors.length)], size: 4, life: 1.0, decay: 0.03 }});
@@ -713,7 +753,7 @@ GAME_HTML = f"""<!DOCTYPE html>
 
             const btn = document.getElementById('btn-start-game');
             btn.disabled = false;
-            btn.className = "pixel-btn-action w-full py-3.5 text-xs font-bold tracking-wider cursor-pointer";
+            btn.className = "pixel-df-btn-flame w-full py-3.5 text-xs font-bold tracking-wider cursor-pointer";
             SFX.select();
         }}
 
@@ -722,7 +762,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             document.getElementById('intro-modal').classList.add('hidden');
             document.getElementById('user-display-tag').textContent = `${{playerGender === 'boy' ? '[CHICO]' : '[CHICA]'}} ${{playerName}}`;
             
-            // Cambiar fondo de registro a fondo de juego
             const bgReg = document.getElementById('bg-reg');
             const bgGame = document.getElementById('bg-game');
             if (bgReg) bgReg.classList.add('hidden');
@@ -736,7 +775,7 @@ GAME_HTML = f"""<!DOCTYPE html>
 
         function showRankNotice() {{
             SFX.hover();
-            showAlert("[RANKING EN DESARROLLO]");
+            showAlert("[CRÓNICA EN DESARROLLO]");
         }}
 
         function toggleTutorial() {{
@@ -905,10 +944,10 @@ GAME_HTML = f"""<!DOCTYPE html>
             const selected = hand.filter(c => c.selected);
             if(selected.length > 0) {{
                 btnPlay.disabled = false;
-                btnPlay.className = "pixel-btn-action px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest cursor-pointer";
+                btnPlay.className = "pixel-df-btn-flame px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest cursor-pointer";
             }} else {{
                 btnPlay.disabled = true;
-                btnPlay.className = "pixel-box-8bit bg-[#10131a] text-gray-500 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed";
+                btnPlay.className = "pixel-df-panel bg-[#0d0f14] text-stone-600 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed font-hud";
             }}
         }}
 
@@ -975,9 +1014,9 @@ GAME_HTML = f"""<!DOCTYPE html>
             for(let i=0; i<3; i++) {{
                 setTimeout(() => SFX.star(), i * 250);
                 if(i < stars) {{
-                    starContainer.innerHTML += `<span class="text-[#f4b41b] drop-shadow-[0_2px_0_#000]">★</span>`;
+                    starContainer.innerHTML += `<span class="text-[#d4a340] drop-shadow-[0_2px_0_#000]">★</span>`;
                 }} else {{
-                    starContainer.innerHTML += `<span class="text-stone-500">☆</span>`;
+                    starContainer.innerHTML += `<span class="text-stone-700">☆</span>`;
                 }}
             }}
 
@@ -989,16 +1028,16 @@ GAME_HTML = f"""<!DOCTYPE html>
             if(stars === 3) {{
                 comodines.skip++;
                 updateUI();
-                bonusItemText = `<div class="text-emerald-400 font-bold">[+] COMODÍN "SALTAR" DESBLOQUEADO</div>`;
+                bonusItemText = `<div class="text-emerald-400 font-bold">[+] RELIQUIA "SALTAR" DESBLOQUEADA</div>`;
             }}
 
             desc.innerHTML = `
-                <div class="flex justify-between border-b border-white/10 pb-1">
+                <div class="flex justify-between border-b border-[#2b3548] pb-1">
                     <span>PRECISIÓN DE MANO:</span>
-                    <span class="text-[#f4b41b] font-bold">${{Math.round(precision * 100)}}%</span>
+                    <span class="text-[#d4a340] font-bold">${{Math.round(precision * 100)}}%</span>
                 </div>
-                <div class="flex justify-between border-b border-white/10 py-1">
-                    <span>BONO POR ESTRELLAS:</span>
+                <div class="flex justify-between border-b border-[#2b3548] py-1">
+                    <span>BONO DE ALMAS:</span>
                     <span class="text-emerald-400 font-bold">+${{bonusScore.toLocaleString()}} PTS</span>
                 </div>
                 <div class="pt-1">
@@ -1070,12 +1109,12 @@ GAME_HTML = f"""<!DOCTYPE html>
                 SFX.discard();
                 hand = [];
                 startRound();
-                showAlert("[MANO REVOLVIDA]");
+                showAlert("[MANO PURIFICADA]");
             }}
             else if (type === 'skip') {{
                 comodines.skip--;
                 SFX.winRound();
-                showAlert("[RONDA SALTADA]");
+                showAlert("[RONDA TRASCENDIDA]");
                 
                 round++;
                 if(round > 3) {{
