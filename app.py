@@ -1,13 +1,16 @@
 """
-Balatro Factor Común - Pixel Art con Textura de Sprite Real
+Balatro Factor Común - Pixel Art Sprite Sheet Nativo
 Curso: IF0003 Matemática Básica para Informática Empresarial
 Universidad de Costa Rica - Recinto de Paraíso
 """
 
 import os
+import io
+import glob
 import base64
 import streamlit as st
 import streamlit.components.v1 as components
+from PIL import Image
 
 st.set_page_config(
     page_title="Balatro: Factor Común | IF0003",
@@ -50,7 +53,7 @@ def get_base64_file(filename):
             return base64.b64encode(f.read()).decode("utf-8")
     return None
 
-# Cargar video de fondo
+# Video de fondo
 video_b64 = None
 video_mime = "video/mp4"
 for v_name in ["fakcpg.mp4", "faKcpg.mp4", "fakcpg.gif", "faKcpg.gif"]:
@@ -61,10 +64,43 @@ for v_name in ["fakcpg.mp4", "faKcpg.mp4", "fakcpg.gif", "faKcpg.gif"]:
             video_mime = "image/gif"
         break
 
-# Cargar textura de carta sprite
-card_sprite_b64 = get_base64_file("card_blank.png")
+# Detección y recorte dinámico en el servidor de la carta individual
+card_sprite_b64 = None
 
-# Cargar fuentes
+# 1. Si ya existe un archivo recortado previo
+if os.path.exists(os.path.join(current_dir, "card_blank.png")):
+    card_sprite_b64 = get_base64_file("card_blank.png")
+else:
+    # 2. Buscar tu imagen de spritesheet en el repo y recortar la carta en memoria
+    search_patterns = ["*phd4*", "*sprite*", "*.jpeg", "*.jpg", "*.png"]
+    found_images = []
+    for p in search_patterns:
+        found_images.extend(glob.glob(os.path.join(current_dir, p)))
+
+    for img_path in found_images:
+        try:
+            im = Image.open(img_path)
+            # Verificar que sea el spritesheet (dimensiones superiores a 600px)
+            if im.width >= 600 and im.height >= 800:
+                # Mapear coordenadas relativas de la carta inferior derecha (ondas/pergamino)
+                sx = im.width / 1742.0
+                sy = im.height / 2432.0
+                crop_box = (int(1193 * sx), int(1653 * sy), int(1670 * sx), int(2377 * sy))
+                cropped = im.crop(crop_box)
+                
+                # Redimensionar conservando el pixel art (Nearest Neighbor)
+                target_w = 106
+                target_h = int(target_w * (cropped.height / cropped.width))
+                cropped_resized = cropped.resize((target_w, target_h), Image.Resampling.NEAREST)
+                
+                buf = io.BytesIO()
+                cropped_resized.save(buf, format="PNG")
+                card_sprite_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+                break
+        except Exception:
+            continue
+
+# Tipografías
 balatro_font_b64 = get_base64_file("balatro.otf")
 daydream_font_b64 = get_base64_file("Daydream DEMO.otf") or get_base64_file("Daydream.otf")
 kiwisoda_font_b64 = get_base64_file("KiwiSoda.ttf") or get_base64_file("kiwisoda.ttf")
@@ -105,11 +141,11 @@ if video_b64:
 else:
     video_html_tag = '<div id="bg-media" class="procedural-bg filter-ronda-1"></div>'
 
-card_bg_css = ""
+card_bg_style = ""
 if card_sprite_b64:
-    card_bg_css = f"background-image: url('data:image/png;base64,{card_sprite_b64}'); background-size: 100% 100%; background-repeat: no-repeat;"
+    card_bg_style = f"background-image: url('data:image/png;base64,{card_sprite_b64}'); background-size: cover; background-position: center;"
 else:
-    card_bg_css = "background-color: #122822; border: 4px solid #38b764;"
+    card_bg_style = "background-color: #122822; border: 4px solid #38b764;"
 
 GAME_HTML = f"""<!DOCTYPE html>
 <html lang="es">
@@ -180,11 +216,11 @@ GAME_HTML = f"""<!DOCTYPE html>
         .filter-ronda-2 {{ filter: hue-rotate(50deg) saturate(160%) brightness(0.8) contrast(1.25); }}
         .filter-ronda-3 {{ filter: hue-rotate(150deg) saturate(130%) brightness(0.68) contrast(1.2); }}
 
-        /* MARCO PIXEL ART DE LAS CARTAS BASADO EN LA IMAGEN */
+        /* CARTA PIXEL ART INDIVIDUAL */
         .sprite-card {{
-            width: 108px;
-            height: 168px;
-            {card_bg_css}
+            width: 106px;
+            height: 162px;
+            {card_bg_style}
             position: relative;
             cursor: pointer;
             display: flex;
@@ -197,21 +233,21 @@ GAME_HTML = f"""<!DOCTYPE html>
         .sprite-card:hover {{
             transform: translateY(-14px) !important;
             animation-play-state: paused;
-            filter: drop-shadow(0 14px 0 #050608) brightness(1.1);
+            filter: drop-shadow(0 14px 0 #050608) brightness(1.15);
             z-index: 20;
         }}
 
         .sprite-card.selected {{
             transform: translateY(-24px) !important;
             animation-play-state: paused;
-            filter: drop-shadow(0 0 8px #5cff9a) drop-shadow(0 14px 0 #042a18) brightness(1.2) !important;
+            filter: drop-shadow(0 0 10px #5cff9a) drop-shadow(0 14px 0 #042a18) brightness(1.25) !important;
             z-index: 30;
         }}
 
-        /* Esquina con índice */
+        /* Esquina superior izquierda */
         .corner-badge {{
             position: absolute;
-            top: 14px; left: 14px;
+            top: 10px; left: 12px;
             font-family: var(--pixel-font-title);
             font-size: 10px;
             color: #5cff9a;
@@ -220,7 +256,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             pointer-events: none;
         }}
 
-        /* Contenedor central del monomio */
+        /* Placa y Texto central */
         .term-container {{
             max-width: 82%;
             display: flex;
@@ -238,10 +274,9 @@ GAME_HTML = f"""<!DOCTYPE html>
             white-space: nowrap;
             letter-spacing: -0.5px;
             font-weight: bold;
-            text-shadow: 2px 2px 0 #000000, 0 0 10px rgba(92, 255, 154, 0.5);
+            text-shadow: 3px 3px 0 #000000, -1px -1px 0 #000, 0 0 12px rgba(92, 255, 154, 0.7);
         }}
 
-        /* Escala dinámica para que nunca se desborde */
         .len-1 {{ font-size: 2.3rem; }}
         .len-2 {{ font-size: 1.95rem; }}
         .len-3 {{ font-size: 1.65rem; }}
@@ -249,7 +284,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         .len-5 {{ font-size: 1.15rem; }}
         .len-many {{ font-size: 0.95rem; }}
 
-        /* Balanceo en reposo */
+        /* Animación de oscilación pixelada */
         @keyframes pixel-sway-1 {{
             0%, 100% {{ transform: translateY(0px); }}
             50% {{ transform: translateY(-7px); }}
@@ -267,7 +302,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         .idle-sway-2 {{ animation: pixel-sway-2 3.6s steps(5) infinite; }}
         .idle-sway-3 {{ animation: pixel-sway-3 4s steps(5) infinite; }}
 
-        /* PANELES DE LA INTERFAZ */
+        /* BARRAS Y BOTONES RETRO */
         .pixel-frame {{
             background: #172026;
             border: 4px solid #080c0f;
@@ -310,7 +345,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
 
         @media (max-width: 640px) {{
-            .sprite-card {{ width: 84px !important; height: 130px !important; }}
+            .sprite-card {{ width: 84px !important; height: 128px !important; }}
             .len-1 {{ font-size: 1.65rem !important; }}
             .len-2 {{ font-size: 1.4rem !important; }}
             .len-3 {{ font-size: 1.2rem !important; }}
@@ -499,7 +534,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             const n = currentHand.length;
             for(let i=1; i < (1<<n); i++) {{
                 let subset = [];
-                for(let j=0; j<n; j++) if((i & (1<<j))) subset.push(currentHand[j]);
+                for(let j=0; j<n; j++) if((i & (1<<j))) subset.push(hand[j]);
                 if(subset.length > 1) {{
                     const info = getCommonFactorInfo(subset);
                     if(info.isValid && subset.length > maxSubset) maxSubset = subset.length;
@@ -679,7 +714,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             document.getElementById('qty-skip').textContent = comodines.skip;
         }}
 
-        // Iniciar partida
         startRound();
     </script>
 </body>
