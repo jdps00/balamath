@@ -1,5 +1,5 @@
 """
-Balatro Factor Común - Aplicación Educativa en Streamlit (Pure Pixel Art 16-Bit Edition)
+Balatro Factor Común - Edición Pixel Art 16-Bit Auténtica
 Curso: IF0003 Matemática Básica para Informática Empresarial
 Universidad de Costa Rica - Recinto de Paraíso
 """
@@ -23,14 +23,11 @@ st.markdown(
     footer {visibility: hidden;}
     header {visibility: hidden;}
     .block-container {
-        padding-top: 0rem;
-        padding-bottom: 0rem;
-        padding-left: 0rem;
-        padding-right: 0rem;
+        padding: 0 !important;
         max-width: 100% !important;
     }
     .stApp {
-        background-color: #0b1712;
+        background-color: #050a08;
     }
     </style>
     """,
@@ -66,55 +63,24 @@ if daydream_font_b64:
     @font-face {{
         font-family: 'DaydreamFont';
         src: url(data:font/otf;base64,{daydream_font_b64}) format('opentype');
-        font-weight: normal;
-        font-style: normal;
     }}
     """
-else:
-    font_face_css += """
-    @font-face {
-        font-family: 'DaydreamFont';
-        src: local('Press Start 2P'), monospace;
-        font-weight: bold;
-    }
-    """
-
 if kiwisoda_font_b64:
     font_face_css += f"""
     @font-face {{
         font-family: 'KiwiSodaFont';
         src: url(data:font/ttf;base64,{kiwisoda_font_b64}) format('truetype');
-        font-weight: normal;
-        font-style: normal;
     }}
     """
-else:
-    font_face_css += """
-    @font-face {
-        font-family: 'KiwiSodaFont';
-        src: local('VT323'), monospace;
-        font-weight: bold;
-    }
-    """
-
 if balatro_font_b64:
     font_face_css += f"""
     @font-face {{
         font-family: 'BalatroFont';
         src: url(data:font/otf;base64,{balatro_font_b64}) format('opentype');
-        font-weight: normal;
-        font-style: normal;
     }}
     """
-else:
-    font_face_css += """
-    @font-face {
-        font-family: 'BalatroFont';
-        src: local('DaydreamFont'), monospace;
-        font-weight: bold;
-    }
-    """
 
+video_html_tag = ""
 if video_b64:
     if "gif" in video_mime:
         video_html_tag = f'<img id="bg-media" class="video-bg filter-ronda-1" src="data:{video_mime};base64,{video_b64}" alt="Background" />'
@@ -133,23 +99,17 @@ GAME_HTML = f"""
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Balatro Factor Común - Pixel Art</title>
+    <title>Balatro Factor Común</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    
     <style>
         {font_face_css}
 
         :root {{
-            --font-pixel-head: 'DaydreamFont', cursive, monospace;
-            --font-pixel-math: 'BalatroFont', 'KiwiSodaFont', monospace;
-            --font-pixel-ui: 'KiwiSodaFont', monospace;
-            --px-dark: #12141a;
-            --px-gray: #303744;
-            --px-light-gray: #4d5668;
-            --px-white: #f5f3ec;
-            --px-yellow: #f1b31c;
-            --px-orange: #e85d26;
-            --px-red: #d9383a;
-            --px-blue: #1d72b8;
+            --pixel-font-title: 'DaydreamFont', 'Press Start 2P', monospace;
+            --pixel-font-math: 'BalatroFont', 'KiwiSodaFont', 'Press Start 2P', monospace;
+            --pixel-font-body: 'KiwiSodaFont', 'VT323', monospace;
         }}
 
         * {{
@@ -160,7 +120,7 @@ GAME_HTML = f"""
 
         body {{
             color: #ffffff;
-            font-family: var(--font-pixel-head);
+            font-family: var(--pixel-font-title);
             overflow: hidden;
             user-select: none;
             margin: 0;
@@ -169,7 +129,7 @@ GAME_HTML = f"""
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            background-color: #0b1712;
+            background-color: #070e0b;
         }}
 
         .video-bg {{
@@ -181,233 +141,221 @@ GAME_HTML = f"""
             z-index: -3;
             object-fit: cover;
             pointer-events: none;
-            transition: filter 1.2s ease-in-out;
+            transition: filter 1s steps(4);
             image-rendering: pixelated;
         }}
 
         .procedural-bg {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at center, #1b533d, #081a13);
+            background: radial-gradient(circle at center, #1b4d36, #07120c);
             z-index: -3;
         }}
 
         .bg-tint-overlay {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at center, rgba(16, 56, 38, 0.45) 0%, rgba(5, 18, 12, 0.88) 100%);
+            background: radial-gradient(circle at center, rgba(20, 60, 42, 0.4) 0%, rgba(4, 14, 9, 0.9) 100%);
             mix-blend-mode: multiply;
             pointer-events: none;
             z-index: -2;
         }}
 
-        .filter-ronda-1 {{ filter: hue-rotate(95deg) saturate(140%) brightness(0.72) contrast(1.15); }}
-        .filter-ronda-2 {{ filter: hue-rotate(60deg) saturate(150%) brightness(0.8) contrast(1.2); }}
-        .filter-ronda-3 {{ filter: hue-rotate(150deg) saturate(135%) brightness(0.68) contrast(1.15); }}
+        .filter-ronda-1 {{ filter: hue-rotate(95deg) saturate(140%) brightness(0.72) contrast(1.2); }}
+        .filter-ronda-2 {{ filter: hue-rotate(50deg) saturate(160%) brightness(0.8) contrast(1.25); }}
+        .filter-ronda-3 {{ filter: hue-rotate(150deg) saturate(130%) brightness(0.68) contrast(1.2); }}
 
-        /* ========================================================
-           CONTENEDORES Y CAJAS 100% PIXEL ART (ESQUINAS EN ESCALERA)
-           ======================================================== */
-        .pixel-box {{
-            background: #2b313b;
-            border: 4px solid var(--px-dark);
+        /* CAJAS Y BOTONES EN PIXEL ART SÓLIDO */
+        .pixel-panel {{
+            background: #252b36;
+            border: 4px solid #0a0b0e;
             box-shadow: 
-                inset 2px 2px 0 #4f5869, 
-                inset -2px -2px 0 #1b1e25,
-                0 6px 0 #090a0d;
+                inset 3px 3px 0 #465166, 
+                inset -3px -3px 0 #13161c,
+                0 6px 0 #050608;
             position: relative;
         }}
 
-        .pixel-inner-box {{
-            background: #181b22;
-            border: 3px solid var(--px-dark);
+        .pixel-panel-inner {{
+            background: #11141a;
+            border: 3px solid #0a0b0e;
             box-shadow: inset 2px 2px 0 #000000;
         }}
 
-        .pixel-banner-red {{
-            background: var(--px-red);
-            border: 3px solid var(--px-dark);
+        .pixel-badge-red {{
+            background: #d9383a;
+            border: 3px solid #0a0b0e;
             box-shadow: 
-                inset 2px 2px 0 #f86f71, 
-                inset -2px -2px 0 #8b181a,
-                0 4px 0 #540e10;
+                inset 2px 2px 0 #f67375, 
+                inset -2px -2px 0 #851a1b,
+                0 4px 0 #4a0d0e;
             color: #ffffff;
             text-shadow: 2px 2px 0 #000000;
         }}
 
         .pixel-btn-orange {{
-            font-family: var(--font-pixel-head);
-            background: var(--px-orange);
-            border: 3px solid var(--px-dark);
+            font-family: var(--pixel-font-title);
+            background: #e85d26;
+            border: 4px solid #0a0b0e;
             box-shadow: 
-                inset 2px 2px 0 #ff8e61, 
-                inset -2px -2px 0 #943209,
-                0 6px 0 #521a03;
+                inset 3px 3px 0 #ff8c5c, 
+                inset -3px -3px 0 #8e3009,
+                0 6px 0 #4a1703;
             color: #ffffff;
-            text-shadow: 2px 2px 0 #3a1101;
+            text-shadow: 2px 2px 0 #000000;
             transition: transform 0.05s steps(2);
         }}
+        .pixel-btn-orange:hover {{ background: #f86e36; }}
         .pixel-btn-orange:active {{
             transform: translateY(4px);
             box-shadow: 
-                inset 2px 2px 0 #943209, 
-                inset -2px -2px 0 #ff8e61,
-                0 2px 0 #521a03;
+                inset 3px 3px 0 #8e3009, 
+                inset -3px -3px 0 #ff8c5c,
+                0 2px 0 #4a1703;
         }}
 
         .pixel-btn-blue {{
-            font-family: var(--font-pixel-head);
-            background: var(--px-blue);
-            border: 3px solid var(--px-dark);
+            font-family: var(--pixel-font-title);
+            background: #1f78c1;
+            border: 3px solid #0a0b0e;
             box-shadow: 
-                inset 2px 2px 0 #4fa5ed, 
-                inset -2px -2px 0 #0c436f,
-                0 6px 0 #082944;
+                inset 2px 2px 0 #5aa7e8, 
+                inset -2px -2px 0 #0d4472,
+                0 5px 0 #06233d;
             color: #ffffff;
-            text-shadow: 2px 2px 0 #051b2e;
-            transition: transform 0.05s steps(2);
-        }}
-        .pixel-btn-blue:active {{
-            transform: translateY(4px);
-            box-shadow: 
-                inset 2px 2px 0 #0c436f, 
-                inset -2px -2px 0 #4fa5ed,
-                0 2px 0 #082944;
-        }}
-
-        .pixel-input {{
-            font-family: var(--font-pixel-head);
-            background: #0d0f13;
-            border: 3px solid var(--px-dark);
-            box-shadow: inset 2px 2px 0 #000000;
-            color: #ffffff;
-            outline: none;
-        }}
-        .pixel-input:focus {{
-            border-color: var(--px-yellow);
+            text-shadow: 2px 2px 0 #000000;
         }}
 
         /* ========================================================
-           NAIPES PIXEL ART ESTILO BALATRO
+           CARTAS PIXEL ART 16-BIT (ESTILO BALATRO COMPLETO)
            ======================================================== */
-        .pixel-card {{
-            width: 104px;
-            height: 148px;
-            background: var(--px-white);
-            border: 3px solid var(--px-dark);
-            /* Borde pixelado con relieve biselado retro */
+        .balatro-pixel-card {{
+            width: 106px;
+            height: 152px;
+            background: #fbf8eb;
+            border: 4px solid #0d0f14;
+            /* Biselado duro de naipe físico en pixel art */
             box-shadow: 
                 inset 3px 3px 0 #ffffff,
-                inset -3px -3px 0 #c2bbae,
-                0 6px 0 #090a0d;
+                inset -3px -3px 0 #c7bea9,
+                0 7px 0 #08090d;
             position: relative;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.12s steps(4);
+            transition: transform 0.08s steps(3);
         }}
 
-        /* Marco pixelado interno */
-        .card-pixel-border {{
+        /* Borde interior pixelado */
+        .card-inner-pixel-box {{
             position: absolute;
             top: 4px; left: 4px; right: 4px; bottom: 4px;
-            border: 2px dashed rgba(40, 44, 52, 0.25);
+            border: 2px solid #ddd5be;
             pointer-events: none;
         }}
 
-        .card-corner-tl {{
+        /* Esquina superior izquierda */
+        .pixel-pip-tl {{
             position: absolute;
             top: 5px; left: 6px;
             display: flex; flex-direction: column; align-items: center;
-            line-height: 0.9;
+            line-height: 1;
             pointer-events: none;
         }}
-        .card-corner-br {{
+
+        /* Esquina inferior derecha rotada */
+        .pixel-pip-br {{
             position: absolute;
             bottom: 5px; right: 6px;
             display: flex; flex-direction: column; align-items: center;
-            line-height: 0.9;
+            line-height: 1;
             transform: rotate(180deg);
             pointer-events: none;
         }}
 
-        .corner-rank {{
-            font-family: var(--font-pixel-head);
+        .pip-rank-pixel {{
+            font-family: var(--pixel-font-title);
             font-size: 11px;
             letter-spacing: -0.5px;
+            font-weight: bold;
         }}
-        .corner-suit {{
-            font-size: 10px;
+
+        .pip-suit-pixel {{
+            font-size: 11px;
             margin-top: 1px;
         }}
 
-        .term-math-pixel {{
-            font-family: var(--font-pixel-math);
-            font-size: 2.1rem;
-            color: #171920;
+        /* Término algebraico central en pixel art */
+        .math-center-pixel {{
+            font-family: var(--pixel-font-math);
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #151821;
             text-align: center;
             padding: 0 4px;
             line-height: 1;
             z-index: 2;
+            letter-spacing: -1px;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.15);
         }}
 
-        /* Balanceo oscilante pixelado */
+        /* Animación de balanceo en pasos de pixel */
         @keyframes pixel-sway-1 {{
             0%, 100% {{ transform: translateY(0px); }}
-            50% {{ transform: translateY(-6px); }}
+            50% {{ transform: translateY(-7px); }}
         }}
         @keyframes pixel-sway-2 {{
-            0%, 100% {{ transform: translateY(-4px); }}
+            0%, 100% {{ transform: translateY(-5px); }}
             50% {{ transform: translateY(3px); }}
         }}
         @keyframes pixel-sway-3 {{
             0%, 100% {{ transform: translateY(2px); }}
-            50% {{ transform: translateY(-5px); }}
+            50% {{ transform: translateY(-6px); }}
         }}
 
-        .idle-sway-1 {{ animation: pixel-sway-1 3s steps(6) infinite; }}
-        .idle-sway-2 {{ animation: pixel-sway-2 3.6s steps(6) infinite; }}
-        .idle-sway-3 {{ animation: pixel-sway-3 4s steps(6) infinite; }}
+        .idle-sway-1 {{ animation: pixel-sway-1 3s steps(5) infinite; }}
+        .idle-sway-2 {{ animation: pixel-sway-2 3.6s steps(5) infinite; }}
+        .idle-sway-3 {{ animation: pixel-sway-3 4s steps(5) infinite; }}
 
-        .pixel-card:hover {{
-            transform: translateY(-14px) !important;
+        .balatro-pixel-card:hover {{
+            transform: translateY(-16px) !important;
             animation-play-state: paused;
             box-shadow: 
                 inset 3px 3px 0 #ffffff,
-                inset -3px -3px 0 #c2bbae,
-                0 12px 0 #090a0d;
+                inset -3px -3px 0 #c7bea9,
+                0 14px 0 #08090d;
             z-index: 20;
         }}
 
-        .pixel-card.selected {{
-            transform: translateY(-24px) !important;
+        .balatro-pixel-card.selected {{
+            transform: translateY(-26px) !important;
             animation-play-state: paused;
-            border-color: var(--px-yellow);
+            border-color: #f1b31c;
             box-shadow: 
-                inset 3px 3px 0 #fff2a3,
-                inset -3px -3px 0 #b38009,
-                0 0 0 3px var(--px-yellow),
-                0 12px 0 #573a00 !important;
+                inset 3px 3px 0 #fff7b8,
+                inset -3px -3px 0 #a97705,
+                0 0 0 4px #f1b31c,
+                0 14px 0 #4f3600 !important;
             z-index: 30;
         }}
 
         @media (max-width: 640px) {{
-            .pixel-card {{ width: 84px !important; height: 122px !important; }}
-            .term-math-pixel {{ font-size: 1.55rem !important; }}
-            .corner-rank {{ font-size: 9px !important; }}
-            .corner-suit {{ font-size: 8px !important; }}
+            .balatro-pixel-card {{ width: 86px !important; height: 124px !important; }}
+            .math-center-pixel {{ font-size: 1.55rem !important; }}
+            .pip-rank-pixel {{ font-size: 9px !important; }}
+            .pip-suit-pixel {{ font-size: 8px !important; }}
             #hand-container {{ min-height: 190px !important; }}
         }}
 
-        /* FLAMA EN PIXEL ART */
-        @keyframes flame-bounce {{
+        /* FUEGO DE PUNTOS PIXEL */
+        @keyframes pixel-flame {{
             0%, 100% {{ transform: scale(1); }}
-            50% {{ transform: scale(1.1); }}
+            50% {{ transform: scale(1.12); }}
         }}
         .score-flame-pixel {{
             color: #ffffff;
-            font-family: var(--font-pixel-head);
+            font-family: var(--pixel-font-title);
             text-shadow: 3px 3px 0 #d9383a, -3px -3px 0 #f1b31c, 3px -3px 0 #e85d26;
-            animation: flame-bounce 0.3s steps(3) infinite;
+            animation: pixel-flame 0.25s steps(2) infinite;
         }}
 
         @keyframes shake-pixel {{
@@ -415,11 +363,11 @@ GAME_HTML = f"""
             25% {{ transform: translateX(-8px); }}
             75% {{ transform: translateX(8px); }}
         }}
-        .animate-shake {{ animation: shake-pixel 0.25s steps(4); }}
+        .animate-shake {{ animation: shake-pixel 0.22s steps(4); }}
 
         #fx-canvas {{ position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; }}
         .lb-scroll::-webkit-scrollbar {{ width: 6px; }}
-        .lb-scroll::-webkit-scrollbar-thumb {{ background: #4d5668; border: 1px solid #12141a; }}
+        .lb-scroll::-webkit-scrollbar-thumb {{ background: #465166; border: 1px solid #0a0b0e; }}
     </style>
 </head>
 <body class="p-2 sm:p-4">
@@ -427,17 +375,17 @@ GAME_HTML = f"""
     <div class="bg-tint-overlay"></div>
     <canvas id="fx-canvas"></canvas>
 
-    <!-- INTRO MODAL PIXEL ART -->
+    <!-- INTRO MODAL -->
     <div id="intro-modal" class="fixed inset-0 bg-black/85 z-[1000] flex items-center justify-center p-4">
-        <div class="pixel-box max-w-sm w-full p-6 text-center">
-            <div class="pixel-banner-red py-3 px-4 mb-5">
+        <div class="pixel-panel max-w-sm w-full p-6 text-center">
+            <div class="pixel-badge-red py-3 px-4 mb-5">
                 <h1 class="text-xl sm:text-2xl tracking-wider">FACTOR COMÚN</h1>
                 <p class="text-[9px] tracking-widest mt-1 opacity-90">MATEMÁTICA BÁSICA • UCR</p>
             </div>
             
-            <div class="pixel-inner-box p-4 mb-5 text-left">
+            <div class="pixel-panel-inner p-4 mb-5 text-left">
                 <label class="block text-[9px] text-gray-400 mb-2 tracking-wider">APODO DEL JUGADOR:</label>
-                <input type="text" id="username-input" class="pixel-input w-full p-3 text-center uppercase text-xs" placeholder="TU NOMBRE" maxlength="12">
+                <input type="text" id="username-input" class="w-full bg-[#08090c] border-2 border-[#313947] focus:border-[#f1b31c] text-white p-3 text-center uppercase text-xs outline-none" placeholder="TU NOMBRE" maxlength="12">
             </div>
 
             <button onclick="startGameFromIntro()" class="pixel-btn-orange w-full py-4 text-xs tracking-wider">
@@ -446,7 +394,7 @@ GAME_HTML = f"""
         </div>
     </div>
 
-    <!-- BOTONES INFERIORES PIXEL -->
+    <!-- BOTONES INFERIORES -->
     <div class="fixed bottom-3 left-3 z-40">
         <button onclick="toggleTutorial()" class="pixel-btn-blue text-[9px] sm:text-[10px] px-3.5 py-2.5">
             💡 TUTO
@@ -458,71 +406,71 @@ GAME_HTML = f"""
         </button>
     </div>
 
-    <!-- PANEL TUTORIAL PIXEL -->
-    <div id="tutorial-panel" class="fixed left-0 top-0 h-full w-72 sm:w-80 bg-[#1e222a] border-r-4 border-black p-4 flex flex-col z-50 transform -translate-x-full transition-transform duration-200">
+    <!-- PANEL TUTORIAL -->
+    <div id="tutorial-panel" class="fixed left-0 top-0 h-full w-72 sm:w-80 bg-[#191d24] border-r-4 border-black p-4 flex flex-col z-50 transform -translate-x-full transition-transform duration-200">
         <div class="flex justify-between items-center mb-4 border-b-2 border-white/20 pb-2">
-            <div class="pixel-banner-red px-3 py-1 text-[9px]">CÓMO JUGAR</div>
+            <div class="pixel-badge-red px-3 py-1 text-[9px]">CÓMO JUGAR</div>
             <button onclick="toggleTutorial()" class="text-white text-base">✕</button>
         </div>
-        <div class="pixel-inner-box p-3 text-2xl text-center mb-3">
+        <div class="pixel-panel-inner p-3 text-2xl text-center mb-3">
             🍎🍉 <span class="text-red-400">+</span> 🍎🍌
         </div>
         <p class="text-[9px] text-yellow-300 text-center mb-3">SACA LO QUE SE REPITE (🍎)</p>
-        <div class="pixel-inner-box p-3 text-2xl text-center mb-4">
+        <div class="pixel-panel-inner p-3 text-2xl text-center mb-4">
             🍎<span class="text-gray-400">(</span>🍉 <span class="text-red-400">+</span> 🍌<span class="text-gray-400">)</span>
         </div>
-        <div class="text-[14px] text-gray-300 leading-relaxed font-['KiwiSodaFont'] space-y-2">
+        <div class="text-[13px] text-gray-300 leading-relaxed font-['KiwiSodaFont',monospace] space-y-2">
             <p>1. Selecciona 2 o más cartas que compartan divisores o variables con exponentes comunes.</p>
-            <p>2. Presiona "JUGAR MANO" para multiplicar los puntos según la cantidad de cartas seleccionadas.</p>
+            <p>2. Presiona "JUGAR MANO" para acumular puntos calculados por el algoritmo.</p>
             <p>3. Las cartas no jugadas permanecen en la mesa para la siguiente ronda.</p>
         </div>
     </div>
 
-    <!-- PANEL CLASIFICACIÓN PIXEL -->
-    <aside id="leaderboard-panel" class="fixed right-0 top-0 h-full w-72 sm:w-80 bg-[#1e222a] border-l-4 border-black p-4 flex flex-col z-50 transform translate-x-full transition-transform duration-200">
+    <!-- PANEL CLASIFICACIÓN -->
+    <aside id="leaderboard-panel" class="fixed right-0 top-0 h-full w-72 sm:w-80 bg-[#191d24] border-l-4 border-black p-4 flex flex-col z-50 transform translate-x-full transition-transform duration-200">
         <div class="flex justify-between items-center mb-3 border-b-2 border-white/20 pb-2">
             <button onclick="toggleLeaderboard()" class="text-white text-base">✕</button>
-            <div class="pixel-banner-red px-3 py-1 text-[9px]">POSICIONES</div>
+            <div class="pixel-badge-red px-3 py-1 text-[9px]">POSICIONES</div>
         </div>
         <div class="text-[9px] text-gray-400 mb-2 text-center">COMPITIENDO EN EL AULA</div>
         <div id="leaderboard" class="flex-grow overflow-y-auto lb-scroll flex flex-col gap-1.5 pr-1"></div>
     </aside>
 
-    <!-- HEADER SUPERIOR PIXEL -->
+    <!-- HEADER SUPERIOR -->
     <header class="flex justify-between items-center z-10 max-w-5xl mx-auto w-full gap-2 px-1">
-        <div class="pixel-box px-3 py-2 text-center min-w-[95px] sm:min-w-[125px]">
+        <div class="pixel-panel px-3 py-2 text-center min-w-[95px] sm:min-w-[125px]">
             <div class="text-[8px] sm:text-[9px] text-gray-400">NIVEL <span id="level-display" class="text-yellow-400 text-xs sm:text-sm">1</span></div>
             <div class="text-[7px] sm:text-[8px] text-gray-300 mt-0.5">RONDA <span id="round-display" class="text-white">1</span>/3</div>
         </div>
 
         <!-- 3 Comodines Pixel -->
         <div class="flex justify-center gap-1.5 sm:gap-2.5">
-            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="pixel-box p-2 text-base sm:text-lg relative active:translate-y-1">
+            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="pixel-panel p-2 text-base sm:text-lg relative active:translate-y-1">
                 👁️
                 <span id="qty-reveal" class="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] px-1 border border-black">1</span>
             </button>
-            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano" class="pixel-box p-2 text-base sm:text-lg relative active:translate-y-1">
+            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano" class="pixel-panel p-2 text-base sm:text-lg relative active:translate-y-1">
                 🎲
                 <span id="qty-reroll" class="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] px-1 border border-black">1</span>
             </button>
-            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar nivel" class="pixel-box p-2 text-base sm:text-lg relative active:translate-y-1 opacity-40">
+            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar nivel" class="pixel-panel p-2 text-base sm:text-lg relative active:translate-y-1 opacity-40">
                 ⏭️
                 <span id="qty-skip" class="absolute -top-2 -right-2 bg-yellow-500 text-black text-[8px] px-1 border border-black">0</span>
             </button>
         </div>
 
-        <div class="pixel-box px-3 py-2 text-center min-w-[95px] sm:min-w-[125px]">
+        <div class="pixel-panel px-3 py-2 text-center min-w-[95px] sm:min-w-[125px]">
             <div class="text-[8px] sm:text-[9px] text-gray-400">PUNTOS</div>
-            <div id="total-score" class="font-['KiwiSodaFont'] text-lg sm:text-xl text-yellow-400 leading-none mt-1">0</div>
+            <div id="total-score" class="font-['KiwiSodaFont',monospace] text-xl sm:text-2xl text-yellow-400 leading-none mt-1">0</div>
             <div class="text-[7px] text-gray-400 mt-0.5">Rank: <span id="player-rank">#25</span></div>
         </div>
     </header>
 
-    <!-- ÁREA DE NAIPES PIXEL -->
+    <!-- ÁREA DE NAIPES PIXEL ART -->
     <main class="flex-grow flex flex-col items-center justify-center relative w-full max-w-5xl mx-auto my-auto">
         <div id="hand-container" class="flex justify-center items-center flex-wrap gap-2.5 sm:gap-4 w-full px-2 mb-6"></div>
 
-        <button id="btn-play" onclick="playHand()" disabled class="pixel-box bg-[#1b1e25] text-gray-500 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed">
+        <button id="btn-play" onclick="playHand()" disabled class="pixel-panel bg-[#151820] text-gray-500 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed">
             JUGAR MANO
         </button>
 
@@ -531,14 +479,14 @@ GAME_HTML = f"""
         </div>
     </main>
 
-    <!-- MODAL FIN DE NIVEL PIXEL -->
+    <!-- MODAL FIN DE NIVEL -->
     <div id="level-modal" class="fixed inset-0 bg-black/85 z-50 hidden flex items-center justify-center p-4">
-        <div class="pixel-box max-w-sm w-full p-6 text-center">
-            <div class="pixel-banner-red py-2 px-4 mb-4">
+        <div class="pixel-panel max-w-sm w-full p-6 text-center">
+            <div class="pixel-badge-red py-2 px-4 mb-4">
                 <h2 class="text-lg sm:text-xl">NIVEL COMPLETADO</h2>
             </div>
             <div class="flex justify-center gap-3 my-4" id="modal-stars"></div>
-            <p id="modal-desc" class="pixel-inner-box p-3 text-gray-200 font-['KiwiSodaFont'] text-base leading-relaxed mb-5"></p>
+            <p id="modal-desc" class="pixel-panel-inner p-3 text-gray-200 font-['KiwiSodaFont',monospace] text-base leading-relaxed mb-5"></p>
             <button onclick="nextLevel()" class="pixel-btn-orange w-full py-3.5 text-xs tracking-wider">
                 SIGUIENTE NIVEL ➔
             </button>
@@ -546,7 +494,7 @@ GAME_HTML = f"""
     </div>
 
     <!-- ALERTA PIXEL -->
-    <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 pixel-banner-red font-['KiwiSodaFont'] text-base px-5 py-2.5 z-50 hidden text-center max-w-[90vw]">
+    <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 pixel-badge-red font-['KiwiSodaFont',monospace] text-base px-5 py-2.5 z-50 hidden text-center max-w-[90vw]">
         <span id="alert-text"></span>
     </div>
 
@@ -664,10 +612,10 @@ GAME_HTML = f"""
                 
                 const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${{idx+1}}`;
                 const div = document.createElement('div');
-                div.className = `flex justify-between items-center text-sm p-1.5 ${{p.isPlayer ? 'bg-[#1d72b8] text-white border-2 border-white' : 'pixel-inner-box text-gray-300'}}`;
+                div.className = `flex justify-between items-center text-sm p-1.5 ${{p.isPlayer ? 'bg-[#1f78c1] text-white border-2 border-white' : 'pixel-panel-inner text-gray-300'}}`;
                 div.innerHTML = `
-                    <span class="truncate max-w-[130px] font-['KiwiSodaFont']">${{medal}} ${{p.name}} ${{p.isPlayer ? '(TÚ)' : ''}}</span>
-                    <span class="text-yellow-400 font-['KiwiSodaFont'] font-bold">${{p.score.toLocaleString()}}</span>
+                    <span class="truncate max-w-[130px] font-['KiwiSodaFont',monospace]">${{medal}} ${{p.name}} ${{p.isPlayer ? '(TÚ)' : ''}}</span>
+                    <span class="text-yellow-400 font-['KiwiSodaFont',monospace] font-bold">${{p.score.toLocaleString()}}</span>
                 `;
                 container.appendChild(div);
             }});
@@ -757,7 +705,7 @@ GAME_HTML = f"""
             if (c === 0) c = 1;
             const suits = ['♠', '♥', '♦', '♣'];
             const suit = suits[Math.floor(Math.random() * suits.length)];
-            const suitColor = (suit === '♥' || suit === '♦') ? '#d9383a' : '#1d72b8';
+            const suitColor = (suit === '♥' || suit === '♦') ? '#d9383a' : '#1f78c1';
 
             return {{ c, x, y, str: formatTerm(c,x,y), suit, suitColor, selected: false, id: nextCardId++ }};
         }}
@@ -779,7 +727,7 @@ GAME_HTML = f"""
             for(let i=1; i < (1<<n); i++) {{
                 let subset = [];
                 for(let j=0; j<n; j++) {{
-                    if((i & (1<<j))) subset.push(currentHand[j]);
+                    if((i & (1<<j))) subset.push(hand[j]);
                 }}
                 if(subset.length > 1) {{
                     const info = getCommonFactorInfo(subset);
@@ -822,20 +770,20 @@ GAME_HTML = f"""
             hand.forEach((card, idx) => {{
                 const el = document.createElement('div');
                 const swayClass = idx % 3 === 0 ? 'idle-sway-1' : (idx % 3 === 1 ? 'idle-sway-2' : 'idle-sway-3');
-                el.className = `pixel-card ${{card.selected ? 'selected' : swayClass}}`;
+                el.className = `balatro-pixel-card ${{card.selected ? 'selected' : swayClass}}`;
                 
                 const cornerRank = getCardCornerRank(card);
 
                 el.innerHTML = `
-                    <div class="card-pixel-border"></div>
-                    <div class="card-corner-tl" style="color: ${{card.suitColor}};">
-                        <span class="corner-rank">${{cornerRank}}</span>
-                        <span class="corner-suit">${{card.suit}}</span>
+                    <div class="card-inner-pixel-box"></div>
+                    <div class="pixel-pip-tl" style="color: ${{card.suitColor}};">
+                        <span class="pip-rank-pixel">${{cornerRank}}</span>
+                        <span class="pip-suit-pixel">${{card.suit}}</span>
                     </div>
-                    <div class="term-math-pixel">${{card.str}}</div>
-                    <div class="card-corner-br" style="color: ${{card.suitColor}};">
-                        <span class="corner-rank">${{cornerRank}}</span>
-                        <span class="corner-suit">${{card.suit}}</span>
+                    <div class="math-center-pixel">${{card.str}}</div>
+                    <div class="pixel-pip-br" style="color: ${{card.suitColor}};">
+                        <span class="pip-rank-pixel">${{cornerRank}}</span>
+                        <span class="pip-suit-pixel">${{card.suit}}</span>
                     </div>
                 `;
                 
@@ -856,7 +804,7 @@ GAME_HTML = f"""
                 btnPlay.className = "pixel-btn-orange px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest cursor-pointer";
             }} else {{
                 btnPlay.disabled = true;
-                btnPlay.className = "pixel-box bg-[#1b1e25] text-gray-500 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed";
+                btnPlay.className = "pixel-panel bg-[#151820] text-gray-500 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed";
             }}
         }}
 
@@ -868,7 +816,7 @@ GAME_HTML = f"""
                 SFX.error();
                 handContainer.classList.add('animate-shake');
                 levelStats.errors++;
-                setTimeout(() => handContainer.classList.remove('animate-shake'), 300);
+                setTimeout(() => handContainer.classList.remove('animate-shake'), 220);
                 return;
             }}
 
@@ -894,7 +842,7 @@ GAME_HTML = f"""
 
             setTimeout(() => {{
                 flameContainer.style.opacity = '0';
-                setTimeout(() => flameContainer.classList.add('hidden'), 200);
+                setTimeout(() => flameContainer.classList.add('hidden'), 150);
                 
                 round++;
                 if(round > 3) {{
