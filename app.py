@@ -1,5 +1,5 @@
 """
-Arcana Alquimia: Factor Común - Aplicación Educativa en Streamlit
+Balatro Factor Común - Aplicación Educativa en Streamlit
 Curso: IF0003 Matemática Básica para Informática Empresarial
 Universidad de Costa Rica - Recinto de Paraíso
 """
@@ -10,8 +10,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="Alquimia Arcana: Factor Común | IF0003",
-    page_icon="⚗️",
+    page_title="Balatro: Factor Común | IF0003",
+    page_icon="🃏",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -30,7 +30,7 @@ st.markdown(
         max-width: 100% !important;
     }
     .stApp {
-        background-color: #08100d;
+        background-color: #0b1712;
     }
     </style>
     """,
@@ -56,15 +56,16 @@ for v_name in ["fakcpg.mp4", "faKcpg.mp4", "fakcpg.gif", "faKcpg.gif"]:
             video_mime = "image/gif"
         break
 
-daydream_b64 = get_base64_file("Daydream DEMO.otf") or get_base64_file("Daydream.otf")
-kiwisoda_b64 = get_base64_file("KiwiSoda.ttf") or get_base64_file("kiwisoda.ttf")
+balatro_font_b64 = get_base64_file("balatro.otf")
+daydream_font_b64 = get_base64_file("Daydream DEMO.otf") or get_base64_file("Daydream.otf")
+kiwisoda_font_b64 = get_base64_file("KiwiSoda.ttf") or get_base64_file("kiwisoda.ttf")
 
 font_face_css = ""
-if daydream_b64:
+if balatro_font_b64:
     font_face_css += f"""
     @font-face {{
-        font-family: 'DaydreamFont';
-        src: url(data:font/otf;base64,{daydream_b64}) format('opentype');
+        font-family: 'BalatroFont';
+        src: url(data:font/otf;base64,{balatro_font_b64}) format('opentype');
         font-weight: normal;
         font-style: normal;
     }}
@@ -72,17 +73,35 @@ if daydream_b64:
 else:
     font_face_css += """
     @font-face {
-        font-family: 'DaydreamFont';
-        src: local('Press Start 2P'), local('Courier New');
+        font-family: 'BalatroFont';
+        src: local('Impact'), local('Arial Black'), sans-serif;
         font-weight: bold;
     }
     """
 
-if kiwisoda_b64:
+if daydream_font_b64:
+    font_face_css += f"""
+    @font-face {{
+        font-family: 'DaydreamFont';
+        src: url(data:font/otf;base64,{daydream_font_b64}) format('opentype');
+        font-weight: normal;
+        font-style: normal;
+    }}
+    """
+else:
+    font_face_css += """
+    @font-face {
+        font-family: 'DaydreamFont';
+        src: local('Press Start 2P'), monospace;
+        font-weight: bold;
+    }
+    """
+
+if kiwisoda_font_b64:
     font_face_css += f"""
     @font-face {{
         font-family: 'KiwiSodaFont';
-        src: url(data:font/ttf;base64,{kiwisoda_b64}) format('truetype');
+        src: url(data:font/ttf;base64,{kiwisoda_font_b64}) format('truetype');
         font-weight: normal;
         font-style: normal;
     }}
@@ -91,14 +110,14 @@ else:
     font_face_css += """
     @font-face {
         font-family: 'KiwiSodaFont';
-        src: local('VT323'), local('Courier New');
+        src: local('VT323'), monospace;
         font-weight: bold;
     }
     """
 
 if video_b64:
     if "gif" in video_mime:
-        video_html_tag = f'<img id="bg-media" class="video-bg filter-ronda-1" src="data:{video_mime};base64,{video_b64}" alt="Caldero" />'
+        video_html_tag = f'<img id="bg-media" class="video-bg filter-ronda-1" src="data:{video_mime};base64,{video_b64}" alt="Background" />'
     else:
         video_html_tag = f"""
         <video id="bg-media" class="video-bg filter-ronda-1" autoplay muted loop playsinline>
@@ -114,18 +133,18 @@ GAME_HTML = f"""
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Alquimia Arcana: Factor Común</title>
+    <title>Balatro Factor Común</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         {font_face_css}
 
         :root {{
-            --font-title: 'DaydreamFont', cursive, monospace;
-            --font-body: 'KiwiSodaFont', monospace;
-            --gold-bright: #ffd447;
-            --gold-dark: #b8860b;
-            --alchemy-cyan: #4deeea;
-            --magic-purple: #9d4edd;
+            --font-balatro: 'BalatroFont', 'DaydreamFont', sans-serif;
+            --font-sub: 'DaydreamFont', 'KiwiSodaFont', monospace;
+            --balatro-blue: #0077c8;
+            --balatro-red: #ea2e35;
+            --balatro-yellow: #f1b31c;
+            --balatro-orange: #ef5b25;
         }}
 
         * {{
@@ -134,8 +153,8 @@ GAME_HTML = f"""
         }}
 
         body {{
-            color: #f4ebd9;
-            font-family: var(--font-body);
+            color: white;
+            font-family: var(--font-balatro);
             overflow: hidden;
             user-select: none;
             margin: 0;
@@ -144,251 +163,215 @@ GAME_HTML = f"""
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            background-color: #08100d;
+            background-color: #0b1712;
         }}
 
-        .font-pixel-title {{ font-family: var(--font-title); }}
-        .font-pixel-body {{ font-family: var(--font-body); }}
-
-        /* VIDEO DEL CALDERO DE FONDO */
         .video-bg {{
             position: fixed;
             top: 50%; left: 50%;
             min-width: 100%; min-height: 100%;
             width: auto; height: auto;
-            transform: translate(-50%, -50%) scale(1.06);
+            transform: translate(-50%, -50%) scale(1.05);
             z-index: -3;
             object-fit: cover;
             pointer-events: none;
-            transition: filter 1.3s ease-in-out;
+            transition: filter 1.2s ease-in-out;
         }}
 
         .procedural-bg {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at center, #1b4931, #08120c);
+            background: radial-gradient(circle at center, #1b533d, #081a13);
             z-index: -3;
         }}
 
-        .bg-cauldron-overlay {{
+        .bg-tint-overlay {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at center, rgba(14, 46, 31, 0.45) 0%, rgba(4, 13, 9, 0.92) 100%);
+            background: radial-gradient(circle at center, rgba(16, 56, 38, 0.45) 0%, rgba(5, 18, 12, 0.88) 100%);
             mix-blend-mode: multiply;
             pointer-events: none;
             z-index: -2;
         }}
 
         .filter-ronda-1 {{ filter: hue-rotate(95deg) saturate(140%) brightness(0.72) contrast(1.15); }}
-        .filter-ronda-2 {{ filter: hue-rotate(40deg) saturate(160%) brightness(0.82) contrast(1.2); }}
-        .filter-ronda-3 {{ filter: hue-rotate(150deg) saturate(130%) brightness(0.68) contrast(1.18); }}
+        .filter-ronda-2 {{ filter: hue-rotate(60deg) saturate(150%) brightness(0.8) contrast(1.2); }}
+        .filter-ronda-3 {{ filter: hue-rotate(150deg) saturate(135%) brightness(0.68) contrast(1.15); }}
 
-        /* PANELES DE PIEDRA RUNICA Y ORO ALQUÍMICO */
-        .alch-stone-panel {{
-            background: #1a1c23;
-            border: 4px solid #0f1116;
-            border-radius: 8px;
-            box-shadow: 0 6px 0 #08090b, 0 12px 20px rgba(0,0,0,0.85), inset 0 0 0 2px #393e4d;
+        /* PANELES Y VENTANAS ESTILO BALATRO */
+        .balatro-box {{
+            background: #2b313b;
+            border: 4px solid #171b21;
+            border-radius: 12px;
+            box-shadow: 0 10px 0 #121418, 0 16px 25px rgba(0,0,0,0.85);
             position: relative;
         }}
 
-        .alch-inner-plate {{
-            background: #111318;
-            border: 2px solid #282c37;
-            border-radius: 6px;
-            box-shadow: inset 0 3px 6px rgba(0,0,0,0.7);
-        }}
-
-        .alch-banner-gold {{
-            background: linear-gradient(180deg, #c99318 0%, #8c6307 100%);
-            border: 3px solid #0f1116;
-            border-radius: 6px;
-            box-shadow: 0 4px 0 #4f3803;
-            color: #ffffff;
-            text-shadow: 2px 2px 0 #281d02;
-        }}
-
-        .alch-btn-gold {{
-            font-family: var(--font-title);
-            background: linear-gradient(180deg, #dfa92a 0%, #aa770d 100%);
-            border: 3px solid #14161d;
+        .balatro-box-inner {{
+            background: #1e2229;
+            border: 3px solid #111418;
             border-radius: 8px;
-            box-shadow: 0 6px 0 #573c03, 0 8px 14px rgba(0,0,0,0.6);
-            color: #ffffff;
-            text-shadow: 2px 2px 0 #2d1e01;
-            transition: transform 0.08s ease, box-shadow 0.08s ease;
-        }}
-        .alch-btn-gold:hover {{
-            background: linear-gradient(180deg, #ecc045 0%, #be8913 100%);
-        }}
-        .alch-btn-gold:active {{
-            transform: translateY(4px);
-            box-shadow: 0 2px 0 #573c03, 0 3px 6px rgba(0,0,0,0.6);
         }}
 
-        .alch-btn-transmute {{
-            font-family: var(--font-title);
-            background: linear-gradient(180deg, #3aa773 0%, #1f6b47 100%);
-            border: 3px solid #0f1116;
+        .balatro-header-badge {{
+            background: #e12d39;
+            border: 3px solid #14171c;
+            border-radius: 8px;
+            box-shadow: 0 5px 0 #8c161d;
+            color: #ffffff;
+            text-shadow: 2px 2px 0 #570b10;
+        }}
+
+        .balatro-input {{
+            background: #111317;
+            border: 3px solid #363c48;
+            border-radius: 8px;
+            box-shadow: inset 0 4px 6px rgba(0,0,0,0.7);
+            color: #ffffff;
+        }}
+        .balatro-input:focus {{
+            border-color: #f1b31c;
+            outline: none;
+        }}
+
+        .balatro-btn-orange {{
+            background: #ef5b25;
+            border: 3px solid #171b21;
+            border-radius: 8px;
+            box-shadow: 0 6px 0 #9e330e, 0 8px 12px rgba(0,0,0,0.6);
+            color: #ffffff;
+            text-shadow: 2px 2px 0 #5d1b04;
+            transition: transform 0.08s ease, box-shadow 0.08s ease;
+        }}
+        .balatro-btn-orange:hover {{
+            background: #f86a36;
+        }}
+        .balatro-btn-orange:active {{
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #9e330e, 0 3px 6px rgba(0,0,0,0.6);
+        }}
+
+        .balatro-btn-blue {{
+            background: #0077c8;
+            border: 3px solid #171b21;
+            border-radius: 8px;
+            box-shadow: 0 6px 0 #004677, 0 8px 12px rgba(0,0,0,0.6);
+            color: #ffffff;
+            text-shadow: 2px 2px 0 #002844;
+            transition: transform 0.08s ease, box-shadow 0.08s ease;
+        }}
+        .balatro-btn-blue:hover {{
+            background: #118ee6;
+        }}
+        .balatro-btn-blue:active {{
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #004677, 0 3px 6px rgba(0,0,0,0.6);
+        }}
+
+        /* NAIPES DE BALATRO */
+        .balatro-card {{
+            width: 104px;
+            height: 148px;
+            background: linear-gradient(175deg, #ffffff 0%, #f6f3ea 70%, #ece6d8 100%);
             border-radius: 10px;
-            box-shadow: 0 7px 0 #0d3823, 0 10px 18px rgba(0,0,0,0.7);
-            color: #ffffff;
-            text-shadow: 2px 2px 0 #082215;
-            transition: transform 0.08s ease, box-shadow 0.08s ease;
-        }}
-        .alch-btn-transmute:hover {{
-            background: linear-gradient(180deg, #4bc68b 0%, #298559 100%);
-        }}
-        .alch-btn-transmute:active {{
-            transform: translateY(4px);
-            box-shadow: 0 3px 0 #0d3823, 0 4px 8px rgba(0,0,0,0.7);
-        }}
-
-        /* ========================================================
-           TALISMANES / FRASCOS ALQUÍMICOS (EN VEZ DE NAIPES)
-           ======================================================== */
-        .alch-reagent {{
-            width: 108px;
-            height: 154px;
-            background: linear-gradient(180deg, #2b313d 0%, #1c2028 65%, #13161c 100%);
-            border: 3px solid #0f1116;
-            border-radius: 14px 14px 18px 18px;
-            box-shadow: 0 7px 0 #090a0d, 0 12px 18px rgba(0,0,0,0.7), inset 0 0 0 2px #444c5f;
+            border: 2px solid #232731;
+            box-shadow: 0 6px 0 #12141a, 0 10px 18px rgba(0,0,0,0.65);
             position: relative;
             cursor: pointer;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 6px;
-            transition: transform 0.16s cubic-bezier(0.2, 0.9, 0.3, 1.2), box-shadow 0.16s ease, border-color 0.16s ease;
-        }}
-
-        /* Cuello de frasco de alquimia */
-        .reagent-neck {{
-            width: 44px;
-            height: 9px;
-            background: #b58b29;
-            border: 2px solid #0f1116;
-            border-radius: 4px;
-            box-shadow: 0 2px 0 #5f4810, inset 0 1px 0 rgba(255,255,255,0.4);
-            margin-bottom: 2px;
-        }}
-
-        /* Glifo de cabecera (Tipo de reactivo) */
-        .reagent-header-glyph {{
-            font-family: var(--font-title);
-            font-size: 10px;
-            letter-spacing: 1px;
-            line-height: 1;
-            padding: 2px 6px;
-            border-radius: 4px;
-            border: 1px solid rgba(0,0,0,0.4);
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
-        }}
-
-        /* Contenedor del término central */
-        .reagent-core {{
-            flex-grow: 1;
-            width: 90%;
-            margin: 4px 0;
-            background: radial-gradient(circle at center, rgba(30, 48, 41, 0.75) 0%, rgba(13, 20, 18, 0.95) 100%);
-            border: 2px solid #2f3e37;
-            border-radius: 8px;
-            display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            overflow: hidden;
-            box-shadow: inset 0 0 12px rgba(0,0,0,0.8);
+            transition: transform 0.16s cubic-bezier(0.2, 0.9, 0.3, 1.2), box-shadow 0.16s ease;
         }}
 
-        /* Líquido mágico en el fondo del frasco */
-        .reagent-liquid-glow {{
+        .card-inner-frame {{
             position: absolute;
-            bottom: -15px; left: -10%; width: 120%; height: 50%;
-            border-radius: 50%;
-            opacity: 0.35;
-            filter: blur(8px);
+            top: 5px; left: 5px; right: 5px; bottom: 5px;
+            border: 1px dashed rgba(50, 50, 50, 0.22);
+            border-radius: 6px;
             pointer-events: none;
         }}
 
-        .term-math {{
-            font-family: var(--font-body);
-            font-size: 2.25rem;
+        .card-pip-tl {{
+            position: absolute;
+            top: 6px; left: 8px;
+            display: flex; flex-direction: column; align-items: center;
+            line-height: 0.95;
+            pointer-events: none;
+        }}
+        .card-pip-br {{
+            position: absolute;
+            bottom: 6px; right: 8px;
+            display: flex; flex-direction: column; align-items: center;
+            line-height: 0.95;
+            transform: rotate(180deg);
+            pointer-events: none;
+        }}
+
+        .pip-val {{
+            font-family: var(--font-balatro);
+            font-size: 13px;
             font-weight: bold;
-            color: #ffffff;
+        }}
+        .pip-suit {{
+            font-size: 11px;
+            margin-top: 1px;
+        }}
+
+        .term-main {{
+            font-family: var(--font-balatro);
+            font-size: 1.85rem;
+            color: #1a1c22;
             text-align: center;
+            padding: 0 6px;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.12);
             line-height: 1;
-            letter-spacing: -0.5px;
-            text-shadow: 2px 2px 0 #000, 0 0 12px rgba(255,255,255,0.3);
             z-index: 2;
         }}
 
-        .reagent-pedestal {{
-            font-family: var(--font-title);
-            font-size: 8px;
-            color: #a4b2c6;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }}
-
-        /* Flotación mágica en reposo */
-        @keyframes reagent-hover-1 {{
+        @keyframes balatro-sway-1 {{
             0%, 100% {{ transform: translateY(0px) rotate(-1.5deg); }}
-            50% {{ transform: translateY(-8px) rotate(1.2deg); }}
+            50% {{ transform: translateY(-7px) rotate(1.2deg); }}
         }}
-        @keyframes reagent-hover-2 {{
-            0%, 100% {{ transform: translateY(-5px) rotate(1.4deg); }}
-            50% {{ transform: translateY(4px) rotate(-1.6deg); }}
+        @keyframes balatro-sway-2 {{
+            0%, 100% {{ transform: translateY(-5px) rotate(1.3deg); }}
+            50% {{ transform: translateY(3px) rotate(-1.7deg); }}
         }}
-        @keyframes reagent-hover-3 {{
-            0%, 100% {{ transform: translateY(2px) rotate(-1deg); }}
-            50% {{ transform: translateY(-7px) rotate(1.6deg); }}
+        @keyframes balatro-sway-3 {{
+            0%, 100% {{ transform: translateY(2px) rotate(-0.9deg); }}
+            50% {{ transform: translateY(-6px) rotate(1.5deg); }}
         }}
 
-        .idle-sway-1 {{ animation: reagent-hover-1 3.2s ease-in-out infinite; }}
-        .idle-sway-2 {{ animation: reagent-hover-2 3.8s ease-in-out infinite; }}
-        .idle-sway-3 {{ animation: reagent-hover-3 4.1s ease-in-out infinite; }}
+        .idle-sway-1 {{ animation: balatro-sway-1 3.2s ease-in-out infinite; }}
+        .idle-sway-2 {{ animation: balatro-sway-2 3.8s ease-in-out infinite; }}
+        .idle-sway-3 {{ animation: balatro-sway-3 4.1s ease-in-out infinite; }}
 
-        .alch-reagent:hover {{
-            transform: translateY(-16px) scale(1.06) rotate(0deg) !important;
+        .balatro-card:hover {{
+            transform: translateY(-16px) scale(1.05) rotate(0deg) !important;
             animation-play-state: paused;
-            box-shadow: 0 14px 0 #090a0d, 0 20px 25px rgba(0,0,0,0.8), inset 0 0 0 2px #626e89;
+            box-shadow: 0 12px 0 #12141a, 0 18px 24px rgba(0,0,0,0.7);
             z-index: 20;
         }}
-
-        /* Estado seleccionado (Activo en el caldero) */
-        .alch-reagent.selected {{
-            transform: translateY(-26px) scale(1.1) rotate(0deg) !important;
+        .balatro-card.selected {{
+            transform: translateY(-26px) scale(1.08) rotate(0deg) !important;
             animation-play-state: paused;
-            border-color: #ffd447;
-            box-shadow: 0 14px 0 #7e5c08, 0 0 0 3px #ffd447, 0 22px 30px rgba(0,0,0,0.9), 0 0 20px rgba(255,212,71,0.5) !important;
+            border-color: #f1b31c;
+            box-shadow: 0 12px 0 #9e330e, 0 0 0 3px #f1b31c, 0 20px 28px rgba(0,0,0,0.8) !important;
             z-index: 30;
-        }}
-        .alch-reagent.selected .reagent-core {{
-            border-color: #ffd447;
-            background: radial-gradient(circle at center, rgba(50, 75, 45, 0.85) 0%, rgba(18, 30, 20, 0.95) 100%);
         }}
 
         @media (max-width: 640px) {{
-            .alch-reagent {{ width: 86px !important; height: 128px !important; }}
-            .reagent-neck {{ width: 34px !important; height: 7px !important; }}
-            .reagent-header-glyph {{ font-size: 8px !important; }}
-            .term-math {{ font-size: 1.65rem !important; }}
-            .reagent-pedestal {{ font-size: 7px !important; }}
-            #hand-container {{ min-height: 180px !important; }}
+            .balatro-card {{ width: 84px !important; height: 122px !important; }}
+            .term-main {{ font-size: 1.35rem !important; }}
+            .pip-val {{ font-size: 10px !important; }}
+            .pip-suit {{ font-size: 9px !important; }}
+            #hand-container {{ min-height: 200px !important; }}
         }}
 
-        /* LLAMA DE ESENCIA TRANSMUTADA */
-        @keyframes essence-burn {{
-            0% {{ text-shadow: 0 0 10px #4deeea, 0 -6px 18px #22c55e, 0 -12px 25px #ffd447; transform: scale(1); }}
-            50% {{ text-shadow: 0 0 25px #4deeea, 0 -10px 30px #22c55e, 0 -18px 36px #ffd447; transform: scale(1.12); }}
-            100% {{ text-shadow: 0 0 10px #4deeea, 0 -6px 18px #22c55e, 0 -12px 25px #ffd447; transform: scale(1); }}
+        @keyframes flame-flicker {{
+            0% {{ text-shadow: 0 0 10px #ff5a00, 0 -5px 15px #ff9c00, 0 -10px 20px #ffce00; transform: scale(1); }}
+            50% {{ text-shadow: 0 0 22px #ff5a00, 0 -10px 28px #ff9c00, 0 -15px 32px #ffce00; transform: scale(1.1); }}
+            100% {{ text-shadow: 0 0 10px #ff5a00, 0 -5px 15px #ff9c00, 0 -10px 20px #ffce00; transform: scale(1); }}
         }}
-        .essence-flame {{
-            color: #ffffff;
-            font-family: var(--font-title);
-            animation: essence-burn 0.6s infinite alternate;
-        }}
+        .score-flame {{ color: #fff; animation: flame-flicker 0.6s infinite alternate; font-family: var(--font-balatro); }}
 
         @keyframes shake {{
             0%, 100% {{ transform: translateX(0); }}
@@ -401,134 +384,133 @@ GAME_HTML = f"""
 
         #fx-canvas {{ position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; }}
         .lb-scroll::-webkit-scrollbar {{ width: 5px; }}
-        .lb-scroll::-webkit-scrollbar-thumb {{ background: #444c5f; border-radius: 4px; }}
+        .lb-scroll::-webkit-scrollbar-thumb {{ background: #3c4452; border-radius: 4px; }}
     </style>
 </head>
 <body class="p-2 sm:p-4">
     {video_html_tag}
-    <div class="bg-cauldron-overlay"></div>
+    <div class="bg-tint-overlay"></div>
     <canvas id="fx-canvas"></canvas>
 
-    <!-- INTRO MODAL: PÓRTICO ARCANO -->
+    <!-- INTRO MODAL -->
     <div id="intro-modal" class="fixed inset-0 bg-black/85 z-[1000] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="alch-stone-panel max-w-sm w-full p-6 text-center">
-            <div class="alch-banner-gold py-3 px-4 mb-5 transform -rotate-1 inline-block w-full">
-                <h1 class="font-pixel-title text-xl sm:text-2xl tracking-wide">ALQUIMIA ARCANA</h1>
-                <p class="font-pixel-body text-sm text-yellow-100 tracking-widest mt-1">TRANSMUTACIÓN • FACTOR COMÚN</p>
+        <div class="balatro-box max-w-sm w-full p-6 text-center">
+            <div class="balatro-header-badge py-3 px-4 mb-5 transform -rotate-1 inline-block w-full">
+                <h1 class="text-2xl sm:text-3xl tracking-wide">FACTOR COMÚN</h1>
+                <p class="text-[9px] opacity-90 tracking-widest mt-1">MATEMÁTICA BÁSICA • UCR</p>
             </div>
             
-            <div class="alch-inner-plate p-4 mb-5 text-left">
-                <label class="block font-pixel-title text-[9px] text-gray-400 mb-2 tracking-wider">NOMBRE DEL APRENDIZ:</label>
-                <input type="text" id="username-input" class="w-full bg-[#090b0e] border-2 border-[#2b313e] focus:border-[#ffd447] text-[#ffd447] font-pixel-body text-xl p-3 text-center uppercase tracking-widest outline-none rounded" placeholder="TU NOMBRE" maxlength="12">
+            <div class="balatro-box-inner p-4 mb-5 text-left">
+                <label class="block text-[10px] text-gray-400 mb-2 tracking-wider">APODO DEL JUGADOR:</label>
+                <input type="text" id="username-input" class="balatro-input w-full p-3 text-center uppercase tracking-wider text-sm font-bold" placeholder="TU NOMBRE" maxlength="12">
             </div>
 
-            <button onclick="startGameFromIntro()" class="alch-btn-gold w-full py-4 text-xs sm:text-sm tracking-widest">
-                INICIAR TRANSMUTACIÓN
+            <button onclick="startGameFromIntro()" class="balatro-btn-orange w-full py-4 text-sm font-bold tracking-wider">
+                ENTRAR AL JUEGO
             </button>
         </div>
     </div>
 
-    <!-- BOTONES AUXILIARES INFERIORES -->
+    <!-- BOTONES INFERIORES -->
     <div class="fixed bottom-3 left-3 z-40">
-        <button onclick="toggleTutorial()" class="alch-stone-panel font-pixel-title text-[9px] sm:text-[10px] text-yellow-300 px-3.5 py-2.5 active:translate-y-1">
-            📜 GRIMORIO
+        <button onclick="toggleTutorial()" class="balatro-btn-blue text-[10px] sm:text-xs px-3.5 py-2.5">
+            💡 TUTO
         </button>
     </div>
     <div class="fixed bottom-3 right-3 z-40">
-        <button onclick="toggleLeaderboard()" class="alch-stone-panel font-pixel-title text-[9px] sm:text-[10px] text-cyan-300 px-3.5 py-2.5 active:translate-y-1">
-            🏆 LOGIA
+        <button onclick="toggleLeaderboard()" class="balatro-btn-orange text-[10px] sm:text-xs px-3.5 py-2.5">
+            🏆 RANK
         </button>
     </div>
 
-    <!-- GRIMORIO (TUTORIAL DIDÁCTICO) -->
-    <div id="tutorial-panel" class="fixed left-0 top-0 h-full w-72 sm:w-80 bg-[#14161c] border-r-4 border-[#090a0d] p-4 flex flex-col z-50 transform -translate-x-full transition-transform duration-300 shadow-2xl">
+    <!-- PANEL TUTORIAL -->
+    <div id="tutorial-panel" class="fixed left-0 top-0 h-full w-72 bg-[#1b1f26] border-r-4 border-[#121418] p-4 flex flex-col z-50 transform -translate-x-full transition-transform duration-300 shadow-2xl">
         <div class="flex justify-between items-center mb-4 border-b-2 border-white/10 pb-2">
-            <div class="alch-banner-gold font-pixel-title px-3 py-1 text-[10px]">REGLAS ALQUÍMICAS</div>
-            <button onclick="toggleTutorial()" class="text-white text-xl font-bold">✕</button>
+            <div class="balatro-header-badge px-3 py-1 text-[10px]">CÓMO JUGAR</div>
+            <button onclick="toggleTutorial()" class="text-white text-lg font-bold">✕</button>
         </div>
-        <div class="alch-inner-plate p-3 text-2xl text-center mb-3">
-            🍎🍉 <span class="text-emerald-400">+</span> 🍎🍌
+        <div class="balatro-box-inner p-3 text-2xl text-center mb-3">
+            🍎🍉 <span class="text-red-400">+</span> 🍎🍌
         </div>
-        <p class="font-pixel-title text-[9px] text-yellow-300 text-center mb-3">DESTILA EL ELEMENTO COMÚN (🍎)</p>
-        <div class="alch-inner-plate p-3 text-2xl text-center mb-4">
-            🍎<span class="text-gray-400">(</span>🍉 <span class="text-emerald-400">+</span> 🍌<span class="text-gray-400">)</span>
+        <p class="text-[10px] text-yellow-300 text-center mb-3">SACA LO QUE SE REPITE (🍎)</p>
+        <div class="balatro-box-inner p-3 text-2xl text-center mb-4">
+            🍎<span class="text-gray-400">(</span>🍉 <span class="text-red-400">+</span> 🍌<span class="text-gray-400">)</span>
         </div>
-        <div class="font-pixel-body text-base text-gray-300 leading-relaxed space-y-2">
-            <p>1. Selecciona 2 o más reactivos que compartan divisores o letras con exponentes comunes.</p>
-            <p>2. Presiona <b>"TRANSMUTAR"</b> para purificar la fórmula y ganar esencia alquímica.</p>
-            <p>3. Los reactivos no transmutados permanecerán en tu mesa para la siguiente fase.</p>
+        <div class="text-[10px] text-gray-300 leading-relaxed font-sub space-y-2">
+            <p>1. Selecciona 2 o más cartas que compartan divisores o variables comunes.</p>
+            <p>2. Presiona "JUGAR MANO" para acumular puntos multiplicados.</p>
+            <p>3. Las cartas no jugadas permanecen en tu mano para la siguiente ronda.</p>
         </div>
     </div>
 
-    <!-- LOGIA ARCANA (RANKING DEL AULA) -->
-    <aside id="leaderboard-panel" class="fixed right-0 top-0 h-full w-72 sm:w-80 bg-[#14161c] border-l-4 border-[#090a0d] p-4 flex flex-col z-50 transform translate-x-full transition-transform duration-300 shadow-2xl">
+    <!-- PANEL CLASIFICACIÓN -->
+    <aside id="leaderboard-panel" class="fixed right-0 top-0 h-full w-72 bg-[#1b1f26] border-l-4 border-[#121418] p-4 flex flex-col z-50 transform translate-x-full transition-transform duration-300 shadow-2xl">
         <div class="flex justify-between items-center mb-3 border-b-2 border-white/10 pb-2">
-            <button onclick="toggleLeaderboard()" class="text-white text-xl font-bold">✕</button>
-            <div class="alch-banner-gold font-pixel-title px-3 py-1 text-[10px]">MAESTROS ALQUIMISTAS</div>
+            <button onclick="toggleLeaderboard()" class="text-white text-lg font-bold">✕</button>
+            <div class="balatro-header-badge px-3 py-1 text-[10px]">POSICIONES</div>
         </div>
-        <div class="font-pixel-body text-xs text-gray-400 mb-2 text-center">APRENDICES EN VIVO • IF0003</div>
+        <div class="text-[9px] text-gray-400 mb-2 text-center">COMPITIENDO EN EL AULA</div>
         <div id="leaderboard" class="flex-grow overflow-y-auto lb-scroll flex flex-col gap-1.5 pr-1"></div>
     </aside>
 
-    <!-- HEADER SUPERIOR: CALDERO, RELIQUIAS Y ESENCIA -->
+    <!-- HEADER SUPERIOR -->
     <header class="flex justify-between items-center z-10 max-w-5xl mx-auto w-full gap-2 px-1">
-        <div class="alch-stone-panel px-3.5 py-2 text-center min-w-[95px] sm:min-w-[125px]">
-            <div class="font-pixel-title text-[8px] sm:text-[9px] text-gray-400">ETAPA <span id="level-display" class="text-yellow-400 text-xs sm:text-sm">1</span></div>
-            <div class="font-pixel-title text-[7px] sm:text-[8px] text-gray-300 mt-0.5">FASE <span id="round-display" class="text-cyan-300">1</span>/3</div>
+        <div class="balatro-box px-3.5 py-2 text-center min-w-[95px] sm:min-w-[120px]">
+            <div class="text-[8px] sm:text-[10px] text-gray-400">NIVEL <span id="level-display" class="text-yellow-400 text-sm sm:text-base">1</span></div>
+            <div class="text-[7px] sm:text-[9px] text-gray-300 mt-0.5">RONDA <span id="round-display" class="text-white">1</span>/3</div>
         </div>
 
-        <!-- 3 Reliquias Mágicas (Comodines) -->
         <div class="flex justify-center gap-1.5 sm:gap-2.5">
-            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Ojo de Adivino: Detecta la esencia dominante" class="alch-stone-panel p-2 sm:p-2.5 text-base sm:text-xl relative active:translate-y-1">
+            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="balatro-box p-2 sm:p-2.5 text-base sm:text-xl relative active:translate-y-1">
                 👁️
-                <span id="qty-reveal" class="font-pixel-title absolute -top-2 -right-2 bg-emerald-600 text-white text-[8px] px-1 rounded-full border border-black">1</span>
+                <span id="qty-reveal" class="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] px-1 rounded-full border border-black">1</span>
             </button>
-            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Revolver Caldero: Genera nuevos reactivos" class="alch-stone-panel p-2 sm:p-2.5 text-base sm:text-xl relative active:translate-y-1">
-                🌪️
-                <span id="qty-reroll" class="font-pixel-title absolute -top-2 -right-2 bg-purple-600 text-white text-[8px] px-1 rounded-full border border-black">1</span>
+            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano" class="balatro-box p-2 sm:p-2.5 text-base sm:text-xl relative active:translate-y-1">
+                🎲
+                <span id="qty-reroll" class="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] px-1 rounded-full border border-black">1</span>
             </button>
-            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Piedra Filosofal: Transmutación perfecta inmediata" class="alch-stone-panel p-2 sm:p-2.5 text-base sm:text-xl relative active:translate-y-1 opacity-40">
-                💎
-                <span id="qty-skip" class="font-pixel-title absolute -top-2 -right-2 bg-yellow-500 text-black text-[8px] px-1 rounded-full border border-black">0</span>
+            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar nivel" class="balatro-box p-2 sm:p-2.5 text-base sm:text-xl relative active:translate-y-1 opacity-40">
+                ⏭️
+                <span id="qty-skip" class="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] px-1 rounded-full border border-black">0</span>
             </button>
         </div>
 
-        <div class="alch-stone-panel px-3.5 py-2 text-center min-w-[95px] sm:min-w-[125px]">
-            <div class="font-pixel-title text-[8px] sm:text-[9px] text-gray-400">ESENCIA</div>
-            <div id="total-score" class="font-pixel-body text-xl sm:text-2xl text-yellow-400 leading-none mt-1">0</div>
-            <div class="font-pixel-title text-[7px] text-gray-400 mt-0.5">Rango: <span id="player-rank">#25</span></div>
+        <div class="balatro-box px-3.5 py-2 text-center min-w-[95px] sm:min-w-[120px]">
+            <div class="text-[8px] sm:text-[10px] text-gray-400">PUNTOS</div>
+            <div id="total-score" class="text-sm sm:text-lg text-yellow-400 mt-0.5">0</div>
+            <div class="text-[7px] text-gray-400">Rank: <span id="player-rank">#25</span></div>
         </div>
     </header>
 
-    <!-- ZONA CENTRAL DE TRANSMUTACIÓN -->
+    <!-- ÁREA DE CARTAS -->
     <main class="flex-grow flex flex-col items-center justify-center relative w-full max-w-5xl mx-auto my-auto">
         <div id="hand-container" class="flex justify-center items-center flex-wrap gap-2.5 sm:gap-4 w-full px-2 mb-6"></div>
 
-        <button id="btn-play" onclick="playHand()" disabled class="alch-stone-panel bg-[#15171d] text-gray-500 font-pixel-title px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed">
-            TRANSMUTAR
+        <button id="btn-play" onclick="playHand()" disabled class="balatro-box bg-[#1b1e25] text-gray-500 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed">
+            JUGAR MANO
         </button>
 
         <div id="flame-score-container" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 hidden opacity-0 transition-opacity duration-300 z-40 pointer-events-none text-center">
-            <div id="flame-score" class="text-3xl sm:text-5xl essence-flame tracking-wider drop-shadow-[0_0_35px_#4deeea]">0</div>
+            <div id="flame-score" class="text-4xl sm:text-6xl score-flame tracking-wider drop-shadow-[0_0_35px_#ff4500]">0</div>
         </div>
     </main>
 
-    <!-- MODAL FIN DE ETAPA -->
+    <!-- MODAL FIN DE NIVEL -->
     <div id="level-modal" class="fixed inset-0 bg-black/85 z-50 hidden flex items-center justify-center backdrop-blur-sm p-4">
-        <div class="alch-stone-panel max-w-sm w-full p-6 text-center">
-            <div class="alch-banner-gold py-2 px-4 mb-4 transform -rotate-1 inline-block w-full">
-                <h2 class="font-pixel-title text-lg sm:text-xl">ETAPA PURIFICADA</h2>
+        <div class="balatro-box max-w-sm w-full p-6 text-center">
+            <div class="balatro-header-badge py-2 px-4 mb-4 transform -rotate-1 inline-block w-full">
+                <h2 class="text-xl sm:text-2xl">NIVEL COMPLETADO</h2>
             </div>
             <div class="flex justify-center gap-3 my-4" id="modal-stars"></div>
-            <p id="modal-desc" class="alch-inner-plate p-3 text-gray-200 font-pixel-body text-base leading-relaxed mb-5"></p>
-            <button onclick="nextLevel()" class="alch-btn-gold w-full py-3.5 text-xs tracking-wider">
-                SIGUIENTE ETAPA ➔
+            <p id="modal-desc" class="balatro-box-inner p-3 text-gray-300 text-[10px] leading-relaxed mb-5 font-sub"></p>
+            <button onclick="nextLevel()" class="balatro-btn-orange w-full py-3.5 text-xs tracking-wider">
+                SIGUIENTE NIVEL ➔
             </button>
         </div>
     </div>
 
-    <!-- ALERTA ARCANAS -->
-    <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 alch-banner-gold font-pixel-body text-base sm:text-lg px-5 py-2.5 z-50 hidden transition-opacity text-center max-w-[90vw]">
+    <!-- ALERTA BALATRO -->
+    <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 balatro-header-badge text-[10px] sm:text-xs px-5 py-3 z-50 hidden transition-opacity text-center max-w-[90vw]">
         <span id="alert-text"></span>
     </div>
 
@@ -547,13 +529,13 @@ GAME_HTML = f"""
         }}
 
         const SFX = {{
-            hover: () => playTone(360, 'sine', 0.08, 0.03),
-            select: () => playTone(580, 'triangle', 0.12, 0.12),
-            error: () => {{ playTone(120, 'sawtooth', 0.25, 0.25); setTimeout(() => playTone(80, 'sawtooth', 0.35, 0.25), 100); }},
-            flamePop: () => {{ playTone(220, 'sine', 0.35, 0.3); setTimeout(() => playTone(330, 'triangle', 0.25, 0.25), 60); }},
-            star: () => {{ playTone(880, 'sine', 0.3, 0.2); setTimeout(()=>playTone(1174, 'sine', 0.4, 0.2), 100); }},
-            discard: () => playTone(260, 'triangle', 0.15, 0.15),
-            winRound: () => {{ playTone(523, 'sine', 0.3, 0.2); setTimeout(() => playTone(784, 'sine', 0.3, 0.2), 150); }}
+            hover: () => playTone(320, 'sine', 0.08, 0.04),
+            select: () => playTone(540, 'triangle', 0.12, 0.12),
+            error: () => {{ playTone(130, 'sawtooth', 0.25, 0.25); setTimeout(() => playTone(90, 'sawtooth', 0.35, 0.25), 100); }},
+            flamePop: () => {{ playTone(180, 'sawtooth', 0.28, 0.25); setTimeout(() => playTone(240, 'sawtooth', 0.2, 0.2), 60); }},
+            star: () => {{ playTone(880, 'sine', 0.3, 0.2); setTimeout(()=>playTone(1100, 'sine', 0.4, 0.2), 100); }},
+            discard: () => playTone(240, 'triangle', 0.15, 0.15),
+            winRound: () => {{ playTone(440, 'sine', 0.3, 0.2); setTimeout(() => playTone(659, 'sine', 0.3, 0.2), 150); }}
         }};
 
         let isBgmPlaying = false;
@@ -588,8 +570,8 @@ GAME_HTML = f"""
         let particles = [];
         window.onresize = () => {{ cvs.width = window.innerWidth; cvs.height = window.innerHeight; }};
         window.onresize();
-        function spawnParticles(x, y, count=35) {{
-            const colors = ['#4deeea', '#ffd447', '#22c55e', '#ffffff', '#9d4edd'];
+        function spawnParticles(x, y, count=30) {{
+            const colors = ['#f1b31c', '#0077c8', '#ea2e35', '#ffffff'];
             for(let i=0; i<count; i++) {{
                 const angle = Math.random() * Math.PI * 2; const speed = 2 + Math.random() * 7;
                 particles.push({{ x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed-2, color: colors[Math.floor(Math.random()*colors.length)], size: 3+Math.random()*4, life: 1.0, decay: 0.02+Math.random()*0.02 }});
@@ -607,9 +589,9 @@ GAME_HTML = f"""
         }}
         renderParticles();
 
-        const names = ["Alquimista_U", "Fabiola_P", "Bryan_Q", "Daniela_CR", "Nath_V", "Isaac_H", "Carlos_S", "M_Estela", "K_Navas", "Diego_R", "K_Mora", "Josue_B", "Maria_F", "Valeria_G", "Seidy_T", "Allan_P", "Cesar_O", "Monica_V", "Lucia_Z", "R_Arias", "Erick_L", "S_Díaz", "Karla_C", "Luis_M"];
+        const names = ["Andrey_U", "Fabiola_P", "Bryan_Q", "Daniela_CR", "Nath_V", "Isaac_H", "Carlos_S", "M_Estela", "K_Navas", "Diego_R", "K_Mora", "Josue_B", "Maria_F", "Valeria_G", "Seidy_T", "Allan_P", "Cesar_O", "Monica_V", "Lucia_Z", "R_Arias", "Erick_L", "S_Díaz", "Karla_C", "Luis_M"];
         let leaderboardData = [];
-        let playerName = "APRENDIZ";
+        let playerName = "ESTUDIANTE";
         
         function initLeaderboard() {{
             leaderboardData = names.map(n => ({{ name: n, score: Math.floor(Math.random() * 1100 + 400), level: 1 }}));
@@ -646,10 +628,10 @@ GAME_HTML = f"""
                 
                 const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${{idx+1}}`;
                 const div = document.createElement('div');
-                div.className = `flex justify-between items-center text-sm p-1.5 rounded ${{p.isPlayer ? 'bg-[#1b4332] text-[#ffd447] border border-[#ffd447] font-bold' : 'alch-inner-plate text-gray-300'}}`;
+                div.className = `flex justify-between items-center text-[10px] p-2 rounded ${{p.isPlayer ? 'bg-[#0077c8] text-white font-bold border border-cyan-300' : 'balatro-box-inner text-gray-300'}}`;
                 div.innerHTML = `
-                    <span class="truncate max-w-[130px] font-pixel-body">${{medal}} ${{p.name}} ${{p.isPlayer ? '(TÚ)' : ''}}</span>
-                    <span class="text-yellow-400 font-pixel-body font-bold">${{p.score.toLocaleString()}}</span>
+                    <span class="truncate max-w-[130px]">${{medal}} ${{p.name}} ${{p.isPlayer ? '(TÚ)' : ''}}</span>
+                    <span class="text-yellow-400 font-bold">${{p.score.toLocaleString()}}</span>
                 `;
                 container.appendChild(div);
             }});
@@ -704,11 +686,11 @@ GAME_HTML = f"""
             return s;
         }}
 
-        function getReagentMetadata(card) {{
-            if (card.x > 0 && card.y === 0) return {{ rune: card.x === 1 ? "X" : `X${{card.x}}`, type: "AZUFRE", color: "#eab308", glow: "#ca8a04" }};
-            if (card.y > 0 && card.x === 0) return {{ rune: card.y === 1 ? "Y" : `Y${{card.y}}`, type: "MERCURIO", color: "#38bdf8", glow: "#0284c7" }};
-            if (card.x > 0 && card.y > 0) return {{ rune: "XY", type: "ETHER", color: "#c084fc", glow: "#9333ea" }};
-            return {{ rune: Math.abs(card.c).toString(), type: "SAL", color: "#4ade80", glow: "#16a34a" }};
+        function getCardCornerRank(card) {{
+            if (card.x > 0 && card.y === 0) return card.x === 1 ? "X" : `X${{card.x}}`;
+            if (card.y > 0 && card.x === 0) return card.y === 1 ? "Y" : `Y${{card.y}}`;
+            if (card.x > 0 && card.y > 0) return "XY";
+            return Math.abs(card.c).toString();
         }}
 
         function updateBackgroundForRound() {{
@@ -737,7 +719,11 @@ GAME_HTML = f"""
             }}
 
             if (c === 0) c = 1;
-            return {{ c, x, y, str: formatTerm(c,x,y), selected: false, id: nextCardId++ }};
+            const suits = ['♠', '♥', '♦', '♣'];
+            const suit = suits[Math.floor(Math.random() * suits.length)];
+            const suitColor = (suit === '♥' || suit === '♦') ? '#ea2e35' : '#0077c8';
+
+            return {{ c, x, y, str: formatTerm(c,x,y), suit, suitColor, selected: false, id: nextCardId++ }};
         }}
 
         function getCommonFactorInfo(cards) {{
@@ -757,7 +743,7 @@ GAME_HTML = f"""
             for(let i=1; i < (1<<n); i++) {{
                 let subset = [];
                 for(let j=0; j<n; j++) {{
-                    if((i & (1<<j))) subset.push(currentHand[j]);
+                    if((i & (1<<j))) subset.push(hand[j]);
                 }}
                 if(subset.length > 1) {{
                     const info = getCommonFactorInfo(subset);
@@ -800,20 +786,21 @@ GAME_HTML = f"""
             hand.forEach((card, idx) => {{
                 const el = document.createElement('div');
                 const swayClass = idx % 3 === 0 ? 'idle-sway-1' : (idx % 3 === 1 ? 'idle-sway-2' : 'idle-sway-3');
-                el.className = `alch-reagent ${{card.selected ? 'selected' : swayClass}}`;
+                el.className = `balatro-card ${{card.selected ? 'selected' : swayClass}}`;
                 
-                const meta = getReagentMetadata(card);
+                const cornerRank = getCardCornerRank(card);
 
                 el.innerHTML = `
-                    <div class="reagent-neck"></div>
-                    <div class="reagent-header-glyph" style="background: ${{meta.color}}22; color: ${{meta.color}}; border-color: ${{meta.color}}66;">
-                        ${{meta.rune}}
+                    <div class="card-inner-frame"></div>
+                    <div class="card-pip-tl" style="color: ${{card.suitColor}};">
+                        <span class="pip-val">${{cornerRank}}</span>
+                        <span class="pip-suit">${{card.suit}}</span>
                     </div>
-                    <div class="reagent-core">
-                        <div class="reagent-liquid-glow" style="background: ${{meta.glow}};"></div>
-                        <div class="term-math">${{card.str}}</div>
+                    <div class="term-main">${{card.str}}</div>
+                    <div class="card-pip-br" style="color: ${{card.suitColor}};">
+                        <span class="pip-val">${{cornerRank}}</span>
+                        <span class="pip-suit">${{card.suit}}</span>
                     </div>
-                    <div class="reagent-pedestal">${{meta.type}}</div>
                 `;
                 
                 el.onclick = () => {{
@@ -830,10 +817,10 @@ GAME_HTML = f"""
             const selected = hand.filter(c => c.selected);
             if(selected.length > 0) {{
                 btnPlay.disabled = false;
-                btnPlay.className = "alch-btn-transmute px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest cursor-pointer";
+                btnPlay.className = "balatro-btn-orange px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest cursor-pointer";
             }} else {{
                 btnPlay.disabled = true;
-                btnPlay.className = "alch-stone-panel bg-[#15171d] text-gray-500 font-pixel-title px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed";
+                btnPlay.className = "balatro-box bg-[#1b1e25] text-gray-500 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed";
             }}
         }}
 
@@ -862,7 +849,7 @@ GAME_HTML = f"""
             SFX.flamePop();
             const flameScore = document.getElementById('flame-score');
             const flameContainer = document.getElementById('flame-score-container');
-            flameScore.textContent = "+" + handScore.toLocaleString() + " ESENCIA";
+            flameScore.textContent = "+" + handScore.toLocaleString();
             flameContainer.classList.remove('hidden');
             flameContainer.style.opacity = '1';
             spawnParticles(window.innerWidth/2, window.innerHeight/2, 45);
@@ -900,7 +887,7 @@ GAME_HTML = f"""
             for(let i=0; i<3; i++) {{
                 setTimeout(() => SFX.star(), i * 250);
                 if(i < stars) {{
-                    starContainer.innerHTML += `<span class="text-yellow-400 text-3xl sm:text-4xl drop-shadow-[0_4px_0_#573c03]">★</span>`;
+                    starContainer.innerHTML += `<span class="text-yellow-400 text-3xl sm:text-4xl drop-shadow-[0_4px_0_#9e330e]">★</span>`;
                 }} else {{
                     starContainer.innerHTML += `<span class="text-gray-600 text-3xl sm:text-4xl">★</span>`;
                 }}
@@ -913,9 +900,9 @@ GAME_HTML = f"""
             if(stars === 3) {{
                 comodines.skip++;
                 updateUI();
-                desc.innerHTML = `¡PURIFICACIÓN PERFECTA!<br>Obtuviste la reliquia PIEDRA FILOSOFAL.<br>Bono arcano: +${{bonusScore.toLocaleString()}} esencia`;
+                desc.innerHTML = `¡PRECISIÓN PERFECTA!<br>Ganaste un comodín SALTAR NIVEL.<br>Bono: +${{bonusScore.toLocaleString()}} pts`;
             }} else {{
-                desc.innerHTML = `Precisión: ${{Math.round(precision*100)}}%. Quedaron reactivos sin destilar.<br>Bono arcano: +${{bonusScore.toLocaleString()}} esencia`;
+                desc.innerHTML = `Precisión: ${{Math.round(precision*100)}}%. Hubo términos sin factorizar.<br>Bono: +${{bonusScore.toLocaleString()}} pts`;
             }}
 
             modal.classList.remove('hidden');
@@ -972,9 +959,9 @@ GAME_HTML = f"""
                 }}
                 SFX.select();
                 if(maxSubset > 1) {{
-                    showAlert(`👁️ FACTOR DOMINANTE: <b>${{bestFactor}}</b> (en ${{maxSubset}} reactivos)`);
+                    showAlert(`🔎 FACTOR DOMINANTE: <b>${{bestFactor}}</b> (en ${{maxSubset}} cartas)`);
                 }} else {{
-                    showAlert(`👁️ No hay factores comunes detectables en esta mesa.`);
+                    showAlert(`🔎 No hay factores comunes detectables en esta mano.`);
                 }}
             }} 
             else if (type === 'reroll') {{
@@ -982,7 +969,7 @@ GAME_HTML = f"""
                 SFX.discard();
                 hand = [];
                 startRound();
-                showAlert("🌪️ ¡CALDERO REVUELTO!");
+                showAlert("🎲 ¡MANO CAMBIADA!");
             }}
             else if (type === 'skip') {{
                 comodines.skip--;
@@ -1002,13 +989,13 @@ GAME_HTML = f"""
 components.html(GAME_HTML, height=720, scrolling=False)
 
 with st.sidebar:
-    st.header("⚗️ Alquimia: Factor Común")
+    st.header("🧮 Balatro: Factor Común")
     st.caption("UCR • IF0003 Matemática Básica")
     st.markdown(
         """
         **Mecánica Didáctica:**
-        - **3 Fases por Etapa:** La complejidad de los reactivos monomios escala.
-        - **Factor Común:** Extraer el MCD numérico y las variables comunes de menor exponente.
-        - **Persistencia:** Los reactivos no transmutados se conservan en la siguiente fase.
+        - **3 Rondas por Nivel:** Escala la complejidad de los monomios.
+        - **Factor Común Monomio:** Hallar MCD numérico y variable de menor exponente.
+        - **Reutilización:** Cartas no jugadas pasan a la siguiente ronda.
         """
     )
