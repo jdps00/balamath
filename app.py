@@ -1,5 +1,5 @@
 """
-Balatro: Factor Común - Edición Dark Fantasy 8-Bit
+Balatro: Factor Común - Dark Fantasy 8-Bit Edition
 Curso: IF0003 Matemática Básica para Informática Empresarial
 Universidad de Costa Rica - Recinto de Paraíso
 """
@@ -30,7 +30,7 @@ st.markdown(
         max-width: 100% !important;
     }
     .stApp {
-        background-color: #050608;
+        background-color: #030406;
     }
     iframe {
         border: none !important;
@@ -64,18 +64,18 @@ def get_font_from_zip(zip_pattern, ttf_name_substring="DOS"):
             continue
     return None
 
-# Fondos GIF por estado
+# Fondos GIF según el estado
 bg_game_b64 = get_base64_file("background_gif.gif") or get_base64_file("background.gif")
 bg_reg_b64 = get_base64_file("background_gif_2.gif") or get_base64_file("background_2.gif") or bg_game_b64
 
 # Audio de fondo
 audio_bg_b64 = get_base64_file("background.mp3")
 
-# Imágenes de personajes
+# Imágenes de personajes Pokémon
 ricky_b64 = get_base64_file("ricky.png")
 ariana_b64 = get_base64_file("ariana.png")
 
-# Cargar fuentes: soporte para archivo suelto o dentro del ZIP adjunto
+# Fuentes con soporte de lectura directa en ZIP
 dos_font_b64 = (
     get_base64_file("Perfect DOS VGA 437 Win.ttf") or 
     get_base64_file("Perfect DOS VGA 437.ttf") or
@@ -102,7 +102,7 @@ else:
     font_face_css += """
     @font-face {
         font-family: 'DosVgaFont';
-        src: local('Press Start 2P'), local('Courier New'), monospace;
+        src: local('Courier New'), monospace;
         font-weight: bold;
     }
     """
@@ -112,15 +112,13 @@ if balatro_font_b64:
     @font-face {{
         font-family: 'BalatroFont';
         src: url(data:font/otf;base64,{balatro_font_b64}) format('opentype');
-        font-weight: normal;
-        font-style: normal;
     }}
     """
 else:
     font_face_css += """
     @font-face {
         font-family: 'BalatroFont';
-        src: local('DosVgaFont'), local('Press Start 2P'), monospace;
+        src: local('DosVgaFont'), monospace;
         font-weight: bold;
     }
     """
@@ -136,26 +134,27 @@ if audio_bg_b64:
     </audio>
     """
 
-ricky_img_tag = f'<img src="data:image/png;base64,{ricky_b64}" class="w-full h-full object-contain pixelated" alt="Ricky" />' if ricky_b64 else '<div class="text-xl font-dos">CHICO</div>'
-ariana_img_tag = f'<img src="data:image/png;base64,{ariana_b64}" class="w-full h-full object-contain pixelated" alt="Ariana" />' if ariana_b64 else '<div class="text-xl font-dos">CHICA</div>'
+ricky_img_tag = f'<img src="data:image/png;base64,{ricky_b64}" class="w-full h-full object-contain pixelated" alt="Ricky" />' if ricky_b64 else '<div class="font-dos text-base text-cyan-400 font-bold">[CHICO]</div>'
+ariana_img_tag = f'<img src="data:image/png;base64,{ariana_b64}" class="w-full h-full object-contain pixelated" alt="Ariana" />' if ariana_b64 else '<div class="font-dos text-base text-rose-400 font-bold">[CHICA]</div>'
 
 GAME_HTML = f"""<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Balatro: Factor Común 8-Bit</title>
+    <title>Balatro: Factor Común</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    
     <style>
         {font_face_css}
 
         :root {{
-            --font-dos: 'DosVgaFont', 'Press Start 2P', monospace;
+            --font-dos: 'DosVgaFont', monospace;
             --font-balatro: 'BalatroFont', 'DosVgaFont', monospace;
-            --color-card-cream: #f4edd9;
-            --color-card-border: #14171f;
+            --dark-iron: #090b10;
+            --border-steel: #232a3a;
+            --blood-seal: #8a171e;
+            --gold-relic: #d4a017;
+            --card-cream: #f4edd9;
         }}
 
         * {{
@@ -170,7 +169,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
 
         body {{
-            color: #f0e6d2;
+            color: #ece4d0;
             font-family: var(--font-dos);
             overflow: hidden;
             user-select: none;
@@ -180,7 +179,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            background-color: #050608;
+            background-color: #030406;
         }}
 
         .font-dos {{ font-family: var(--font-dos); }}
@@ -199,106 +198,105 @@ GAME_HTML = f"""<!DOCTYPE html>
             image-rendering: pixelated;
         }}
 
-        .procedural-reg {{
-            background: radial-gradient(circle at center, #1b202c, #07090d);
-        }}
-        .procedural-game {{
-            background: radial-gradient(circle at center, #1a2f26, #050b07);
-        }}
+        .procedural-reg {{ background: radial-gradient(circle at center, #141724, #05060a); }}
+        .procedural-game {{ background: radial-gradient(circle at center, #142820, #030805); }}
 
-        .bg-dark-overlay {{
+        .bg-vignette {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at center, rgba(10, 14, 18, 0.4) 0%, rgba(3, 4, 6, 0.88) 100%);
+            background: radial-gradient(circle at center, rgba(5, 7, 10, 0.35) 0%, rgba(2, 3, 5, 0.94) 100%);
             pointer-events: none;
             z-index: -2;
         }}
 
-        /* BARRAS Y PANELES 8-BIT CON BISEL Y RELIEVE */
-        .pixel-panel-8bit {{
-            background: #181d26;
+        /* ========================================================
+           ARQUITECTURA DE UI PIXEL ART 8-BIT ESTRICTA
+           ======================================================== */
+        .px-panel {{
+            background: #141822;
             border: 4px solid #000000;
             box-shadow: 
-                inset 3px 3px 0 #3b465c,
-                inset -3px -3px 0 #0a0c10,
+                inset 3px 3px 0 #2e374d,
+                inset -3px -3px 0 #080a0e,
                 0 6px 0 #000000;
             position: relative;
         }}
 
-        .pixel-inner-box {{
-            background: #090c12;
+        .px-panel-slot {{
+            background: #080a0f;
             border: 3px solid #000000;
-            box-shadow: inset 2px 2px 0 #000000;
+            box-shadow: inset 2px 2px 0 #1b2130, inset -2px -2px 0 #000000;
         }}
 
-        .pixel-badge-red {{
-            background: #a92329;
-            border: 3px solid #000000;
+        .px-badge-blood {{
+            background: #8b181e;
+            border: 4px solid #000000;
             box-shadow: 
-                inset 2px 2px 0 #e44d53,
-                inset -2px -2px 0 #570b0f,
-                0 4px 0 #000000;
+                inset 3px 3px 0 #ba2f36,
+                inset -3px -3px 0 #4a070b,
+                0 6px 0 #000000;
             color: #ffffff;
             text-shadow: 2px 2px 0 #000000;
         }}
 
-        .pixel-btn-orange {{
+        .px-btn-primary {{
             font-family: var(--font-dos);
-            background: #d85718;
+            background: #c95116;
             border: 4px solid #000000;
             box-shadow: 
-                inset 3px 3px 0 #ff8c4a,
-                inset -3px -3px 0 #732603,
+                inset 4px 4px 0 #ff8244,
+                inset -4px -4px 0 #6e2503,
                 0 6px 0 #000000;
             color: #ffffff;
             text-shadow: 2px 2px 0 #000000;
             transition: transform 0.05s steps(2);
         }}
-        .pixel-btn-orange:hover {{ background: #eb6523; }}
-        .pixel-btn-orange:active {{
+        .px-btn-primary:hover {{ background: #dc5e1e; }}
+        .px-btn-primary:active {{
             transform: translateY(4px);
             box-shadow: 
-                inset 3px 3px 0 #732603,
-                inset -3px -3px 0 #ff8c4a,
+                inset 4px 4px 0 #6e2503,
+                inset -4px -4px 0 #ff8244,
                 0 2px 0 #000000;
         }}
 
-        .pixel-btn-blue {{
+        .px-btn-cyan {{
             font-family: var(--font-dos);
-            background: #1765a0;
+            background: #12588c;
             border: 3px solid #000000;
             box-shadow: 
-                inset 2px 2px 0 #4698dc,
-                inset -2px -2px 0 #0a3355,
-                0 4px 0 #000000;
+                inset 3px 3px 0 #2a83c7,
+                inset -3px -3px 0 #092c47,
+                0 5px 0 #000000;
             color: #ffffff;
             text-shadow: 2px 2px 0 #000000;
         }}
 
         /* SELECCIÓN DE PERSONAJE 8-BIT */
-        .char-box-8bit {{
-            background: #0e121a;
+        .char-card-pixel {{
+            background: #0d1017;
             border: 3px solid #000000;
+            box-shadow: inset 2px 2px 0 #1c2436;
             cursor: pointer;
             transition: transform 0.08s steps(2);
         }}
-        .char-box-8bit:hover {{
-            border-color: #f1b31c;
-            background: #151b27;
+        .char-card-pixel:hover {{
+            border-color: #d4a017;
+            background: #131824;
             transform: translateY(-2px);
         }}
-        .char-box-8bit.selected {{
-            border-color: #f1b31c;
-            background: #1d2535;
-            box-shadow: inset 0 0 0 2px #f1b31c, 0 4px 0 #000000;
+        .char-card-pixel.selected {{
+            border-color: #d4a017;
+            background: #192030;
+            box-shadow: inset 0 0 0 3px #d4a017, 0 4px 0 #000000;
         }}
 
         /* ========================================================
-           CARTAS 8-BIT / NAIPES FÍSICOS BALATRO CON BISEL PURO
+           CARTAS FÍSICAS BALATRO (CONSERVA TU FORMATO)
            ======================================================== */
-        .card-8bit {{
+        .balatro-card {{
             width: 104px;
             height: 150px;
-            background: var(--color-card-cream);
+            background: var(--card-cream);
             border: 4px solid #000000;
             box-shadow: 
                 inset 3px 3px 0 #ffffff,
@@ -312,15 +310,14 @@ GAME_HTML = f"""<!DOCTYPE html>
             transition: transform 0.08s steps(3);
         }}
 
-        .card-line-frame {{
+        .card-inner-frame {{
             position: absolute;
             top: 4px; left: 4px; right: 4px; bottom: 4px;
             border: 2px dashed rgba(60, 50, 35, 0.25);
             pointer-events: none;
         }}
 
-        /* Esquinas de las cartas */
-        .card-corner-tl {{
+        .card-pip-tl {{
             position: absolute;
             top: 6px; left: 7px;
             display: flex; flex-direction: column; align-items: center;
@@ -328,7 +325,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             pointer-events: none;
             font-family: var(--font-dos);
         }}
-        .card-corner-br {{
+        .card-pip-br {{
             position: absolute;
             bottom: 6px; right: 7px;
             display: flex; flex-direction: column; align-items: center;
@@ -338,17 +335,16 @@ GAME_HTML = f"""<!DOCTYPE html>
             font-family: var(--font-dos);
         }}
 
-        .corner-val {{
+        .pip-val {{
             font-size: 13px;
             font-weight: bold;
             letter-spacing: -0.5px;
         }}
-        .corner-suit {{
+        .pip-suit {{
             font-size: 11px;
             margin-top: 1px;
         }}
 
-        /* Contenedor central del monomio */
         .term-container {{
             max-width: 86%;
             display: flex;
@@ -359,7 +355,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             pointer-events: none;
         }}
 
-        .term-math-dos {{
+        .term-main {{
             font-family: var(--font-dos);
             color: #12141a;
             line-height: 1;
@@ -369,12 +365,10 @@ GAME_HTML = f"""<!DOCTYPE html>
             text-shadow: 1px 1px 0 rgba(255,255,255,0.7);
         }}
 
-        /* Superíndice puro ASCII compatible con Perfect DOS VGA 437 */
-        .term-math-dos sup, .corner-val sup {{
+        .term-main sup, .pip-val sup {{
             font-size: 0.65em;
             vertical-align: super;
             line-height: 0;
-            letter-spacing: 0;
             font-family: var(--font-dos);
         }}
 
@@ -385,24 +379,24 @@ GAME_HTML = f"""<!DOCTYPE html>
         .len-5 {{ font-size: 1.15rem; }}
         .len-many {{ font-size: 0.95rem; }}
 
-        @keyframes sway-8bit-1 {{
+        @keyframes balatro-sway-1 {{
             0%, 100% {{ transform: translateY(0px); }}
             50% {{ transform: translateY(-7px); }}
         }}
-        @keyframes sway-8bit-2 {{
+        @keyframes balatro-sway-2 {{
             0%, 100% {{ transform: translateY(-5px); }}
             50% {{ transform: translateY(3px); }}
         }}
-        @keyframes sway-8bit-3 {{
+        @keyframes balatro-sway-3 {{
             0%, 100% {{ transform: translateY(2px); }}
             50% {{ transform: translateY(-6px); }}
         }}
 
-        .idle-sway-1 {{ animation: sway-8bit-1 3s steps(5) infinite; }}
-        .idle-sway-2 {{ animation: sway-8bit-2 3.6s steps(5) infinite; }}
-        .idle-sway-3 {{ animation: sway-8bit-3 4s steps(5) infinite; }}
+        .idle-sway-1 {{ animation: balatro-sway-1 3s steps(5) infinite; }}
+        .idle-sway-2 {{ animation: balatro-sway-2 3.6s steps(5) infinite; }}
+        .idle-sway-3 {{ animation: balatro-sway-3 4s steps(5) infinite; }}
 
-        .card-8bit:hover {{
+        .balatro-card:hover {{
             transform: translateY(-16px) !important;
             animation-play-state: paused;
             box-shadow: 
@@ -411,200 +405,234 @@ GAME_HTML = f"""<!DOCTYPE html>
                 0 14px 0 #000000;
             z-index: 20;
         }}
-        .card-8bit.selected {{
+        .balatro-card.selected {{
             transform: translateY(-26px) !important;
             animation-play-state: paused;
-            border-color: #f1b31c;
+            border-color: #d4a017;
             box-shadow: 
                 inset 3px 3px 0 #fff7b8,
                 inset -3px -3px 0 #ab7c07,
-                0 0 0 3px #f1b31c,
+                0 0 0 3px #d4a017,
                 0 14px 0 #000000 !important;
             z-index: 30;
         }}
 
         @media (max-width: 640px) {{
-            .card-8bit {{ width: 84px !important; height: 122px !important; }}
+            .balatro-card {{ width: 84px !important; height: 122px !important; }}
             .len-1 {{ font-size: 1.65rem !important; }}
             .len-2 {{ font-size: 1.4rem !important; }}
             .len-3 {{ font-size: 1.15rem !important; }}
             .len-4 {{ font-size: 0.95rem !important; }}
             .len-5 {{ font-size: 0.82rem !important; }}
             .len-many {{ font-size: 0.72rem !important; }}
-            .corner-val {{ font-size: 11px !important; }}
-            .corner-suit {{ font-size: 9px !important; }}
+            .pip-val {{ font-size: 11px !important; }}
+            .pip-suit {{ font-size: 9px !important; }}
             #hand-container {{ min-height: 200px !important; }}
         }}
 
-        @keyframes flame-8bit {{
-            0%, 100% {{ transform: scale(1); }}
-            50% {{ transform: scale(1.12); }}
-        }}
-        .score-flame {{
-            color: #ffffff;
-            font-family: var(--font-dos);
-            text-shadow: 3px 3px 0 #a92329, -3px -3px 0 #d85718;
-            animation: flame-8bit 0.25s steps(2) infinite;
+        /* ICONOS PIXEL ART SVG (CERO EMOJIS) */
+        .px-icon {{
+            display: inline-block;
+            vertical-align: middle;
+            image-rendering: pixelated;
         }}
 
-        @keyframes shake-8bit {{
+        /* RETROALIMENTACIÓN DE PUNTOS */
+        @keyframes float-score-pixel {{
+            0% {{ transform: translate(-50%, -40%) scale(0.9); opacity: 0; }}
+            20% {{ transform: translate(-50%, -50%) scale(1.1); opacity: 1; }}
+            80% {{ transform: translate(-50%, -55%) scale(1); opacity: 1; }}
+            100% {{ transform: translate(-50%, -65%) scale(0.95); opacity: 0; }}
+        }}
+        .score-splash-8bit {{
+            font-family: var(--font-dos);
+            color: #ffffff;
+            text-shadow: 4px 4px 0 #8b181e, -3px -3px 0 #c95116;
+            animation: float-score-pixel 1.1s steps(6) forwards;
+        }}
+
+        @keyframes shake-pixel {{
             0%, 100% {{ transform: translateX(0); }}
             25% {{ transform: translateX(-8px); }}
             75% {{ transform: translateX(8px); }}
         }}
-        .animate-shake {{ animation: shake-8bit 0.22s steps(4); }}
-
-        #fx-canvas {{ position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; }}
+        .animate-shake {{ animation: shake-pixel 0.22s steps(4); }}
     </style>
 </head>
 <body class="p-2 sm:p-4">
     {bg_reg_tag}
     {bg_game_tag}
     {audio_html_tag}
-    <div class="bg-dark-overlay"></div>
-    <canvas id="fx-canvas"></canvas>
+    <div class="bg-vignette"></div>
 
-    <!-- INTRO MODAL: NOMBRE Y GÉNERO POKÉMON EN ESTILO 8-BIT -->
+    <!-- MODAL INICIO / REGISTRO DARK FANTASY 8-BIT -->
     <div id="intro-modal" class="fixed inset-0 bg-black/85 z-[1000] flex items-center justify-center p-4">
-        <div class="pixel-panel-8bit max-w-sm w-full p-6 text-center">
+        <div class="px-panel max-w-md w-full p-6 sm:p-8 text-center">
             
-            <div class="pixel-badge-red py-3 px-4 mb-5 transform -rotate-1 inline-block w-full">
-                <h1 class="text-xl sm:text-2xl tracking-wide font-balatro">FACTOR COMÚN</h1>
-                <p class="text-[11px] opacity-90 tracking-widest mt-1 font-dos">MATEMÁTICA BÁSICA • UCR</p>
+            <div class="px-badge-blood py-3.5 px-4 mb-6 transform -rotate-1 inline-block w-full">
+                <h1 class="text-2xl sm:text-3xl tracking-wide font-balatro">FACTOR COMÚN</h1>
+                <p class="text-xs sm:text-sm text-yellow-300 tracking-widest mt-1 font-dos">MATEMÁTICA BÁSICA • UCR</p>
             </div>
             
             <!-- PASO 1: NOMBRE -->
             <div id="step-name">
-                <div class="pixel-inner-box p-4 mb-5 text-left">
-                    <label class="block text-xs text-gray-400 mb-2 tracking-wider font-dos">APODO DEL JUGADOR:</label>
-                    <input type="text" id="username-input" class="w-full bg-[#05070a] border-2 border-[#262f3f] text-[#f1b31c] p-3 text-center uppercase tracking-wider text-base font-bold font-dos outline-none focus:border-[#f1b31c]" placeholder="TU NOMBRE" maxlength="12">
+                <div class="px-panel-slot p-4 mb-6 text-left">
+                    <label class="block text-xs sm:text-sm text-gray-400 mb-2 tracking-wider font-dos">APODO DEL JUGADOR:</label>
+                    <input type="text" id="username-input" class="w-full bg-[#05070a] border-2 border-[#2b3547] text-[#d4a017] p-3 text-center uppercase tracking-wider text-base sm:text-lg font-bold font-dos outline-none focus:border-[#d4a017]" placeholder="TU NOMBRE" maxlength="12">
                 </div>
-                <button onclick="goToGenderStep()" class="pixel-btn-orange w-full py-4 text-xs font-bold tracking-wider">
+                <button onclick="goToGenderStep()" class="px-btn-primary w-full py-4 text-sm sm:text-base font-bold tracking-wider">
                     CONTINUAR ➔
                 </button>
             </div>
 
-            <!-- PASO 2: ELECCIÓN DE PERSONAJE POKÉMON -->
+            <!-- PASO 2: SELECCIÓN POKÉMON -->
             <div id="step-gender" class="hidden">
-                <div class="pixel-inner-box p-3 mb-4 text-center">
-                    <p class="text-xs text-yellow-300 font-dos mb-3">¿ERES CHICO O CHICA?</p>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div id="opt-boy" onclick="selectGender('boy')" class="char-box-8bit p-2 flex flex-col items-center">
-                            <div class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center mb-1">
+                <div class="px-panel-slot p-4 mb-5 text-center">
+                    <p class="text-xs sm:text-sm text-yellow-300 font-dos mb-4">ELIGE TU PERSONAJE</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div id="opt-boy" onclick="selectGender('boy')" class="char-card-pixel p-3 flex flex-col items-center">
+                            <div class="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center mb-2">
                                 {ricky_img_tag}
                             </div>
-                            <span class="text-xs font-bold text-gray-300 font-dos">CHICO</span>
+                            <span class="text-xs sm:text-sm font-bold text-gray-200 font-dos">[ CHICO ]</span>
                         </div>
-                        <div id="opt-girl" onclick="selectGender('girl')" class="char-box-8bit p-2 flex flex-col items-center">
-                            <div class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center mb-1">
+                        <div id="opt-girl" onclick="selectGender('girl')" class="char-card-pixel p-3 flex flex-col items-center">
+                            <div class="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center mb-2">
                                 {ariana_img_tag}
                             </div>
-                            <span class="text-xs font-bold text-gray-300 font-dos">CHICA</span>
+                            <span class="text-xs sm:text-sm font-bold text-gray-200 font-dos">[ CHICA ]</span>
                         </div>
                     </div>
                 </div>
-                <button id="btn-start-game" onclick="startGame()" disabled class="pixel-panel-8bit bg-[#10131a] text-gray-600 w-full py-3.5 text-xs font-bold tracking-wider opacity-40 cursor-not-allowed">
-                    ENTRAR AL JUEGO
+                <button id="btn-start-game" onclick="startGame()" disabled class="px-panel bg-[#0d1017] text-gray-600 w-full py-4 text-sm font-bold tracking-wider opacity-40 cursor-not-allowed">
+                    INICIAR PARTIDA
                 </button>
             </div>
 
         </div>
     </div>
 
-    <!-- BOTONES INFERIORES -->
+    <!-- BOTONES AUXILIARES INFERIORES -->
     <div class="fixed bottom-3 left-3 z-40">
-        <button onclick="toggleTutorial()" class="pixel-btn-blue text-xs px-3.5 py-2">
-            💡 TUTO
+        <button onclick="toggleTutorial()" class="px-btn-cyan text-xs sm:text-sm px-4 py-2 font-dos">
+            [ ? ] GUÍA
         </button>
     </div>
     <div class="fixed bottom-3 right-3 z-40">
         <!-- RANK DESHABILITADO -->
-        <button onclick="showRankNotice()" class="pixel-panel-8bit bg-[#10131a] border-[#000] text-gray-400 text-xs px-3.5 py-2 cursor-pointer relative font-dos" title="Módulo en desarrollo por compañero">
-            🏆 RANK
-            <span class="absolute -top-2 -right-2 bg-yellow-500 text-black text-[8px] font-bold px-1 border border-black">DEV</span>
+        <button onclick="showRankNotice()" class="px-panel bg-[#0d1017] text-gray-500 text-xs sm:text-sm px-4 py-2 cursor-pointer relative font-dos" title="En desarrollo por compañero">
+            [ RANK ]
+            <span class="absolute -top-2 -right-2 bg-yellow-500 text-black text-[9px] font-bold px-1.5 border border-black">DEV</span>
         </button>
     </div>
 
-    <!-- PANEL TUTORIAL -->
-    <div id="tutorial-panel" class="fixed left-0 top-0 h-full w-72 sm:w-80 bg-[#141720] border-r-4 border-black p-4 flex flex-col z-50 transform -translate-x-full transition-transform duration-200 shadow-2xl">
+    <!-- PANEL GUÍA DIDÁCTICA -->
+    <div id="tutorial-panel" class="fixed left-0 top-0 h-full w-72 sm:w-80 bg-[#10141d] border-r-4 border-black p-4 sm:p-5 flex flex-col z-50 transform -translate-x-full transition-transform duration-200 shadow-2xl">
         <div class="flex justify-between items-center mb-4 border-b-2 border-white/10 pb-2">
-            <div class="pixel-badge-red px-3 py-1 text-xs font-dos">CÓMO JUGAR</div>
-            <button onclick="toggleTutorial()" class="text-white text-base font-bold">✕</button>
+            <div class="px-badge-blood px-3 py-1 text-xs font-dos">REGLAS DE FACTORIZACIÓN</div>
+            <button onclick="toggleTutorial()" class="text-white text-base font-bold font-dos">[ X ]</button>
         </div>
-        <div class="pixel-inner-box p-3 text-2xl text-center mb-3">
-            🍎🍉 <span class="text-red-400">+</span> 🍎🍌
+        <div class="px-panel-slot p-3 text-xl text-center mb-3 font-dos">
+            4x² + 6x
         </div>
-        <p class="text-xs text-yellow-300 text-center mb-3 font-dos">SACA LO QUE SE REPITE (🍎)</p>
-        <div class="pixel-inner-box p-3 text-2xl text-center mb-4">
-            🍎<span class="text-gray-400">(</span>🍉 <span class="text-red-400">+</span> 🍌<span class="text-gray-400">)</span>
+        <p class="text-xs text-yellow-300 text-center mb-3 font-dos">MCD = 2, VARIABLE COMÚN = x</p>
+        <div class="px-panel-slot p-3 text-xl text-center mb-4 font-dos text-emerald-400">
+            2x · (2x + 3)
         </div>
         <div class="text-xs text-gray-300 leading-relaxed font-dos space-y-2">
-            <p>1. Selecciona 2 o más cartas que compartan divisores o variables comunes.</p>
-            <p>2. Presiona "JUGAR MANO" para acumular fichas multiplicadas.</p>
-            <p>3. Las cartas no seleccionadas permanecen en tu mano para la siguiente ronda.</p>
+            <p>1. Selecciona 2 o más cartas que compartan factor común numérico o literal.</p>
+            <p>2. Presiona "JUGAR MANO" para resolver y multiplicar tus fichas.</p>
+            <p>3. Las cartas no usadas permanecen en tu mano para la siguiente ronda.</p>
         </div>
     </div>
 
-    <!-- HEADER SUPERIOR 8-BIT -->
+    <!-- HUD SUPERIOR EN PIXEL ART -->
     <header class="flex justify-between items-center z-10 max-w-5xl mx-auto w-full gap-2 px-1">
-        <div class="pixel-panel-8bit px-3.5 py-2 text-center min-w-[95px] sm:min-w-[125px]">
-            <div class="text-[10px] text-gray-400 font-dos">NIVEL <span id="level-display" class="text-yellow-400 text-sm font-dos">1</span></div>
-            <div class="text-[9px] text-gray-300 mt-0.5 font-dos">RONDA <span id="round-display" class="text-white">1</span>/3</div>
+        <!-- Nivel y Ronda -->
+        <div class="px-panel px-3.5 py-2.5 text-center min-w-[110px] sm:min-w-[140px]">
+            <div class="text-xs text-gray-400 font-dos">NIVEL <span id="level-display" class="text-yellow-400 text-base font-dos font-bold">1</span></div>
+            <div class="text-[11px] text-gray-300 mt-0.5 font-dos">RONDA <span id="round-display" class="text-white font-bold">1</span>/3</div>
         </div>
 
-        <!-- 3 Comodines -->
-        <div class="flex justify-center gap-1.5 sm:gap-2.5">
-            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="pixel-panel-8bit p-2 text-base sm:text-xl relative active:translate-y-1">
-                👁️
-                <span id="qty-reveal" class="absolute -top-2 -right-2 bg-red-600 text-white text-[9px] px-1 border border-black font-dos">1</span>
+        <!-- 3 Comodines (Iconos pixel art procedimentales) -->
+        <div class="flex justify-center gap-2 sm:gap-3">
+            <!-- REVELAR -->
+            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar Factor Común" class="px-panel p-2 sm:p-2.5 relative active:translate-y-1">
+                <svg class="px-icon w-6 h-6" viewBox="0 0 16 16" fill="none">
+                    <rect x="5" y="5" width="6" height="6" fill="#4deeea"/>
+                    <rect x="2" y="7" width="3" height="2" fill="#1b827e"/>
+                    <rect x="11" y="7" width="3" height="2" fill="#1b827e"/>
+                    <rect x="7" y="2" width="2" height="3" fill="#1b827e"/>
+                    <rect x="7" y="11" width="2" height="3" fill="#1b827e"/>
+                    <rect x="7" y="7" width="2" height="2" fill="#000000"/>
+                </svg>
+                <span id="qty-reveal" class="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] px-1.5 border border-black font-dos">1</span>
             </button>
-            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano" class="pixel-panel-8bit p-2 text-base sm:text-xl relative active:translate-y-1">
-                🎲
-                <span id="qty-reroll" class="absolute -top-2 -right-2 bg-red-600 text-white text-[9px] px-1 border border-black font-dos">1</span>
+
+            <!-- REROLL -->
+            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Revolver Mano" class="px-panel p-2 sm:p-2.5 relative active:translate-y-1">
+                <svg class="px-icon w-6 h-6" viewBox="0 0 16 16" fill="none">
+                    <rect x="2" y="2" width="12" height="12" fill="#7b2cbf"/>
+                    <rect x="3" y="3" width="10" height="10" fill="#9d4edd"/>
+                    <rect x="4" y="4" width="2" height="2" fill="#ffffff"/>
+                    <rect x="10" y="4" width="2" height="2" fill="#ffffff"/>
+                    <rect x="7" y="7" width="2" height="2" fill="#ffffff"/>
+                    <rect x="4" y="10" width="2" height="2" fill="#ffffff"/>
+                    <rect x="10" y="10" width="2" height="2" fill="#ffffff"/>
+                </svg>
+                <span id="qty-reroll" class="absolute -top-2 -right-2 bg-purple-600 text-white text-[10px] px-1.5 border border-black font-dos">1</span>
             </button>
-            <!-- Comodín que salta 1 RONDA -->
-            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar 1 Ronda" class="pixel-panel-8bit p-2 text-base sm:text-xl relative active:translate-y-1 opacity-40">
-                ⏭️
-                <span id="qty-skip" class="absolute -top-2 -right-2 bg-yellow-500 text-black text-[9px] px-1 border border-black font-dos">0</span>
+
+            <!-- SALTAR 1 RONDA -->
+            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar 1 Ronda" class="px-panel p-2 sm:p-2.5 relative active:translate-y-1 opacity-40">
+                <svg class="px-icon w-6 h-6" viewBox="0 0 16 16" fill="none">
+                    <rect x="2" y="3" width="3" height="10" fill="#d4a017"/>
+                    <rect x="5" y="5" width="2" height="6" fill="#d4a017"/>
+                    <rect x="7" y="7" width="2" height="2" fill="#d4a017"/>
+                    <rect x="9" y="3" width="3" height="10" fill="#f1b31c"/>
+                    <rect x="12" y="5" width="2" height="6" fill="#f1b31c"/>
+                </svg>
+                <span id="qty-skip" class="absolute -top-2 -right-2 bg-yellow-500 text-black text-[10px] px-1.5 border border-black font-dos">0</span>
             </button>
         </div>
 
-        <div class="pixel-panel-8bit px-3.5 py-2 text-center min-w-[95px] sm:min-w-[125px]">
-            <div class="text-[10px] text-gray-400 font-dos">PUNTOS</div>
-            <div id="total-score" class="text-sm sm:text-lg text-yellow-400 mt-0.5 font-dos font-bold">0</div>
-            <div id="user-display-tag" class="text-[9px] text-gray-400 truncate max-w-[85px] mx-auto font-dos">JUGADOR</div>
+        <!-- Puntos y Jugador -->
+        <div class="px-panel px-3.5 py-2.5 text-center min-w-[110px] sm:min-w-[140px]">
+            <div class="text-xs text-gray-400 font-dos">PUNTOS</div>
+            <div id="total-score" class="text-base sm:text-xl text-yellow-400 font-dos font-bold leading-tight">0</div>
+            <div id="user-display-tag" class="text-[10px] text-gray-300 truncate max-w-[100px] mx-auto font-dos">JUGADOR</div>
         </div>
     </header>
 
-    <!-- ÁREA DE CARTAS 8-BIT -->
+    <!-- ÁREA CENTRAL DE CARTAS -->
     <main class="flex-grow flex flex-col items-center justify-center relative w-full max-w-5xl mx-auto my-auto">
         <div id="hand-container" class="flex justify-center items-center flex-wrap gap-2.5 sm:gap-4 w-full px-2 mb-6"></div>
 
-        <button id="btn-play" onclick="playHand()" disabled class="pixel-panel-8bit bg-[#10131a] text-gray-600 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed font-dos">
+        <button id="btn-play" onclick="playHand()" disabled class="px-panel bg-[#0d1017] text-gray-600 px-9 py-3.5 sm:px-14 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed font-dos">
             JUGAR MANO
         </button>
 
-        <div id="flame-score-container" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 hidden opacity-0 transition-opacity duration-200 z-40 pointer-events-none text-center">
-            <div id="flame-score" class="text-3xl sm:text-5xl score-flame tracking-wider">0</div>
+        <div id="flame-score-container" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 hidden z-40 pointer-events-none text-center">
+            <div id="flame-score" class="text-4xl sm:text-6xl score-splash-8bit tracking-wider">0</div>
         </div>
     </main>
 
     <!-- MODAL FIN DE NIVEL -->
     <div id="level-modal" class="fixed inset-0 bg-black/85 z-50 hidden flex items-center justify-center p-4">
-        <div class="pixel-panel-8bit max-w-sm w-full p-6 text-center">
-            <div class="pixel-badge-red py-2 px-4 mb-4 transform -rotate-1 inline-block w-full">
+        <div class="px-panel max-w-sm w-full p-6 text-center">
+            <div class="px-badge-blood py-2 px-4 mb-4 transform -rotate-1 inline-block w-full">
                 <h2 class="text-lg sm:text-xl font-balatro">NIVEL COMPLETADO</h2>
             </div>
-            <div class="flex justify-center gap-3 my-4" id="modal-stars"></div>
-            <p id="modal-desc" class="pixel-inner-box p-3 text-gray-200 text-xs leading-relaxed mb-5 font-dos"></p>
-            <button onclick="nextLevel()" class="pixel-btn-orange w-full py-3.5 text-xs tracking-wider">
+            <div class="flex justify-center gap-3 my-4 font-dos text-2xl text-yellow-400" id="modal-stars"></div>
+            <p id="modal-desc" class="px-panel-slot p-3 text-gray-200 text-xs sm:text-sm leading-relaxed mb-5 font-dos"></p>
+            <button onclick="nextLevel()" class="px-btn-primary w-full py-3.5 text-xs sm:text-sm tracking-wider">
                 SIGUIENTE NIVEL ➔
             </button>
         </div>
     </div>
 
     <!-- ALERTA BALATRO -->
-    <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 pixel-badge-red text-xs px-5 py-3 z-50 hidden text-center max-w-[90vw] font-dos">
+    <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 px-badge-blood text-xs sm:text-sm px-5 py-3 z-50 hidden text-center max-w-[90vw] font-dos">
         <span id="alert-text"></span>
     </div>
 
@@ -625,7 +653,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         const SFX = {{
             hover: () => playTone(320, 'sine', 0.08, 0.04),
             select: () => playTone(540, 'triangle', 0.12, 0.12),
-            error: () => {{ playTone(130, 'sawtooth', 0.25, 0.25); setTimeout(() => playTone(90, 'sawtooth', 0.35, 0.25), 100); }},
+            error: () => {{ playTone(130, 'sawtooth', 0.25, 0.25); setTimeout(() => playTone(90, 'sawtooth', 0.25, 0.25), 100); }},
             flamePop: () => {{ playTone(180, 'sawtooth', 0.28, 0.25); setTimeout(() => playTone(240, 'sawtooth', 0.2, 0.2), 60); }},
             star: () => {{ playTone(880, 'sine', 0.3, 0.2); setTimeout(()=>playTone(1100, 'sine', 0.4, 0.2), 100); }},
             discard: () => playTone(240, 'triangle', 0.15, 0.15),
@@ -639,29 +667,6 @@ GAME_HTML = f"""<!DOCTYPE html>
                 bgm.play().catch(() => {{}});
             }}
         }}
-
-        const cvs = document.getElementById('fx-canvas'); const ctx = cvs.getContext('2d');
-        let particles = [];
-        window.onresize = () => {{ cvs.width = window.innerWidth; cvs.height = window.innerHeight; }};
-        window.onresize();
-        function spawnParticles(x, y, count=35) {{
-            const colors = ['#f1b31c', '#1765a0', '#a92329', '#ffffff'];
-            for(let i=0; i<count; i++) {{
-                const angle = Math.random() * Math.PI * 2; const speed = 2 + Math.random() * 7;
-                particles.push({{ x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed-2, color: colors[Math.floor(Math.random()*colors.length)], size: 4, life: 1.0, decay: 0.03 }});
-            }}
-        }}
-        function renderParticles() {{
-            ctx.clearRect(0,0,cvs.width,cvs.height);
-            for(let i=particles.length-1; i>=0; i--) {{
-                const p = particles[i];
-                p.x += p.vx; p.y += p.vy; p.vy += 0.18; p.life -= p.decay;
-                if(p.life<=0){{ particles.splice(i,1); continue; }}
-                ctx.fillStyle = p.color; ctx.globalAlpha = p.life; ctx.fillRect(Math.floor(p.x), Math.floor(p.y), p.size, p.size);
-            }}
-            ctx.globalAlpha = 1; requestAnimationFrame(renderParticles);
-        }}
-        renderParticles();
 
         let playerName = "JUGADOR";
         let playerGender = null;
@@ -687,16 +692,16 @@ GAME_HTML = f"""<!DOCTYPE html>
 
             const btn = document.getElementById('btn-start-game');
             btn.disabled = false;
-            btn.className = "pixel-btn-orange w-full py-3.5 text-xs font-bold tracking-wider cursor-pointer";
+            btn.className = "px-btn-primary w-full py-4 text-sm font-bold tracking-wider cursor-pointer";
             SFX.select();
         }}
 
         function startGame() {{
             if (!playerGender) return;
             document.getElementById('intro-modal').classList.add('hidden');
-            document.getElementById('user-display-tag').textContent = `${{playerGender === 'boy' ? '👦' : '👧'}} ${{playerName}}`;
+            document.getElementById('user-display-tag').textContent = `[${{playerGender === 'boy' ? 'CHICO' : 'CHICA'}}] ${{playerName}}`;
             
-            // Alternar de background_gif_2.gif a background_gif.gif
+            // Alternar de fondo de registro al de partida activa
             const bgReg = document.getElementById('bg-reg');
             const bgGame = document.getElementById('bg-game');
             if (bgReg) bgReg.classList.add('hidden');
@@ -710,7 +715,7 @@ GAME_HTML = f"""<!DOCTYPE html>
 
         function showRankNotice() {{
             SFX.hover();
-            showAlert("🏆 Módulo de Ranking en desarrollo.");
+            showAlert("MODULO EN DESARROLLO POR COMPANERO.");
         }}
 
         function toggleTutorial() {{
@@ -731,7 +736,6 @@ GAME_HTML = f"""<!DOCTYPE html>
 
         function gcd(a, b) {{ a=Math.abs(a); b=Math.abs(b); return b === 0 ? a : gcd(b, a % b); }}
 
-        // Formato matemático usando etiquetas <sup> nativas (100% compatibles con caracteres ASCII de Perfect DOS)
         function formatTerm(c, x, y) {{
             let s = "";
             if (c === -1 && (x > 0 || y > 0)) s += "-";
@@ -760,15 +764,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             return len;
         }}
 
-        function updateBackgroundForRound() {{
-            const bg = document.getElementById('bg-game');
-            if(!bg) return;
-            bg.classList.remove('filter-ronda-1', 'filter-ronda-2', 'filter-ronda-3');
-            if(round === 1) bg.classList.add('filter-ronda-1');
-            else if (round === 2) bg.classList.add('filter-ronda-2');
-            else if (round === 3) bg.classList.add('filter-ronda-3');
-        }}
-
         function generateTerm(forceFactor = null) {{
             let maxCoef = Math.max(4, level * 3);
             let maxX = Math.min(3, Math.ceil(level / 2));
@@ -788,7 +783,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             if (c === 0) c = 1;
             const suits = ['♠', '♥', '♦', '♣'];
             const suit = suits[Math.floor(Math.random() * suits.length)];
-            const suitColor = (suit === '♥' || suit === '♦') ? '#a92329' : '#1765a0';
+            const suitColor = (suit === '♥' || suit === '♦') ? '#8b181e' : '#12588c';
 
             return {{ c, x, y, str: formatTerm(c,x,y), suit, suitColor, selected: false, id: nextCardId++ }};
         }}
@@ -824,8 +819,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             document.getElementById('level-display').textContent = level;
             document.getElementById('round-display').textContent = round;
             
-            updateBackgroundForRound();
-            
             let needed = 6 - hand.length;
             let plantedC = (Math.random() > 0.5) ? (Math.floor(Math.random()*3)+2) : 1;
             let plantedX = (plantedC === 1 || Math.random() > 0.4) ? 1 : 0;
@@ -853,7 +846,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             hand.forEach((card, idx) => {{
                 const el = document.createElement('div');
                 const swayClass = idx % 3 === 0 ? 'idle-sway-1' : (idx % 3 === 1 ? 'idle-sway-2' : 'idle-sway-3');
-                el.className = `card-8bit ${{card.selected ? 'selected' : swayClass}}`;
+                el.className = `balatro-card ${{card.selected ? 'selected' : swayClass}}`;
                 
                 const cornerRank = getCardCornerRank(card);
                 const rawLen = getTermRawLength(card);
@@ -866,17 +859,17 @@ GAME_HTML = f"""<!DOCTYPE html>
                 else if(rawLen > 5) lenClass = "len-many";
 
                 el.innerHTML = `
-                    <div class="card-line-frame"></div>
-                    <div class="card-corner-tl" style="color: ${{card.suitColor}};">
-                        <span class="corner-val">${{cornerRank}}</span>
-                        <span class="corner-suit">${{card.suit}}</span>
+                    <div class="card-inner-frame"></div>
+                    <div class="card-pip-tl" style="color: ${{card.suitColor}};">
+                        <span class="pip-val">${{cornerRank}}</span>
+                        <span class="pip-suit">${{card.suit}}</span>
                     </div>
                     <div class="term-container">
-                        <span class="term-math-dos ${{lenClass}}">${{card.str}}</span>
+                        <span class="term-main ${{lenClass}}">${{card.str}}</span>
                     </div>
-                    <div class="card-corner-br" style="color: ${{card.suitColor}};">
-                        <span class="corner-val">${{cornerRank}}</span>
-                        <span class="corner-suit">${{card.suit}}</span>
+                    <div class="card-pip-br" style="color: ${{card.suitColor}};">
+                        <span class="pip-val">${{cornerRank}}</span>
+                        <span class="pip-suit">${{card.suit}}</span>
                     </div>
                 `;
                 
@@ -894,10 +887,10 @@ GAME_HTML = f"""<!DOCTYPE html>
             const selected = hand.filter(c => c.selected);
             if(selected.length > 0) {{
                 btnPlay.disabled = false;
-                btnPlay.className = "pixel-btn-orange px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest cursor-pointer";
+                btnPlay.className = "px-btn-primary px-9 py-3.5 sm:px-14 sm:py-4 text-xs sm:text-sm tracking-widest cursor-pointer font-dos";
             }} else {{
                 btnPlay.disabled = true;
-                btnPlay.className = "pixel-panel-8bit bg-[#10131a] text-gray-600 px-8 py-3.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed";
+                btnPlay.className = "px-panel bg-[#0d1017] text-gray-600 px-9 py-3.5 sm:px-14 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed font-dos";
             }}
         }}
 
@@ -909,7 +902,7 @@ GAME_HTML = f"""<!DOCTYPE html>
                 SFX.error();
                 handContainer.classList.add('animate-shake');
                 levelStats.errors++;
-                setTimeout(() => handContainer.classList.remove('animate-shake'), 250);
+                setTimeout(() => handContainer.classList.remove('animate-shake'), 220);
                 return;
             }}
 
@@ -928,15 +921,11 @@ GAME_HTML = f"""<!DOCTYPE html>
             const flameContainer = document.getElementById('flame-score-container');
             flameScore.textContent = "+" + handScore.toLocaleString();
             flameContainer.classList.remove('hidden');
-            flameContainer.style.opacity = '1';
-            spawnParticles(window.innerWidth/2, window.innerHeight/2, 40);
 
             hand = hand.filter(c => !c.selected);
 
             setTimeout(() => {{
-                flameContainer.style.opacity = '0';
-                setTimeout(() => flameContainer.classList.add('hidden'), 200);
-                
+                flameContainer.classList.add('hidden');
                 round++;
                 if(round > 3) {{
                     endLevel();
@@ -964,9 +953,9 @@ GAME_HTML = f"""<!DOCTYPE html>
             for(let i=0; i<3; i++) {{
                 setTimeout(() => SFX.star(), i * 250);
                 if(i < stars) {{
-                    starContainer.innerHTML += `<span class="text-yellow-400 text-3xl sm:text-4xl">★</span>`;
+                    starContainer.innerHTML += `<span>[★]</span>`;
                 }} else {{
-                    starContainer.innerHTML += `<span class="text-gray-600 text-3xl sm:text-4xl">★</span>`;
+                    starContainer.innerHTML += `<span class="text-gray-600">[☆]</span>`;
                 }}
             }}
 
@@ -977,9 +966,9 @@ GAME_HTML = f"""<!DOCTYPE html>
             if(stars === 3) {{
                 comodines.skip++;
                 updateUI();
-                desc.innerHTML = `¡PRECISIÓN PURA!<br>Ganaste un comodín SALTAR RONDA.<br>Bono: +${{bonusScore.toLocaleString()}} pts`;
+                desc.innerHTML = `PRECISIÓN PERFECTA.<br>OBTUVISTE: SALTAR 1 RONDA.<br>BONO: +${{bonusScore.toLocaleString()}} PTS`;
             }} else {{
-                desc.innerHTML = `Precisión: ${{Math.round(precision*100)}}%.<br>Bono obtenido: +${{bonusScore.toLocaleString()}} pts`;
+                desc.innerHTML = `PRECISIÓN: ${{Math.round(precision*100)}}%.<br>BONO: +${{bonusScore.toLocaleString()}} PTS`;
             }}
 
             modal.classList.remove('hidden');
@@ -1008,11 +997,9 @@ GAME_HTML = f"""<!DOCTYPE html>
             const el = document.getElementById('alert-modal');
             document.getElementById('alert-text').innerHTML = msg;
             el.classList.remove('hidden');
-            el.style.opacity = '1';
             setTimeout(() => {{
-                el.style.opacity = '0';
-                setTimeout(() => el.classList.add('hidden'), 200);
-            }}, 2600);
+                el.classList.add('hidden');
+            }}, 2400);
         }}
 
         function useJoker(type) {{
@@ -1036,9 +1023,9 @@ GAME_HTML = f"""<!DOCTYPE html>
                 }}
                 SFX.select();
                 if(maxSubset > 1) {{
-                    showAlert(`🔎 FACTOR COMÚN: <b>${{bestFactor}}</b> (en ${{maxSubset}} cartas)`);
+                    showAlert(`FACTOR: <b>${{bestFactor}}</b> (EN ${{maxSubset}} CARTAS)`);
                 }} else {{
-                    showAlert(`🔎 No hay factores comunes detectables en esta mano.`);
+                    showAlert(`NO HAY FACTORES COMUNES.`);
                 }}
             }} 
             else if (type === 'reroll') {{
@@ -1046,12 +1033,12 @@ GAME_HTML = f"""<!DOCTYPE html>
                 SFX.discard();
                 hand = [];
                 startRound();
-                showAlert("🎲 ¡MANO CAMBIADA!");
+                showAlert("MANO REVOLVIDA.");
             }}
             else if (type === 'skip') {{
                 comodines.skip--;
                 SFX.winRound();
-                showAlert("⏭️ ¡RONDA SALTADA!");
+                showAlert("RONDA SALTADA.");
                 
                 round++;
                 if(round > 3) {{
