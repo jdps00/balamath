@@ -50,7 +50,7 @@ def get_base64_file(filename):
             return base64.b64encode(f.read()).decode("utf-8")
     return None
 
-# Fondos GIF (Intactos)
+# Fondos GIF
 bg_game_b64 = get_base64_file("background_gif.gif") or get_base64_file("background.gif")
 bg_reg_b64 = get_base64_file("background_gif_2.gif") or get_base64_file("background_2.gif") or bg_game_b64
 
@@ -111,8 +111,8 @@ else:
     }
     """
 
-bg_game_tag = f'<img id="bg-game" class="screen-bg hidden" src="data:image/gif;base64,{bg_game_b64}" alt="Game BG" />' if bg_game_b64 else '<div id="bg-game" class="screen-bg hidden procedural-game"></div>'
-bg_reg_tag = f'<img id="bg-reg" class="screen-bg" src="data:image/gif;base64,{bg_reg_b64}" alt="Register BG" />' if bg_reg_b64 else '<div id="bg-reg" class="screen-bg procedural-reg"></div>'
+bg_game_tag = f'<img id="bg-game" class="screen-bg" style="display:none;" src="data:image/gif;base64,{bg_game_b64}" alt="Game BG" />' if bg_game_b64 else '<div id="bg-game" class="screen-bg procedural-game" style="display:none;"></div>'
+bg_reg_tag = f'<img id="bg-reg" class="screen-bg" style="display:block;" src="data:image/gif;base64,{bg_reg_b64}" alt="Register BG" />' if bg_reg_b64 else '<div id="bg-reg" class="screen-bg procedural-reg" style="display:block;"></div>'
 
 audio_html_tag = ""
 if audio_bg_b64:
@@ -167,7 +167,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             padding: 0;
             overflow: hidden;
             user-select: none;
-            background-color: #040508;
+            background-color: transparent; /* Permite que el GIF se vea sin ser tapado */
             color: #d8ceb9;
             font-family: var(--font-hud);
         }}
@@ -183,27 +183,25 @@ GAME_HTML = f"""<!DOCTYPE html>
         .font-dos {{ font-family: var(--font-dos); }}
         .font-balatro {{ font-family: var(--font-balatro); }}
 
-        /* FONDOS Y BRILLO CALIBRADO */
+        /* FONDOS FIJOS EN CAPA BASE */
         .screen-bg {{
             position: fixed;
-            top: 50%; left: 50%;
-            min-width: 100%; min-height: 100%;
-            width: auto; height: auto;
-            transform: translate(-50%, -50%) scale(1.05);
-            z-index: -3;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 0;
             object-fit: cover;
             pointer-events: none;
             image-rendering: pixelated;
         }}
 
         #bg-reg {{
-            filter: brightness(1.20); /* 20% más claro al registrarse */
+            filter: brightness(1.20);
         }}
 
         .procedural-reg {{ background: radial-gradient(circle at center, #262e3d, #0d121a); }}
         .procedural-game {{ background: radial-gradient(circle at center, #1b3d2b, #050c07); }}
 
-        /* OVERLAY 5% MÁS CLARO */
+        /* OVERLAY RETRO POR ENCIMA DE LOS GIFS PERO DETRÁS DE LA UI */
         .bg-dark-overlay {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: 
@@ -211,7 +209,7 @@ GAME_HTML = f"""<!DOCTYPE html>
                 radial-gradient(circle at center, rgba(14, 11, 22, 0.32) 0%, rgba(2, 3, 5, 0.88) 100%);
             background-size: 100% 4px, 100% 100%;
             pointer-events: none;
-            z-index: -2;
+            z-index: 1;
         }}
 
         /* PANELES DARK FANTASY RECTOS */
@@ -547,7 +545,7 @@ GAME_HTML = f"""<!DOCTYPE html>
     </div>
 
     <!-- CONTENIDO DEL JUEGO -->
-    <div id="game-ui" class="hidden flex flex-col justify-between h-full w-full">
+    <div id="game-ui" class="hidden flex flex-col justify-between h-full w-full relative z-10">
         <!-- BOTONES INFERIORES -->
         <div class="fixed bottom-2 sm:bottom-3 left-2 sm:left-3 z-40 flex gap-2">
             <button onclick="toggleTutorial()" class="pixel-df-btn-arcane text-[8px] sm:text-xs px-2.5 sm:px-3.5 py-1.5 sm:py-2 font-hud">
@@ -851,10 +849,11 @@ GAME_HTML = f"""<!DOCTYPE html>
                 document.getElementById('game-ui').classList.remove('hidden');
                 document.getElementById('user-display-tag').textContent = `${{playerGender === 'boy' ? '[CHICO]' : '[CHICA]'}} ${{playerName}}`;
                 
+                // Conmutación limpia de display para los GIF
                 const bgReg = document.getElementById('bg-reg');
                 const bgGame = document.getElementById('bg-game');
-                if (bgReg) bgReg.classList.add('hidden');
-                if (bgGame) bgGame.classList.remove('hidden');
+                if (bgReg) bgReg.style.display = 'none';
+                if (bgGame) bgGame.style.display = 'block';
 
                 setCryptAudioMode(false);
 
