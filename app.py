@@ -10,7 +10,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="Balatro: Factor Común | IF0003",
+    page_title="BALAMATH | Factor Común IF0003",
     page_icon="🃏",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -50,18 +50,28 @@ def get_base64_file(filename):
             return base64.b64encode(f.read()).decode("utf-8")
     return None
 
-# Fondos GIF por estado (Se mantienen exactamente iguales)
+# Fondos GIF (Intactos)
 bg_game_b64 = get_base64_file("background_gif.gif") or get_base64_file("background.gif")
 bg_reg_b64 = get_base64_file("background_gif_2.gif") or get_base64_file("background_2.gif") or bg_game_b64
 
-# Audio de fondo
+# Audio
 audio_bg_b64 = get_base64_file("background.mp3")
 
-# Imágenes de selección de personajes
+# Personajes
 ricky_b64 = get_base64_file("ricky.png")
 ariana_b64 = get_base64_file("ariana.png")
 
-# Tipografías locales
+# Íconos de Comodines
+joker_reveal_b64 = get_base64_file("joker_reveal.png")
+joker_reroll_b64 = get_base64_file("joker_reroll.png")
+joker_skip_b64 = get_base64_file("joker_skip.png")
+
+# Íconos de Tutorial
+tuto_select_b64 = get_base64_file("tuto_select.png")
+tuto_combine_b64 = get_base64_file("tuto_combine.png")
+tuto_remain_b64 = get_base64_file("tuto_remain.png")
+
+# Tipografías
 balatro_font_b64 = get_base64_file("balatro.otf")
 dos_font_b64 = (
     get_base64_file("Perfect DOS VGA 437 Win.ttf") or 
@@ -106,7 +116,7 @@ else:
     }
     """
 
-bg_game_tag = f'<img id="bg-game" class="screen-bg hidden" src="data:image/gif;base64,{bg_game_game_b64}" alt="Game BG" />' if (bg_game_b64 and 'bg_game_game_b64' in locals()) else (f'<img id="bg-game" class="screen-bg hidden" src="data:image/gif;base64,{bg_game_b64}" alt="Game BG" />' if bg_game_b64 else '<div id="bg-game" class="screen-bg hidden procedural-game"></div>')
+bg_game_tag = f'<img id="bg-game" class="screen-bg hidden" src="data:image/gif;base64,{bg_game_b64}" alt="Game BG" />' if bg_game_b64 else '<div id="bg-game" class="screen-bg hidden procedural-game"></div>'
 bg_reg_tag = f'<img id="bg-reg" class="screen-bg" src="data:image/gif;base64,{bg_reg_b64}" alt="Register BG" />' if bg_reg_b64 else '<div id="bg-reg" class="screen-bg procedural-reg"></div>'
 
 audio_html_tag = ""
@@ -120,12 +130,22 @@ if audio_bg_b64:
 ricky_img_tag = f'<img src="data:image/png;base64,{ricky_b64}" class="w-full h-full object-contain pixelated" alt="Ricky" />' if ricky_b64 else '<div class="text-xs font-hud font-bold">[CHICO]</div>'
 ariana_img_tag = f'<img src="data:image/png;base64,{ariana_b64}" class="w-full h-full object-contain pixelated" alt="Ariana" />' if ariana_b64 else '<div class="text-xs font-hud font-bold">[CHICA]</div>'
 
+# Generadores de tags para comodines (PNG o fallback 8-bit)
+reveal_icon_tag = f'<img src="data:image/png;base64,{joker_reveal_b64}" class="w-7 h-7 sm:w-8 sm:h-8 object-contain pixelated" alt="Revelar" />' if joker_reveal_b64 else '<span class="text-cyan-400 font-hud text-xs">👁</span>'
+reroll_icon_tag = f'<img src="data:image/png;base64,{joker_reroll_b64}" class="w-7 h-7 sm:w-8 sm:h-8 object-contain pixelated" alt="Revolver" />' if joker_reroll_b64 else '<span class="text-purple-400 font-hud text-xs">⟲</span>'
+skip_icon_tag = f'<img src="data:image/png;base64,{joker_skip_b64}" class="w-7 h-7 sm:w-8 sm:h-8 object-contain pixelated" alt="Saltar" />' if joker_skip_b64 else '<span class="text-yellow-400 font-hud text-xs">⏭</span>'
+
+# Generadores de tags para el tutorial
+tuto1_tag = f'<img src="data:image/png;base64,{tuto_select_b64}" class="w-8 h-8 object-contain pixelated mr-3 flex-shrink-0" alt="1" />' if tuto_select_b64 else '<span class="text-amber-400 font-hud mr-3 text-sm">[1]</span>'
+tuto2_tag = f'<img src="data:image/png;base64,{tuto_combine_b64}" class="w-8 h-8 object-contain pixelated mr-3 flex-shrink-0" alt="2" />' if tuto_combine_b64 else '<span class="text-amber-400 font-hud mr-3 text-sm">[2]</span>'
+tuto3_tag = f'<img src="data:image/png;base64,{tuto_remain_b64}" class="w-8 h-8 object-contain pixelated mr-3 flex-shrink-0" alt="3" />' if tuto_remain_b64 else '<span class="text-amber-400 font-hud mr-3 text-sm">[3]</span>'
+
 GAME_HTML = f"""<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Balatro: Factor Común 8-Bit Dark Fantasy</title>
+    <title>BALAMATH: Factor Común 8-Bit</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
     
@@ -137,21 +157,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             --font-sub: 'VT323', monospace;
             --font-dos: 'DosVgaFont', 'Press Start 2P', monospace;
             --font-balatro: 'BalatroFont', 'Press Start 2P', sans-serif;
-            
-            /* Paleta Dark Fantasy Pixel Art */
-            --df-obsidian: #090a0f;
-            --df-iron-slate: #151922;
-            --df-iron-light: #2b3242;
-            --df-crypt-stone: #1e1b18;
-            --df-gold-relic: #d4a340;
-            --df-gold-dark: #6e4e13;
-            --df-blood-crimson: #8b1820;
-            --df-blood-light: #c52834;
-            --df-parchment: #c8b99c;
-            --df-mystic-cyan: #228b96;
-            --df-mystic-purple: #6a3489;
-            
-            /* Configuración cartas original */
             --color-card-cream: #ece5d3;
         }}
 
@@ -167,7 +172,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
 
         body {{
-            color: var(--df-parchment);
+            color: #d8ceb9;
             font-family: var(--font-hud);
             overflow: hidden;
             user-select: none;
@@ -201,7 +206,6 @@ GAME_HTML = f"""<!DOCTYPE html>
         .procedural-reg {{ background: radial-gradient(circle at center, #181d26, #07090d); }}
         .procedural-game {{ background: radial-gradient(circle at center, #1b3d2b, #050c07); }}
 
-        /* TRAMA DARK FANTASY + SCANLINES CRT */
         .bg-dark-overlay {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: 
@@ -213,10 +217,8 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
 
         /* ========================================================
-           GUI PIXEL ART DARK FANTASY: HIERRO, RUNAS Y PIEDRA
+           GUI PIXEL ART DARK FANTASY (RECTA, REMACHADA Y SÓLIDA)
            ======================================================== */
-        
-        /* Cajas de piedra de calabozo con remaches pixelados */
         .pixel-df-panel {{
             background: #11141c;
             border: 4px solid #000000;
@@ -228,7 +230,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             position: relative;
         }}
 
-        /* Remaches en las 4 esquinas de los paneles principales */
         .pixel-df-panel::before {{
             content: "◆";
             position: absolute;
@@ -248,7 +249,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             pointer-events: none;
         }}
 
-        /* Hueco o altar tallado hundido */
         .pixel-df-slot {{
             background: #080a0e;
             border: 3px solid #000000;
@@ -257,7 +257,7 @@ GAME_HTML = f"""<!DOCTYPE html>
                 inset -2px -2px 0 #1b202c;
         }}
 
-        /* Estandarte de Sangre / Pergamino Profano */
+        /* BANNER ROJO RECTO (SIN ROTACIÓN) */
         .pixel-df-banner-crimson {{
             background: linear-gradient(180deg, #9b1c24 0%, #590d12 100%);
             border: 4px solid #000000;
@@ -268,9 +268,9 @@ GAME_HTML = f"""<!DOCTYPE html>
                 0 6px 0 #000000;
             color: #f7e8ce;
             text-shadow: 2px 2px 0 #000000;
+            transform: none !important;
         }}
 
-        /* Botón de Acción Principal: Fuego y Cobre Demoníaco */
         .pixel-df-btn-flame {{
             font-family: var(--font-hud);
             background: linear-gradient(180deg, #d35422 0%, #872506 100%);
@@ -297,7 +297,6 @@ GAME_HTML = f"""<!DOCTYPE html>
                 0 2px 0 #000000;
         }}
 
-        /* Botón Secundario Rúnico / Pergamino */
         .pixel-df-btn-arcane {{
             font-family: var(--font-hud);
             background: #172233;
@@ -316,9 +315,8 @@ GAME_HTML = f"""<!DOCTYPE html>
             box-shadow: inset 2px 2px 0 #090e17, inset -2px -2px 0 #384e6f, 0 2px 0 #000;
         }}
 
-        /* Tótems / Comodines Alquímicos */
+        /* RELICARIOS / COMODINES EN CUADRÍCULAS DE ÍCONO */
         .btn-relic-slot {{
-            font-family: var(--font-hud);
             background: #131720;
             border: 3px solid #000000;
             box-shadow: 
@@ -326,16 +324,20 @@ GAME_HTML = f"""<!DOCTYPE html>
                 inset -2px -2px 0 #06070a,
                 0 5px 0 #000000;
             transition: transform 0.05s steps(2);
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }}
         .btn-relic-slot:hover {{
-            border-color: #3f3123;
+            border-color: #d4a340;
         }}
         .btn-relic-slot:active {{
             transform: translateY(3px);
             box-shadow: inset 2px 2px 0 #06070a, inset -2px -2px 0 #2d3648, 0 2px 0 #000000;
         }}
 
-        /* Nicho de Héroes / Personajes */
         .char-slot-crypt {{
             background: #090c12;
             border: 3px solid #000000;
@@ -361,7 +363,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
 
         /* ========================================================
-           CARTAS 8-BIT / BALATRO (CONSERVADAS 100% INTACTAS)
+           CARTAS 8-BIT / BALATRO (INTACTAS)
            ======================================================== */
         .card-8bit {{
             width: 104px;
@@ -521,19 +523,20 @@ GAME_HTML = f"""<!DOCTYPE html>
     <div class="bg-dark-overlay"></div>
     <canvas id="fx-canvas"></canvas>
 
-    <!-- INTRO / REGISTRO: ESTILO NÉBULA OSCURA -->
+    <!-- INTRO / REGISTRO BALAMATH -->
     <div id="intro-modal" class="fixed inset-0 bg-black/90 z-[1000] flex items-center justify-center p-4">
         <div class="pixel-df-panel max-w-sm w-full p-6 text-center">
             
-            <div class="pixel-df-banner-crimson py-3 px-4 mb-5 transform -rotate-1 inline-block w-full">
-                <h1 class="text-xs sm:text-base tracking-wider font-hud text-[#fff1d0]">FACTOR COMÚN</h1>
-                <p class="text-[8px] opacity-90 tracking-widest mt-1 font-hud text-amber-200">DARK FANTASY • IF0003</p>
+            <!-- BANNER ROJO RECTO BALAMATH -->
+            <div class="pixel-df-banner-crimson py-3 px-4 mb-5 inline-block w-full">
+                <h1 class="text-base sm:text-lg tracking-widest font-hud text-[#fff1d0]">BALAMATH</h1>
+                <p class="text-[8px] opacity-90 tracking-widest mt-1 font-hud text-amber-200">FACTOR COMÚN • UCR IF0003</p>
             </div>
             
             <!-- PASO 1: NOMBRE -->
             <div id="step-name">
                 <div class="pixel-df-slot p-4 mb-5 text-left">
-                    <label class="block text-[9px] text-[#a99878] mb-2 tracking-wider font-hud">NOMBRE DEL INVOCADOR:</label>
+                    <label class="block text-[9px] text-[#a99878] mb-2 tracking-wider font-hud">APODO DEL JUGADOR:</label>
                     <input type="text" id="username-input" class="w-full bg-[#050608] border-2 border-[#333d4f] text-[#d4a340] p-3 text-center uppercase tracking-wider text-sm font-bold font-hud outline-none focus:border-[#d4a340]" placeholder="TU NOMBRE" maxlength="12">
                 </div>
                 <button onclick="goToGenderStep()" class="pixel-df-btn-flame w-full py-4 text-xs font-bold tracking-wider">
@@ -541,10 +544,10 @@ GAME_HTML = f"""<!DOCTYPE html>
                 </button>
             </div>
 
-            <!-- PASO 2: ELECCIÓN DE PERSONAJE -->
+            <!-- PASO 2: SELECCIÓN DE PERSONAJE -->
             <div id="step-gender" class="hidden">
                 <div class="pixel-df-slot p-3 mb-4 text-center">
-                    <p class="text-[9px] text-[#d4a340] font-hud mb-3 tracking-wider">SELECCIONA TU HERMANO DE SANGRE</p>
+                    <p class="text-[9px] text-[#d4a340] font-hud mb-3 tracking-wider">ELIGE TU PERSONAJE</p>
                     <div class="grid grid-cols-2 gap-3">
                         <div id="opt-boy" onclick="selectGender('boy')" class="char-slot-crypt p-2 flex flex-col items-center">
                             <div class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center mb-1">
@@ -561,76 +564,99 @@ GAME_HTML = f"""<!DOCTYPE html>
                     </div>
                 </div>
                 <button id="btn-start-game" onclick="startGame()" disabled class="pixel-df-panel bg-[#0d0f14] text-stone-600 w-full py-3.5 text-xs font-bold tracking-wider opacity-40 cursor-not-allowed">
-                    INICIAR PACTO ➔
+                    ENTRAR AL JUEGO ➔
                 </button>
             </div>
 
         </div>
     </div>
 
-    <!-- BOTONES AUXILIARES INFERIORES -->
+    <!-- BOTONES INFERIORES -->
     <div class="fixed bottom-3 left-3 z-40">
         <button onclick="toggleTutorial()" class="pixel-df-btn-arcane text-[9px] sm:text-xs px-3.5 py-2 font-hud flex items-center gap-1.5">
-            <span class="text-amber-400">❖</span> TOMO [?]
+            [ ? ] TUTO
         </button>
     </div>
     <div class="fixed bottom-3 right-3 z-40">
         <button onclick="showRankNotice()" class="pixel-df-panel bg-[#0d1017] text-stone-400 text-[9px] sm:text-xs px-3.5 py-2 cursor-pointer relative font-hud">
-            [ CRÓNICA ]
+            [ RANK ]
             <span class="absolute -top-2 -right-2 bg-[#8b1820] text-amber-200 text-[7px] font-bold px-1.5 py-0.5 border border-black">DEV</span>
         </button>
     </div>
 
-    <!-- TOMO DE GUÍA / TUTORIAL -->
-    <div id="tutorial-panel" class="fixed left-0 top-0 h-full w-72 sm:w-80 bg-[#0d1017] border-r-4 border-black p-4 flex flex-col z-50 transform -translate-x-full transition-transform duration-200 shadow-2xl">
+    <!-- PANEL TUTORIAL CON ÍCONOS -->
+    <div id="tutorial-panel" class="fixed left-0 top-0 h-full w-80 sm:w-96 bg-[#0d1017] border-r-4 border-black p-4 flex flex-col z-50 transform -translate-x-full transition-transform duration-200 shadow-2xl overflow-y-auto">
         <div class="flex justify-between items-center mb-4 border-b-2 border-[#2b3548] pb-2">
-            <div class="pixel-df-banner-crimson px-3 py-1 text-[9px] font-hud">TOMO: FACTOR COMÚN</div>
+            <div class="pixel-df-banner-crimson px-3 py-1 text-[9px] font-hud">GUÍA FACTORIZACIÓN</div>
             <button onclick="toggleTutorial()" class="text-amber-200 text-xs font-bold font-hud hover:text-white">[ ✕ ]</button>
         </div>
-        <div class="pixel-df-slot p-3 text-2xl text-center mb-3 font-sub text-stone-200">
+        
+        <div class="pixel-df-slot p-3 text-2xl text-center mb-2 font-sub text-stone-200">
             4x² + 6x
         </div>
         <p class="text-[8px] text-[#d4a340] text-center mb-3 font-hud">MCD = 2 | VARIABLE = x</p>
         <div class="pixel-df-slot p-3 text-2xl text-center mb-4 font-sub text-emerald-400 border border-emerald-900/60">
             2x · (2x + 3)
         </div>
-        <div class="text-base text-stone-300 leading-snug font-sub space-y-2">
-            <p>1. Selecciona 2 o más runas que compartan divisores o variables comunes.</p>
-            <p>2. Presiona "JUGAR MANO" para canalizar fichas multiplicadas.</p>
-            <p>3. Las runas descartadas permanecerán en tu mano para la siguiente ronda.</p>
+
+        <!-- PASOS CON ÍCONOS PNG -->
+        <div class="space-y-3 font-sub text-stone-300">
+            <div class="pixel-df-slot p-2.5 flex items-center">
+                {tuto1_tag}
+                <div class="text-sm leading-tight">
+                    <span class="text-[#d4a340] font-bold block font-hud text-[8px] mb-1">PASO 1</span>
+                    Selecciona 2 o más cartas que compartan divisores o letras.
+                </div>
+            </div>
+
+            <div class="pixel-df-slot p-2.5 flex items-center">
+                {tuto2_tag}
+                <div class="text-sm leading-tight">
+                    <span class="text-[#d4a340] font-bold block font-hud text-[8px] mb-1">PASO 2</span>
+                    Presiona "JUGAR MANO" para validar y multiplicar tus puntos.
+                </div>
+            </div>
+
+            <div class="pixel-df-slot p-2.5 flex items-center">
+                {tuto3_tag}
+                <div class="text-sm leading-tight">
+                    <span class="text-[#d4a340] font-bold block font-hud text-[8px] mb-1">PASO 3</span>
+                    Las cartas que no selecciones se conservan para la siguiente ronda.
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- ========================================================
-         HEADER SUPERIOR: RELICARIOS DARK FANTASY
+         HEADER SUPERIOR CON COMODINES EN ÍCONOS
          ======================================================== -->
     <header class="flex justify-between items-center z-10 max-w-5xl mx-auto w-full gap-2 px-1">
         <!-- CAJA DE NIVEL Y RONDA -->
         <div class="pixel-df-panel px-3.5 py-2.5 text-center min-w-[110px] sm:min-w-[140px] flex flex-col items-center justify-center">
-            <span class="text-[8px] sm:text-[9px] text-[#8e98aa] font-hud tracking-wider">CALABOZO</span>
+            <span class="text-[8px] sm:text-[9px] text-[#8e98aa] font-hud tracking-wider">NIVEL</span>
             <span id="level-display" class="text-base sm:text-2xl text-[#d4a340] font-hud font-bold leading-tight my-0.5">1</span>
             <span class="text-[7px] sm:text-[8px] text-[#c8b99c] font-hud tracking-wider">RONDA <span id="round-display" class="text-white">1</span>/3</span>
         </div>
 
-        <!-- RELICARIOS / COMODINES EN TEXTO ARCADE -->
-        <div class="flex justify-center gap-2 sm:gap-3">
-            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="btn-relic-slot px-3 py-2 text-center relative">
-                <span class="block text-[9px] sm:text-[11px] text-cyan-400 font-hud font-bold">REVELAR</span>
+        <!-- COMODINES: ÍCONOS PNG CON BADGES DE CANTIDAD -->
+        <div class="flex justify-center gap-3 sm:gap-4">
+            <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="btn-relic-slot relative">
+                {reveal_icon_tag}
                 <span id="qty-reveal" class="absolute -top-2 -right-2 bg-[#8b1820] text-amber-200 text-[8px] px-1.5 py-0.5 border border-black font-hud">1</span>
             </button>
-            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Revolver mano" class="btn-relic-slot px-3 py-2 text-center relative">
-                <span class="block text-[9px] sm:text-[11px] text-purple-400 font-hud font-bold">REVOLVER</span>
+            <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano" class="btn-relic-slot relative">
+                {reroll_icon_tag}
                 <span id="qty-reroll" class="absolute -top-2 -right-2 bg-[#51237a] text-purple-200 text-[8px] px-1.5 py-0.5 border border-black font-hud">1</span>
             </button>
-            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar 1 Ronda" class="btn-relic-slot px-3 py-2 text-center relative opacity-40">
-                <span class="block text-[9px] sm:text-[11px] text-amber-400 font-hud font-bold">SALTAR</span>
+            <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar 1 Ronda" class="btn-relic-slot relative opacity-40">
+                {skip_icon_tag}
                 <span id="qty-skip" class="absolute -top-2 -right-2 bg-[#8b6508] text-amber-100 text-[8px] px-1.5 py-0.5 border border-black font-hud">0</span>
             </button>
         </div>
 
         <!-- CAJA DE PUNTOS Y JUGADOR -->
         <div class="pixel-df-panel px-3.5 py-2.5 text-center min-w-[110px] sm:min-w-[140px] flex flex-col items-center justify-center">
-            <span class="text-[8px] sm:text-[9px] text-[#8e98aa] font-hud tracking-wider">ALMAS</span>
+            <span class="text-[8px] sm:text-[9px] text-[#8e98aa] font-hud tracking-wider">PUNTOS</span>
             <span id="total-score" class="text-base sm:text-xl text-[#d4a340] font-hud font-bold leading-tight my-0.5">0</span>
             <span id="user-display-tag" class="text-[7px] sm:text-[8px] text-[#c8b99c] font-hud truncate max-w-[95px]">JUGADOR</span>
         </div>
@@ -653,8 +679,8 @@ GAME_HTML = f"""<!DOCTYPE html>
     <div id="level-modal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4">
         <div class="pixel-df-panel max-w-sm w-full p-6 text-center">
             
-            <div class="pixel-df-banner-crimson py-3 px-4 mb-4 transform -rotate-1 inline-block w-full">
-                <h2 class="text-xs sm:text-sm font-bold tracking-wider font-hud">SELLO COMPLETADO</h2>
+            <div class="pixel-df-banner-crimson py-3 px-4 mb-4 inline-block w-full">
+                <h2 class="text-xs sm:text-sm font-bold tracking-wider font-hud">NIVEL COMPLETADO</h2>
             </div>
             
             <div class="flex justify-center gap-3 my-3 text-2xl sm:text-3xl font-hud" id="modal-stars"></div>
@@ -664,12 +690,12 @@ GAME_HTML = f"""<!DOCTYPE html>
             </div>
             
             <button onclick="nextLevel()" class="pixel-df-btn-flame w-full py-4 text-xs sm:text-sm tracking-wider font-hud">
-                DESCENDER MÁS ➔
+                SIGUIENTE NIVEL ➔
             </button>
         </div>
     </div>
 
-    <!-- ALERTA BALATRO OSCURA -->
+    <!-- ALERTA BALATRO -->
     <div id="alert-modal" class="fixed top-12 left-1/2 -translate-x-1/2 pixel-df-banner-crimson text-[9px] sm:text-xs px-5 py-3 z-50 hidden text-center max-w-[90vw] font-hud">
         <span id="alert-text"></span>
     </div>
@@ -775,7 +801,7 @@ GAME_HTML = f"""<!DOCTYPE html>
 
         function showRankNotice() {{
             SFX.hover();
-            showAlert("[CRÓNICA EN DESARROLLO]");
+            showAlert("[RANKING EN DESARROLLO]");
         }}
 
         function toggleTutorial() {{
@@ -1028,7 +1054,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             if(stars === 3) {{
                 comodines.skip++;
                 updateUI();
-                bonusItemText = `<div class="text-emerald-400 font-bold">[+] RELIQUIA "SALTAR" DESBLOQUEADA</div>`;
+                bonusItemText = `<div class="text-emerald-400 font-bold">[+] COMODÍN "SALTAR" DESBLOQUEADO</div>`;
             }}
 
             desc.innerHTML = `
@@ -1037,7 +1063,7 @@ GAME_HTML = f"""<!DOCTYPE html>
                     <span class="text-[#d4a340] font-bold">${{Math.round(precision * 100)}}%</span>
                 </div>
                 <div class="flex justify-between border-b border-[#2b3548] py-1">
-                    <span>BONO DE ALMAS:</span>
+                    <span>BONO POR ESTRELLAS:</span>
                     <span class="text-emerald-400 font-bold">+${{bonusScore.toLocaleString()}} PTS</span>
                 </div>
                 <div class="pt-1">
@@ -1109,12 +1135,12 @@ GAME_HTML = f"""<!DOCTYPE html>
                 SFX.discard();
                 hand = [];
                 startRound();
-                showAlert("[MANO PURIFICADA]");
+                showAlert("[MANO REVOLVIDA]");
             }}
             else if (type === 'skip') {{
                 comodines.skip--;
                 SFX.winRound();
-                showAlert("[RONDA TRASCENDIDA]");
+                showAlert("[RONDA SALTADA]");
                 
                 round++;
                 if(round > 3) {{
