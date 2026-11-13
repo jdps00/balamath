@@ -685,7 +685,7 @@ GAME_HTML_TEMPLATE = """<!DOCTYPE html>
                     </div>
                 </div>
                 <button id="btn-start-game" onclick="registerAndEnterLobby()" disabled class="pixel-df-panel bg-[#0d0f14] text-stone-600 w-full py-3 text-xs font-bold tracking-wider opacity-40 cursor-not-allowed">
-                    UNIRSE A LA SALA ➔
+                    ENTRAR ➔
                 </button>
             </div>
 
@@ -709,6 +709,11 @@ GAME_HTML_TEMPLATE = """<!DOCTYPE html>
                     <span>TU APODO: <strong id="lobby-my-name" class="text-white">---</strong></span>
                     <span id="lobby-count-tag">0 CONECTADOS</span>
                 </div>
+                <div class="mt-3 text-right px-1">
+                    <button onclick="logoutSession()" class="text-[7px] sm:text-[8px] text-stone-500 hover:text-red-400 underline font-hud cursor-pointer">
+                        [ CAMBIAR USUARIO ]
+                    </button>
+                </div>
             </div>
 
             <div id="lobby-countdown-box" class="hidden py-6">
@@ -727,7 +732,10 @@ GAME_HTML_TEMPLATE = """<!DOCTYPE html>
             <div class="pixel-df-slot p-3.5 text-stone-300 mb-4 font-sub text-lg sm:text-xl leading-snug">
                 <p id="paused-desc">El administrador ha detenido temporalmente el juego. Tu progreso y puntos están a salvo.</p>
             </div>
-            <p class="text-[8px] text-[#d4a340] font-hud animate-pulse">AGUARDANDO REANUDACIÓN...</p>
+            <p class="text-[8px] text-[#d4a340] font-hud animate-pulse mb-4">AGUARDANDO REANUDACIÓN...</p>
+            <button onclick="logoutSession()" class="text-[7px] sm:text-[8px] text-stone-500 hover:text-red-400 underline font-hud cursor-pointer">
+                [ SALIR DE ESTA CUENTA ]
+            </button>
         </div>
     </div>
 
@@ -756,19 +764,28 @@ GAME_HTML_TEMPLATE = """<!DOCTYPE html>
                 <button onclick="adminClearPlayers()" class="text-[8px] text-red-400 underline font-hud hover:text-red-300">[BORRAR TODOS]</button>
             </div>
 
-            <div id="admin-players-list" class="pixel-df-slot p-2.5 flex-grow overflow-y-auto flex flex-col gap-1.5 text-left min-h-[180px]">
+            <div id="admin-players-list" class="pixel-df-slot p-2.5 flex-grow overflow-y-auto flex flex-col gap-1.5 text-left min-h-[180px] mb-3">
+            </div>
+
+            <div class="text-right">
+                <button onclick="logoutSession()" class="text-[8px] text-stone-400 hover:text-white underline font-hud cursor-pointer">
+                    [ SALIR DEL MODO ADMIN ]
+                </button>
             </div>
         </div>
     </div>
 
     <!-- 5. CONTENIDO DEL JUEGO PRINCIPAL -->
     <div id="game-ui" class="hidden flex flex-col justify-between h-full w-full relative z-10">
-        <div class="fixed bottom-2 sm:bottom-3 left-2 sm:left-3 z-40 flex gap-2">
-            <button onclick="toggleTutorial()" class="pixel-df-btn-arcane text-[8px] sm:text-xs px-2.5 sm:px-3.5 py-1.5 sm:py-2 font-hud">
+        <div class="fixed bottom-2 sm:bottom-3 left-2 sm:left-3 z-40 flex gap-1.5 sm:gap-2">
+            <button onclick="toggleTutorial()" class="pixel-df-btn-arcane text-[8px] sm:text-xs px-2 sm:px-3.5 py-1.5 sm:py-2 font-hud">
                 [ ? ] TUTO
             </button>
             <button id="btn-audio-mute" onclick="toggleMute()" class="pixel-df-btn-arcane text-[8px] sm:text-xs px-2 sm:px-3 py-1.5 sm:py-2 font-hud">
                 [♪ MUTE]
+            </button>
+            <button onclick="logoutSession()" title="Salir / Cambiar cuenta" class="pixel-df-panel bg-[#0d1017] text-stone-500 hover:text-red-400 text-[8px] sm:text-xs px-2 sm:px-2.5 py-1.5 sm:py-2 font-hud cursor-pointer">
+                [ SALIR ]
             </button>
         </div>
 
@@ -907,6 +924,12 @@ GAME_HTML_TEMPLATE = """<!DOCTYPE html>
                 if (c.indexOf(prefix) === 0) return decodeURIComponent(c.substring(prefix.length));
             }
             return null;
+        }
+
+        function logoutSession() {
+            document.cookie = "balamath_user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax";
+            document.cookie = "balamath_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax";
+            location.reload();
         }
 
         let aCtx = null;
@@ -1203,7 +1226,9 @@ GAME_HTML_TEMPLATE = """<!DOCTYPE html>
             setCookie("balamath_user", playerName, 7);
             setCookie("balamath_token", sessionToken, 7);
 
-            enterLobbyView();
+            // Evalúa el estado global actual (si ya empezó o está en curso, entra directo al juego)
+            const currentGlobalState = window.getLatestGameState ? window.getLatestGameState() : { status: 'waiting' };
+            window.onGlobalGameStateChange(currentGlobalState);
         }
 
         function enterLobbyView() {
@@ -1941,6 +1966,8 @@ GAME_HTML_TEMPLATE = """<!DOCTYPE html>
         let db = null;
         let prevPositions = {};
         let latestGameState = { status: 'waiting' };
+
+        window.getLatestGameState = () => latestGameState;
 
         function esc(s) {
             return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
