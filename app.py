@@ -538,6 +538,78 @@ GAME_HTML = f"""<!DOCTYPE html>
         .rank-score {{ font-family: var(--font-hud); font-size: 9px; color: #d4a340; }}
         .rank-up {{ color: #4ade80; font-size: 9px; margin-left: 2px; }}
         .rank-down {{ color: #f87171; font-size: 9px; margin-left: 2px; }}
+        /* ENEMIGO: LADRÓN DE FICHAS */
+        .enemy {{
+            position: fixed;
+            z-index: 45;
+            width: 68px;
+            cursor: crosshair;
+            transition: left 0.7s steps(5), top 0.7s steps(5);
+            animation: enemy-spawn 0.3s steps(3);
+            touch-action: manipulation;
+        }}
+        .enemy svg {{
+            width: 68px;
+            height: 68px;
+            display: block;
+            filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.85));
+            animation: enemy-bob 0.5s steps(2) infinite;
+        }}
+        .enemy.hit svg {{ animation: enemy-hit 0.15s steps(2); }}
+        .enemy-hp {{
+            text-align: center;
+            font-family: var(--font-hud);
+            font-size: 8px;
+            color: #e0294a;
+            text-shadow: 1px 1px 0 #000;
+            height: 11px;
+        }}
+        .enemy-bar {{ height: 6px; background: #14081d; border: 2px solid #000; margin-top: 2px; }}
+        .enemy-bar-fill {{ height: 100%; width: 100%; background: #d4a340; }}
+        .enemy.dying {{ animation: enemy-die 0.35s steps(3) forwards; pointer-events: none; }}
+        .enemy.stealing {{ transition: left 0.5s ease-in, top 0.5s ease-in; opacity: 0.8; pointer-events: none; }}
+
+        @keyframes enemy-bob {{
+            0%, 100% {{ transform: translateY(0); }}
+            50% {{ transform: translateY(-5px); }}
+        }}
+        @keyframes enemy-spawn {{
+            from {{ transform: scale(0); opacity: 0; }}
+            to {{ transform: scale(1); opacity: 1; }}
+        }}
+        @keyframes enemy-hit {{
+            0%, 100% {{ filter: brightness(1); transform: translateX(0); }}
+            50% {{ filter: brightness(3); transform: translateX(-4px); }}
+        }}
+        @keyframes enemy-die {{
+            to {{ transform: scale(1.6); opacity: 0; filter: brightness(4); }}
+        }}
+
+        .float-text {{
+            position: fixed;
+            z-index: 60;
+            font-family: var(--font-hud);
+            font-size: 14px;
+            text-shadow: 2px 2px 0 #000;
+            pointer-events: none;
+            transform: translateX(-50%);
+            animation: float-up 1s steps(8) forwards;
+        }}
+        @keyframes float-up {{
+            to {{ transform: translate(-50%, -40px); opacity: 0; }}
+        }}
+
+        .score-stolen {{ animation: stolen-flash 0.6s steps(4); }}
+        @keyframes stolen-flash {{
+            0%, 100% {{ color: #d4a340; transform: translateX(0); }}
+            25%, 75% {{ color: #f87171; transform: translateX(-4px); }}
+            50% {{ color: #f87171; transform: translateX(4px); }}
+        }}
+
+        @media (max-width: 640px) {{
+            .enemy {{ width: 52px; }}
+            .enemy svg {{ width: 52px; height: 52px; }}
+        }}
     </style>
 </head>
 <body class="p-2 sm:p-4">
@@ -643,6 +715,7 @@ GAME_HTML = f"""<!DOCTYPE html>
                 <p>1. Selecciona 2 o más cartas que compartan divisores o variables comunes.</p>
                 <p>2. Presiona "JUGAR MANO" para acumular fichas multiplicadas.</p>
                 <p>3. Las cartas no seleccionadas permanecen en tu mano para la siguiente ronda.</p>
+                <p>4. ¡Toca al LADRÓN DE FICHAS antes de que escape o te robará puntos!</p>
             </div>
         </div>
 
@@ -966,6 +1039,7 @@ GAME_HTML = f"""<!DOCTYPE html>
 
                 startRound();
                 updateUI();
+                scheduleEnemy();
 
                 setTimeout(() => {{
                     fade.style.opacity = '0';
@@ -1223,6 +1297,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
 
         function triggerGameOver() {{
+            dismissEnemy();
             setCryptAudioMode(true);
             document.getElementById('gameover-modal').classList.remove('hidden');
         }}
@@ -1239,6 +1314,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
 
         function endLevel() {{
+            dismissEnemy();
             let precision = levelStats.optimalPossible > 0 ? (levelStats.actualCorrect / levelStats.optimalPossible) : 1;
             precision -= (levelStats.errors * 0.1);
             if(precision < 0) precision = 0;
@@ -1347,6 +1423,206 @@ GAME_HTML = f"""<!DOCTYPE html>
             setTimeout(() => {{
                 el.classList.add('hidden');
             }}, 150);
+        }}
+
+        /* ========================================================
+           ENEMIGO: LADRÓN DE FICHAS
+           Aparece cada cierto tiempo. Tócalo hasta vaciar sus
+           corazones para ganar puntos; si escapa, te roba puntos.
+           ======================================================== */
+        const ENEMY_ART = [
+            "....DDDDDD....",
+            "...DXXXXXXD...",
+            "..DXXXXXXXXD..",
+            ".DXXMMMMMMXXD.",
+            ".DXMMMMMMMMXD.",
+            ".DXMRMMMMRMXD.",
+            ".DXMMMMMMMMXD.",
+            ".DXXMMWWMMXXD.",
+            "..DXXXXXXXXD..",
+            ".GGDXXXXXXD...",
+            "GGYGDXXXXXXD..",
+            "GGGG.DXXXXXD..",
+            ".GG...DXDXD...",
+            "......D.D.D..."
+        ];
+        const ENEMY_COLORS = {{
+            'X': '#5b2a86', 'D': '#3a1758', 'W': '#f4ecd8', 'R': '#e0294a',
+            'M': '#14081d', 'G': '#d4a340', 'Y': '#ffe68c'
+        }};
+
+        let enemyTimer = null;
+        let enemyEl = null;
+        let enemyState = null;
+
+        function buildEnemySVG() {{
+            let rects = '';
+            ENEMY_ART.forEach((row, y) => {{
+                [...row].forEach((ch, x) => {{
+                    if (ENEMY_COLORS[ch]) rects += `<rect x="${{x}}" y="${{y}}" width="1" height="1" fill="${{ENEMY_COLORS[ch]}}"/>`;
+                }});
+            }});
+            return `<svg viewBox="0 0 ${{ENEMY_ART[0].length}} ${{ENEMY_ART.length}}" shape-rendering="crispEdges">${{rects}}</svg>`;
+        }}
+
+        function refreshScore() {{
+            document.getElementById('total-score').textContent = score.toLocaleString();
+        }}
+
+        function floatText(text, x, y, color) {{
+            const el = document.createElement('div');
+            el.className = 'float-text';
+            el.textContent = text;
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            el.style.color = color;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }}
+
+        function isBlockingModalOpen() {{
+            return !document.getElementById('level-modal').classList.contains('hidden')
+                || !document.getElementById('gameover-modal').classList.contains('hidden')
+                || document.getElementById('game-ui').classList.contains('hidden');
+        }}
+
+        function scheduleEnemy() {{
+            clearTimeout(enemyTimer);
+            // Más frecuente en niveles altos (mínimo 7 s)
+            const base = Math.max(7000, 16000 - level * 900);
+            enemyTimer = setTimeout(spawnEnemy, base + Math.random() * 9000);
+        }}
+
+        function randomEnemyPos() {{
+            const size = window.innerWidth < 640 ? 52 : 68;
+            const x = 20 + Math.random() * Math.max(10, window.innerWidth - size - 40);
+            const y = 90 + Math.random() * (window.innerHeight * 0.55);
+            return {{ x, y }};
+        }}
+
+        function spawnEnemy() {{
+            if (enemyEl || isBlockingModalOpen()) {{ scheduleEnemy(); return; }}
+
+            const maxHp = Math.min(4, 1 + Math.floor(level / 3));      // 1 a 4 toques
+            const lifetime = Math.max(3500, 6500 - level * 300);       // tiempo para atraparlo
+            enemyState = {{ hp: maxHp, drift: null, timeout: null }};
+
+            enemyEl = document.createElement('div');
+            enemyEl.className = 'enemy';
+            enemyEl.innerHTML = `
+                <div class="enemy-hp">${{'♥'.repeat(maxHp)}}</div>
+                ${{buildEnemySVG()}}
+                <div class="enemy-bar"><div class="enemy-bar-fill"></div></div>
+            `;
+            const p = randomEnemyPos();
+            enemyEl.style.left = p.x + 'px';
+            enemyEl.style.top = p.y + 'px';
+            enemyEl.addEventListener('pointerdown', hitEnemy);
+            document.body.appendChild(enemyEl);
+
+            playTone(90, 'sawtooth', 0.25, 0.15);
+            setTimeout(() => playTone(140, 'sawtooth', 0.2, 0.12), 120);
+            showAlert('¡LADRÓN DE FICHAS! TÓCALO');
+
+            // Barra de tiempo
+            const fill = enemyEl.querySelector('.enemy-bar-fill');
+            requestAnimationFrame(() => requestAnimationFrame(() => {{
+                fill.style.transition = `width ${{lifetime}}ms linear`;
+                fill.style.width = '0%';
+            }}));
+
+            // Se mueve por la pantalla (más rápido en niveles altos)
+            enemyState.drift = setInterval(() => {{
+                if (!enemyEl) return;
+                const np = randomEnemyPos();
+                enemyEl.style.left = np.x + 'px';
+                enemyEl.style.top = np.y + 'px';
+            }}, Math.max(600, 1200 - level * 60));
+
+            enemyState.timeout = setTimeout(enemyEscapes, lifetime);
+        }}
+
+        function hitEnemy(e) {{
+            e.preventDefault();
+            e.stopPropagation();
+            if (!enemyEl || !enemyState || enemyState.hp <= 0) return;
+
+            enemyState.hp--;
+            playTone(720, 'square', 0.06, 0.12);
+            enemyEl.querySelector('.enemy-hp').textContent = '♥'.repeat(enemyState.hp);
+
+            enemyEl.classList.remove('hit');
+            void enemyEl.offsetWidth;
+            enemyEl.classList.add('hit');
+            const el = enemyEl;
+            setTimeout(() => el.classList.remove('hit'), 160);
+
+            const r = enemyEl.getBoundingClientRect();
+            spawnParticles(r.left + r.width / 2, r.top + r.height / 2, 10);
+
+            if (enemyState.hp <= 0) defeatEnemy();
+        }}
+
+        function clearEnemyTimers() {{
+            if (!enemyState) return;
+            clearInterval(enemyState.drift);
+            clearTimeout(enemyState.timeout);
+        }}
+
+        function removeEnemy(delay) {{
+            const el = enemyEl;
+            clearEnemyTimers();
+            enemyEl = null;
+            enemyState = null;
+            setTimeout(() => {{ if (el) el.remove(); }}, delay || 0);
+            scheduleEnemy();
+        }}
+
+        function dismissEnemy() {{
+            if (enemyEl) removeEnemy(0);
+        }}
+
+        function defeatEnemy() {{
+            const r = enemyEl.getBoundingClientRect();
+            const reward = 150 * level;
+            score += reward;
+            refreshScore();
+            pushRank();
+
+            spawnParticles(r.left + r.width / 2, r.top + r.height / 2, 40);
+            floatText('+' + reward.toLocaleString(), r.left + r.width / 2, r.top, '#4ade80');
+            SFX.winRound();
+            showAlert('¡LADRÓN DERROTADO! +' + reward.toLocaleString());
+
+            enemyEl.classList.add('dying');
+            removeEnemy(350);
+        }}
+
+        function enemyEscapes() {{
+            if (!enemyEl) return;
+            if (isBlockingModalOpen()) {{ removeEnemy(0); return; }}
+
+            // Roba el 12% de tus puntos (mínimo 50 × nivel), sin bajar de 0
+            const stolen = Math.min(score, Math.max(50 * level, Math.floor(score * 0.12)));
+            score -= stolen;
+            refreshScore();
+            pushRank();
+            SFX.error();
+
+            const scoreEl = document.getElementById('total-score');
+            const sr = scoreEl.getBoundingClientRect();
+            if (stolen > 0) floatText('-' + stolen.toLocaleString(), sr.left + sr.width / 2, sr.bottom + 4, '#f87171');
+            scoreEl.classList.remove('score-stolen');
+            void scoreEl.offsetWidth;
+            scoreEl.classList.add('score-stolen');
+            showAlert(stolen > 0 ? '¡TE ROBÓ ' + stolen.toLocaleString() + ' PTS!' : '¡EL LADRÓN ESCAPÓ!');
+
+            // Vuela hacia tus puntos y desaparece
+            clearEnemyTimers();
+            enemyEl.classList.add('stealing');
+            enemyEl.style.left = sr.left + 'px';
+            enemyEl.style.top = (sr.top - 10) + 'px';
+            removeEnemy(600);
         }}
 
         function useJoker(type) {{
