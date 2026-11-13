@@ -87,11 +87,11 @@ if dos_font_b64:
     """
 else:
     font_face_css += """
-    @font-face {{
+    @font-face {
         font-family: 'DosVgaFont';
         src: local('Press Start 2P'), local('Courier New'), monospace;
         font-weight: bold;
-    }}
+    }
     """
 
 if balatro_font_b64:
@@ -105,11 +105,11 @@ if balatro_font_b64:
     """
 else:
     font_face_css += """
-    @font-face {{
+    @font-face {
         font-family: 'BalatroFont';
         src: local('Press Start 2P'), sans-serif;
         font-weight: bold;
-    }}
+    }
     """
 
 bg_game_tag = f'<img id="bg-game" class="screen-bg" style="display:none;" src="data:image/gif;base64,{bg_game_b64}" alt="Game BG" />' if bg_game_b64 else '<div id="bg-game" class="screen-bg procedural-game" style="display:none;"></div>'
@@ -144,7 +144,7 @@ firebase_config_json = json.dumps(FIREBASE_CONFIG)
 ricky_src_js = json.dumps(f"data:image/png;base64,{ricky_b64}" if ricky_b64 else "")
 ariana_src_js = json.dumps(f"data:image/png;base64,{ariana_b64}" if ariana_b64 else "")
 
-GAME_HTML = f"""<!DOCTYPE html>
+GAME_HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -154,28 +154,28 @@ GAME_HTML = f"""<!DOCTYPE html>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
     
     <style>
-        {font_face_css}
+        __FONT_FACE_CSS__
 
-        :root {{
+        :root {
             --font-hud: 'Press Start 2P', monospace;
             --font-sub: 'VT323', monospace;
             --font-dos: 'DosVgaFont', 'Press Start 2P', monospace;
             --font-balatro: 'BalatroFont', 'Press Start 2P', sans-serif;
             --color-card-cream: #ece5d3;
-        }}
+        }
 
-        * {{
+        * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
             image-rendering: pixelated;
-        }}
+        }
 
-        .pixelated {{
+        .pixelated {
             image-rendering: pixelated;
             image-rendering: crisp-edges;
-        }}
+        }
 
-        html, body {{
+        html, body {
             height: 100dvh;
             width: 100vw;
             margin: 0;
@@ -185,21 +185,20 @@ GAME_HTML = f"""<!DOCTYPE html>
             background-color: transparent;
             color: #d8ceb9;
             font-family: var(--font-hud);
-        }}
+        }
 
-        body {{
+        body {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-        }}
+        }
 
-        .font-hud {{ font-family: var(--font-hud); }}
-        .font-sub {{ font-family: var(--font-sub); }}
-        .font-dos {{ font-family: var(--font-dos); }}
-        .font-balatro {{ font-family: var(--font-balatro); }}
+        .font-hud { font-family: var(--font-hud); }
+        .font-sub { font-family: var(--font-sub); }
+        .font-dos { font-family: var(--font-dos); }
+        .font-balatro { font-family: var(--font-balatro); }
 
-        /* FONDOS */
-        .screen-bg {{
+        .screen-bg {
             position: fixed;
             top: 0; left: 0;
             width: 100vw; height: 100vh;
@@ -207,16 +206,16 @@ GAME_HTML = f"""<!DOCTYPE html>
             object-fit: cover;
             pointer-events: none;
             image-rendering: pixelated;
-        }}
+        }
 
-        #bg-reg {{
+        #bg-reg {
             filter: brightness(1.20);
-        }}
+        }
 
-        .procedural-reg {{ background: radial-gradient(circle at center, #262e3d, #0d121a); }}
-        .procedural-game {{ background: radial-gradient(circle at center, #1b3d2b, #050c07); }}
+        .procedural-reg { background: radial-gradient(circle at center, #262e3d, #0d121a); }
+        .procedural-game { background: radial-gradient(circle at center, #1b3d2b, #050c07); }
 
-        .bg-dark-overlay {{
+        .bg-dark-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: 
                 linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.38) 50%),
@@ -224,10 +223,9 @@ GAME_HTML = f"""<!DOCTYPE html>
             background-size: 100% 4px, 100% 100%;
             pointer-events: none;
             z-index: 1;
-        }}
+        }
 
-        /* PANELES DARK FANTASY RECTOS */
-        .pixel-df-panel {{
+        .pixel-df-panel {
             background: #11141c;
             border: 3px solid #000000;
             box-shadow: 
@@ -236,17 +234,17 @@ GAME_HTML = f"""<!DOCTYPE html>
                 0 0 0 2px #3c2a1e,
                 0 6px 0 #000000;
             position: relative;
-        }}
+        }
 
-        .pixel-df-slot {{
+        .pixel-df-slot {
             background: #080a0e;
             border: 2px solid #000000;
             box-shadow: 
                 inset 2px 2px 0 #000000,
                 inset -2px -2px 0 #1b202c;
-        }}
+        }
 
-        .pixel-df-banner-crimson {{
+        .pixel-df-banner-crimson {
             background: linear-gradient(180deg, #9b1c24 0%, #590d12 100%);
             border: 3px solid #000000;
             box-shadow: 
@@ -257,9 +255,9 @@ GAME_HTML = f"""<!DOCTYPE html>
             color: #f7e8ce;
             text-shadow: 2px 2px 0 #000000;
             transform: none !important;
-        }}
+        }
 
-        .pixel-df-btn-flame {{
+        .pixel-df-btn-flame {
             font-family: var(--font-hud);
             background: linear-gradient(180deg, #d35422 0%, #872506 100%);
             border: 3px solid #000000;
@@ -272,17 +270,17 @@ GAME_HTML = f"""<!DOCTYPE html>
             text-shadow: 2px 2px 0 #000000;
             transition: transform 0.05s steps(2), box-shadow 0.05s steps(2);
             cursor: pointer;
-        }}
-        .pixel-df-btn-flame:active {{
+        }
+        .pixel-df-btn-flame:active {
             transform: translateY(4px);
             box-shadow: 
                 inset 3px 3px 0 #3a0e02,
                 inset -3px -3px 0 #ff8a50,
                 0 0 0 2px #d4a340,
                 0 2px 0 #000000;
-        }}
+        }
 
-        .pixel-df-btn-arcane {{
+        .pixel-df-btn-arcane {
             font-family: var(--font-hud);
             background: #172233;
             border: 2px solid #000000;
@@ -293,13 +291,13 @@ GAME_HTML = f"""<!DOCTYPE html>
             color: #a7c8e8;
             text-shadow: 2px 2px 0 #000000;
             transition: transform 0.05s steps(2);
-        }}
-        .pixel-df-btn-arcane:active {{
+        }
+        .pixel-df-btn-arcane:active {
             transform: translateY(2px);
             box-shadow: inset 2px 2px 0 #090e17, inset -2px -2px 0 #384e6f, 0 2px 0 #000;
-        }}
+        }
 
-        .pixel-df-btn-emerald {{
+        .pixel-df-btn-emerald {
             font-family: var(--font-hud);
             background: linear-gradient(180deg, #1b7a43 0%, #0d4725 100%);
             border: 3px solid #000000;
@@ -311,11 +309,10 @@ GAME_HTML = f"""<!DOCTYPE html>
             color: #ffffff;
             text-shadow: 2px 2px 0 #000000;
             cursor: pointer;
-        }}
-        .pixel-df-btn-emerald:active {{ transform: translateY(4px); }}
+        }
+        .pixel-df-btn-emerald:active { transform: translateY(4px); }
 
-        /* COMODINES */
-        .btn-relic-slot {{
+        .btn-relic-slot {
             background: #131720;
             border: 2px solid #000000;
             box-shadow: 
@@ -328,14 +325,14 @@ GAME_HTML = f"""<!DOCTYPE html>
             display: flex;
             align-items: center;
             justify-content: center;
-        }}
-        .btn-relic-slot:hover {{ border-color: #d4a340; }}
-        .btn-relic-slot:active {{
+        }
+        .btn-relic-slot:hover { border-color: #d4a340; }
+        .btn-relic-slot:active {
             transform: translateY(2px);
             box-shadow: inset 2px 2px 0 #06070a, inset -2px -2px 0 #2d3648, 0 2px 0 #000000;
-        }}
+        }
 
-        .char-slot-crypt {{
+        .char-slot-crypt {
             background: #090c12;
             border: 2px solid #000000;
             box-shadow: 
@@ -344,15 +341,14 @@ GAME_HTML = f"""<!DOCTYPE html>
                 0 3px 0 #000;
             cursor: pointer;
             transition: transform 0.08s steps(2);
-        }}
-        .char-slot-crypt.selected {{
+        }
+        .char-slot-crypt.selected {
             border-color: #d4a340;
             background: #1b2230;
             box-shadow: inset 0 0 0 2px #d4a340, 0 0 8px rgba(212, 163, 64, 0.4), 0 4px 0 #000000;
-        }}
+        }
 
-        /* CARTAS BALATRO ORIGINALES */
-        .card-8bit {{
+        .card-8bit {
             width: 104px;
             height: 150px;
             background: var(--color-card-cream);
@@ -367,24 +363,24 @@ GAME_HTML = f"""<!DOCTYPE html>
             align-items: center;
             justify-content: center;
             transition: transform 0.08s steps(3);
-        }}
+        }
 
-        .card-frame-inner {{
+        .card-frame-inner {
             position: absolute;
             top: 4px; left: 4px; right: 4px; bottom: 4px;
             border: 2px solid #ccc0a2;
             pointer-events: none;
-        }}
+        }
 
-        .pip-corner-tl {{
+        .pip-corner-tl {
             position: absolute;
             top: 6px; left: 7px;
             display: flex; flex-direction: column; align-items: center;
             line-height: 1;
             pointer-events: none;
             font-family: var(--font-dos);
-        }}
-        .pip-corner-br {{
+        }
+        .pip-corner-br {
             position: absolute;
             bottom: 6px; right: 7px;
             display: flex; flex-direction: column; align-items: center;
@@ -392,12 +388,12 @@ GAME_HTML = f"""<!DOCTYPE html>
             transform: rotate(180deg);
             pointer-events: none;
             font-family: var(--font-dos);
-        }}
+        }
 
-        .corner-text {{ font-size: 13px; font-weight: bold; letter-spacing: -0.5px; }}
-        .corner-suit-icon {{ font-size: 11px; margin-top: 1px; }}
+        .corner-text { font-size: 13px; font-weight: bold; letter-spacing: -0.5px; }
+        .corner-suit-icon { font-size: 11px; margin-top: 1px; }
 
-        .term-box-center {{
+        .term-box-center {
             max-width: 86%;
             display: flex;
             align-items: center;
@@ -405,9 +401,9 @@ GAME_HTML = f"""<!DOCTYPE html>
             text-align: center;
             z-index: 2;
             pointer-events: none;
-        }}
+        }
 
-        .term-math-pixel {{
+        .term-math-pixel {
             font-family: var(--font-dos);
             color: #12141a;
             line-height: 1;
@@ -415,39 +411,39 @@ GAME_HTML = f"""<!DOCTYPE html>
             letter-spacing: -1px;
             font-weight: bold;
             text-shadow: 1px 1px 0 #ffffff;
-        }}
+        }
 
-        .len-1 {{ font-size: 2.1rem; }}
-        .len-2 {{ font-size: 1.85rem; }}
-        .len-3 {{ font-size: 1.55rem; }}
-        .len-4 {{ font-size: 1.3rem; }}
-        .len-5 {{ font-size: 1.1rem; }}
-        .len-many {{ font-size: 0.9rem; }}
+        .len-1 { font-size: 2.1rem; }
+        .len-2 { font-size: 1.85rem; }
+        .len-3 { font-size: 1.55rem; }
+        .len-4 { font-size: 1.3rem; }
+        .len-5 { font-size: 1.1rem; }
+        .len-many { font-size: 0.9rem; }
 
-        @keyframes sway-8bit-1 {{
-            0%, 100% {{ transform: translateY(0px); }}
-            50% {{ transform: translateY(-7px); }}
-        }}
-        @keyframes sway-8bit-2 {{
-            0%, 100% {{ transform: translateY(-5px); }}
-            50% {{ transform: translateY(3px); }}
-        }}
-        @keyframes sway-8bit-3 {{
-            0%, 100% {{ transform: translateY(2px); }}
-            50% {{ transform: translateY(-6px); }}
-        }}
+        @keyframes sway-8bit-1 {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-7px); }
+        }
+        @keyframes sway-8bit-2 {
+            0%, 100% { transform: translateY(-5px); }
+            50% { transform: translateY(3px); }
+        }
+        @keyframes sway-8bit-3 {
+            0%, 100% { transform: translateY(2px); }
+            50% { transform: translateY(-6px); }
+        }
 
-        .idle-sway-1 {{ animation: sway-8bit-1 3s steps(5) infinite; }}
-        .idle-sway-2 {{ animation: sway-8bit-2 3.6s steps(5) infinite; }}
-        .idle-sway-3 {{ animation: sway-8bit-3 4s steps(5) infinite; }}
+        .idle-sway-1 { animation: sway-8bit-1 3s steps(5) infinite; }
+        .idle-sway-2 { animation: sway-8bit-2 3.6s steps(5) infinite; }
+        .idle-sway-3 { animation: sway-8bit-3 4s steps(5) infinite; }
 
-        .card-8bit:hover {{
+        .card-8bit:hover {
             transform: translateY(-12px) !important;
             animation-play-state: paused;
             box-shadow: inset 3px 3px 0 #ffffff, inset -3px -3px 0 #b3a992, 0 12px 0 #000000;
             z-index: 20;
-        }}
-        .card-8bit.selected {{
+        }
+        .card-8bit.selected {
             transform: translateY(-20px) !important;
             animation-play-state: paused;
             border-color: #f1b31c;
@@ -457,57 +453,57 @@ GAME_HTML = f"""<!DOCTYPE html>
                 0 0 0 3px #f1b31c,
                 0 12px 0 #000000 !important;
             z-index: 30;
-        }}
+        }
 
-        @media (max-width: 640px) {{
-            .card-8bit {{
+        @media (max-width: 640px) {
+            .card-8bit {
                 width: 68px !important;
                 height: 98px !important;
                 border-width: 3px !important;
                 box-shadow: inset 2px 2px 0 #fff, inset -2px -2px 0 #b3a992, 0 4px 0 #000 !important;
-            }}
-            .card-8bit.selected {{
+            }
+            .card-8bit.selected {
                 transform: translateY(-12px) !important;
                 box-shadow: inset 2px 2px 0 #fff7b8, inset -2px -2px 0 #ab7c07, 0 0 0 2px #f1b31c, 0 8px 0 #000 !important;
-            }}
-            .card-8bit:hover {{
+            }
+            .card-8bit:hover {
                 transform: translateY(-6px) !important;
-            }}
-            .len-1 {{ font-size: 1.25rem !important; }}
-            .len-2 {{ font-size: 1.1rem !important; }}
-            .len-3 {{ font-size: 0.95rem !important; }}
-            .len-4 {{ font-size: 0.8rem !important; }}
-            .len-5 {{ font-size: 0.7rem !important; }}
-            .len-many {{ font-size: 0.6rem !important; }}
-            .corner-text {{ font-size: 9px !important; }}
-            .corner-suit-icon {{ font-size: 8px !important; }}
-            .pip-corner-tl {{ top: 2px !important; left: 3px !important; }}
-            .pip-corner-br {{ bottom: 2px !important; right: 3px !important; }}
-            #hand-container {{ gap: 6px !important; min-height: 120px !important; margin-bottom: 10px !important; }}
-            .btn-relic-slot {{ width: 40px !important; height: 40px !important; }}
-        }}
+            }
+            .len-1 { font-size: 1.25rem !important; }
+            .len-2 { font-size: 1.1rem !important; }
+            .len-3 { font-size: 0.95rem !important; }
+            .len-4 { font-size: 0.8rem !important; }
+            .len-5 { font-size: 0.7rem !important; }
+            .len-many { font-size: 0.6rem !important; }
+            .corner-text { font-size: 9px !important; }
+            .corner-suit-icon { font-size: 8px !important; }
+            .pip-corner-tl { top: 2px !important; left: 3px !important; }
+            .pip-corner-br { bottom: 2px !important; right: 3px !important; }
+            #hand-container { gap: 6px !important; min-height: 120px !important; margin-bottom: 10px !important; }
+            .btn-relic-slot { width: 40px !important; height: 40px !important; }
+        }
 
-        @keyframes flame-flicker-8bit {{
-            0%, 100% {{ transform: scale(1); filter: brightness(1); }}
-            50% {{ transform: scale(1.12); filter: brightness(1.25); }}
-        }}
-        .score-flame {{
+        @keyframes flame-flicker-8bit {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.12); filter: brightness(1.25); }
+        }
+        .score-flame {
             color: #ffe6a3;
             font-family: var(--font-hud);
             text-shadow: 3px 3px 0 #9e1a22, -3px -3px 0 #d85a1a, 0 0 12px rgba(216, 90, 26, 0.8);
             animation: flame-flicker-8bit 0.25s steps(2) infinite;
-        }}
+        }
 
-        @keyframes shake-8bit {{
-            0%, 100% {{ transform: translateX(0); }}
-            25% {{ transform: translateX(-8px); }}
-            75% {{ transform: translateX(8px); }}
-        }}
-        .animate-shake {{ animation: shake-8bit 0.22s steps(4); }}
+        @keyframes shake-8bit {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        .animate-shake { animation: shake-8bit 0.22s steps(4); }
 
-        #fx-canvas {{ position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; }}
+        #fx-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; }
 
-        #fade-overlay {{
+        #fade-overlay {
             position: fixed;
             inset: 0;
             background: #000;
@@ -515,15 +511,14 @@ GAME_HTML = f"""<!DOCTYPE html>
             pointer-events: none;
             z-index: 9999;
             transition: opacity 0.4s steps(4);
-        }}
+        }
 
-        /* LOBBY TIPO KAHOOT CHIPS */
-        @keyframes pop-in-chip {{
-            0% {{ transform: scale(0.5); opacity: 0; }}
-            70% {{ transform: scale(1.1); }}
-            100% {{ transform: scale(1); opacity: 1; }}
-        }}
-        .lobby-chip {{
+        @keyframes pop-in-chip {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .lobby-chip {
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -532,14 +527,13 @@ GAME_HTML = f"""<!DOCTYPE html>
             box-shadow: inset 2px 2px 0 #2e3648, 0 3px 0 #000;
             padding: 5px 9px;
             animation: pop-in-chip 0.25s steps(4) forwards;
-        }}
-        .lobby-chip.me {{
+        }
+        .lobby-chip.me {
             border-color: #d4a340;
             background: #1f2738;
-        }}
+        }
 
-        /* RANKING EN VIVO */
-        .rank-row {{
+        .rank-row {
             display: flex;
             align-items: center;
             gap: 8px;
@@ -548,17 +542,17 @@ GAME_HTML = f"""<!DOCTYPE html>
             border: 2px solid #000000;
             box-shadow: inset 2px 2px 0 #000000, inset -2px -2px 0 #1b202c;
             transition: transform 0.45s steps(6);
-        }}
-        .rank-row.me {{
+        }
+        .rank-row.me {
             border-color: #d4a340;
             background: #1b2230;
             box-shadow: inset 0 0 0 2px #d4a340, 0 0 8px rgba(212, 163, 64, 0.35);
-        }}
-        .rank-pos {{ font-family: var(--font-hud); font-size: 10px; color: #8e98aa; min-width: 26px; }}
-        .rank-row.top1 .rank-pos {{ color: #f1b31c; text-shadow: 1px 1px 0 #000; }}
-        .rank-row.top2 .rank-pos {{ color: #c0c7d1; }}
-        .rank-row.top3 .rank-pos {{ color: #c97a3a; }}
-        .rank-avatar {{
+        }
+        .rank-pos { font-family: var(--font-hud); font-size: 10px; color: #8e98aa; min-width: 26px; }
+        .rank-row.top1 .rank-pos { color: #f1b31c; text-shadow: 1px 1px 0 #000; }
+        .rank-row.top2 .rank-pos { color: #c0c7d1; }
+        .rank-row.top3 .rank-pos { color: #c97a3a; }
+        .rank-avatar {
             width: 30px; height: 30px;
             flex-shrink: 0;
             image-rendering: pixelated;
@@ -566,15 +560,14 @@ GAME_HTML = f"""<!DOCTYPE html>
             border: 2px solid #000;
             display: flex; align-items: center; justify-content: center;
             font-size: 14px; color: #d4a340;
-        }}
-        .rank-name {{ font-family: var(--font-hud); font-size: 8px; color: #e8dcc2; }}
-        .rank-sub {{ font-family: var(--font-sub); font-size: 14px; color: #8e98aa; line-height: 1; }}
-        .rank-score {{ font-family: var(--font-hud); font-size: 9px; color: #d4a340; }}
-        .rank-up {{ color: #4ade80; font-size: 9px; margin-left: 2px; }}
-        .rank-down {{ color: #f87171; font-size: 9px; margin-left: 2px; }}
+        }
+        .rank-name { font-family: var(--font-hud); font-size: 8px; color: #e8dcc2; }
+        .rank-sub { font-family: var(--font-sub); font-size: 14px; color: #8e98aa; line-height: 1; }
+        .rank-score { font-family: var(--font-hud); font-size: 9px; color: #d4a340; }
+        .rank-up { color: #4ade80; font-size: 9px; margin-left: 2px; }
+        .rank-down { color: #f87171; font-size: 9px; margin-left: 2px; }
 
-        /* ENEMIGO: LADRÓN DE FICHAS */
-        .enemy {{
+        .enemy {
             position: fixed;
             z-index: 45;
             width: 68px;
@@ -582,45 +575,45 @@ GAME_HTML = f"""<!DOCTYPE html>
             transition: left 0.7s steps(5), top 0.7s steps(5);
             animation: enemy-spawn 0.3s steps(3);
             touch-action: manipulation;
-        }}
-        .enemy svg {{
+        }
+        .enemy svg {
             width: 68px;
             height: 68px;
             display: block;
             filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.85));
             animation: enemy-bob 0.5s steps(2) infinite;
-        }}
-        .enemy.hit svg {{ animation: enemy-hit 0.15s steps(2); }}
-        .enemy-hp {{
+        }
+        .enemy.hit svg { animation: enemy-hit 0.15s steps(2); }
+        .enemy-hp {
             text-align: center;
             font-family: var(--font-hud);
             font-size: 8px;
             color: #e0294a;
             text-shadow: 1px 1px 0 #000;
             height: 11px;
-        }}
-        .enemy-bar {{ height: 6px; background: #14081d; border: 2px solid #000; margin-top: 2px; }}
-        .enemy-bar-fill {{ height: 100%; width: 100%; background: #d4a340; }}
-        .enemy.dying {{ animation: enemy-die 0.35s steps(3) forwards; pointer-events: none; }}
-        .enemy.stealing {{ transition: left 0.5s ease-in, top 0.5s ease-in; opacity: 0.8; pointer-events: none; }}
+        }
+        .enemy-bar { height: 6px; background: #14081d; border: 2px solid #000; margin-top: 2px; }
+        .enemy-bar-fill { height: 100%; width: 100%; background: #d4a340; }
+        .enemy.dying { animation: enemy-die 0.35s steps(3) forwards; pointer-events: none; }
+        .enemy.stealing { transition: left 0.5s ease-in, top 0.5s ease-in; opacity: 0.8; pointer-events: none; }
 
-        @keyframes enemy-bob {{
-            0%, 100% {{ transform: translateY(0); }}
-            50% {{ transform: translateY(-5px); }}
-        }}
-        @keyframes enemy-spawn {{
-            from {{ transform: scale(0); opacity: 0; }}
-            to {{ transform: scale(1); opacity: 1; }}
-        }}
-        @keyframes enemy-hit {{
-            0%, 100% {{ filter: brightness(1); transform: translateX(0); }}
-            50% {{ filter: brightness(3); transform: translateX(-4px); }}
-        }}
-        @keyframes enemy-die {{
-            to {{ transform: scale(1.6); opacity: 0; filter: brightness(4); }}
-        }}
+        @keyframes enemy-bob {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        @keyframes enemy-spawn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes enemy-hit {
+            0%, 100% { filter: brightness(1); transform: translateX(0); }
+            50% { filter: brightness(3); transform: translateX(-4px); }
+        }
+        @keyframes enemy-die {
+            to { transform: scale(1.6); opacity: 0; filter: brightness(4); }
+        }
 
-        .float-text {{
+        .float-text {
             position: fixed;
             z-index: 60;
             font-family: var(--font-hud);
@@ -629,35 +622,33 @@ GAME_HTML = f"""<!DOCTYPE html>
             pointer-events: none;
             transform: translateX(-50%);
             animation: float-up 1s steps(8) forwards;
-        }}
-        @keyframes float-up {{
-            to {{ transform: translate(-50%, -40px); opacity: 0; }}
-        }}
+        }
+        @keyframes float-up {
+            to { transform: translate(-50%, -40px); opacity: 0; }
+        }
 
-        .score-stolen {{ animation: stolen-flash 0.6s steps(4); }}
-        @keyframes stolen-flash {{
-            0%, 100% {{ color: #d4a340; transform: translateX(0); }}
-            25%, 75% {{ color: #f87171; transform: translateX(-4px); }}
-            50% {{ color: #f87171; transform: translateX(4px); }}
-        }}
+        .score-stolen { animation: stolen-flash 0.6s steps(4); }
+        @keyframes stolen-flash {
+            0%, 100% { color: #d4a340; transform: translateX(0); }
+            25%, 75% { color: #f87171; transform: translateX(-4px); }
+            50% { color: #f87171; transform: translateX(4px); }
+        }
 
-        @media (max-width: 640px) {{
-            .enemy {{ width: 52px; }}
-            .enemy svg {{ width: 52px; height: 52px; }}
-        }}
+        @media (max-width: 640px) {
+            .enemy { width: 52px; }
+            .enemy svg { width: 52px; height: 52px; }
+        }
     </style>
 </head>
 <body class="p-2 sm:p-4">
-    {bg_reg_tag}
-    {bg_game_tag}
-    {audio_html_tag}
+    __BG_REG_TAG__
+    __BG_GAME_TAG__
+    __AUDIO_HTML_TAG__
     <div class="bg-dark-overlay"></div>
     <canvas id="fx-canvas"></canvas>
     <div id="fade-overlay"></div>
 
-    <!-- ========================================================
-         1. VISTA DE REGISTRO / ACCESO (SOLO DICE BALAMATH)
-         ======================================================== -->
+    <!-- 1. VISTA DE REGISTRO / ACCESO -->
     <div id="intro-modal" class="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-4">
         <div class="pixel-df-panel max-w-xs sm:max-w-sm w-full p-4 sm:p-6 text-center">
             
@@ -665,7 +656,6 @@ GAME_HTML = f"""<!DOCTYPE html>
                 <h1 class="text-base sm:text-xl tracking-widest font-hud text-[#fff1d0]">BALAMATH</h1>
             </div>
             
-            <!-- PASO 1: NOMBRE -->
             <div id="step-name">
                 <div class="pixel-df-slot p-3 mb-4 text-left">
                     <label class="block text-[8px] sm:text-[9px] text-[#a99878] mb-1.5 tracking-wider font-hud">APODO DEL JUGADOR:</label>
@@ -676,20 +666,19 @@ GAME_HTML = f"""<!DOCTYPE html>
                 </button>
             </div>
 
-            <!-- PASO 2: SELECCIÓN DE PERSONAJE -->
             <div id="step-gender" class="hidden">
                 <div class="pixel-df-slot p-2 sm:p-3 mb-3 text-center">
                     <p class="text-[8px] sm:text-[9px] text-[#d4a340] font-hud mb-2 tracking-wider">ELIGE TU PERSONAJE</p>
                     <div class="grid grid-cols-2 gap-2 sm:gap-3">
                         <div id="opt-boy" onclick="selectGender('boy')" class="char-slot-crypt p-1.5 flex flex-col items-center">
                             <div class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mb-1">
-                                {ricky_img_tag}
+                                __RICKY_IMG_TAG__
                             </div>
                             <span class="text-[8px] sm:text-[9px] font-bold text-gray-300 font-hud">[CHICO]</span>
                         </div>
                         <div id="opt-girl" onclick="selectGender('girl')" class="char-slot-crypt p-1.5 flex flex-col items-center">
                             <div class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mb-1">
-                                {ariana_img_tag}
+                                __ARIANA_IMG_TAG__
                             </div>
                             <span class="text-[8px] sm:text-[9px] font-bold text-gray-300 font-hud">[CHICA]</span>
                         </div>
@@ -703,9 +692,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- ========================================================
-         2. VISTA SALA DE ESPERA TIPO KAHOOT + CONTADOR
-         ======================================================== -->
+    <!-- 2. SALA DE ESPERA TIPO KAHOOT -->
     <div id="lobby-modal" class="fixed inset-0 z-[900] hidden flex items-center justify-center p-3 sm:p-4">
         <div class="pixel-df-panel max-w-lg w-full p-4 sm:p-6 text-center">
             <div class="pixel-df-banner-crimson py-2.5 px-3 mb-3 inline-block w-full">
@@ -717,7 +704,6 @@ GAME_HTML = f"""<!DOCTYPE html>
                     ESPERANDO AL ANFITRIÓN...
                 </p>
                 <div class="pixel-df-slot p-3 mb-3 min-h-[150px] max-h-[240px] overflow-y-auto flex flex-wrap gap-2 justify-center items-start content-start" id="lobby-players-grid">
-                    <!-- Aquí aparecen los jugadores tipo Kahoot -->
                 </div>
                 <div class="flex justify-between items-center text-[8px] text-[#8e98aa] font-hud px-1">
                     <span>TU APODO: <strong id="lobby-my-name" class="text-white">---</strong></span>
@@ -725,7 +711,6 @@ GAME_HTML = f"""<!DOCTYPE html>
                 </div>
             </div>
 
-            <!-- CONTADOR REGRESIVO AL INICIAR -->
             <div id="lobby-countdown-box" class="hidden py-6">
                 <p class="text-[10px] sm:text-xs text-amber-300 font-hud mb-3 tracking-widest">¡LA PARTIDA COMIENZA EN!</p>
                 <div id="lobby-countdown-num" class="text-5xl sm:text-7xl score-flame font-hud my-2">3</div>
@@ -733,9 +718,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- ========================================================
-         3. VISTA DE JUEGO PAUSADO / DETENIDO / NO ACTIVO
-         ======================================================== -->
+    <!-- 3. VISTA DE JUEGO PAUSADO / DETENIDO -->
     <div id="paused-modal" class="fixed inset-0 bg-black/90 z-[950] hidden flex items-center justify-center p-3 sm:p-4">
         <div class="pixel-df-panel max-w-xs sm:max-w-sm w-full p-5 sm:p-6 text-center">
             <div class="pixel-df-banner-crimson py-2.5 px-3 mb-4 inline-block w-full">
@@ -748,9 +731,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- ========================================================
-         4. VISTA DE ADMINISTRADOR (ACCESO: marvelRIVALS83)
-         ======================================================== -->
+    <!-- 4. VISTA DE ADMINISTRADOR -->
     <div id="admin-modal" class="fixed inset-0 bg-black/92 z-[1100] hidden flex items-center justify-center p-3 sm:p-4">
         <div class="pixel-df-panel max-w-xl w-full p-4 sm:p-6 text-center max-h-[92dvh] flex flex-col">
             <div class="pixel-df-banner-crimson py-2.5 px-3 mb-3 flex justify-between items-center">
@@ -758,7 +739,6 @@ GAME_HTML = f"""<!DOCTYPE html>
                 <span id="admin-state-badge" class="bg-black text-[#d4a340] text-[8px] px-2 py-1 border border-[#d4a340] font-hud">ESTADO: LOBBY</span>
             </div>
 
-            <!-- CONTROLES GLOBALES -->
             <div class="grid grid-cols-3 gap-2 mb-3">
                 <button onclick="adminSetState('starting')" class="pixel-df-btn-emerald py-3 px-2 text-[8px] sm:text-[10px] font-hud">
                     ▶ INICIAR
@@ -776,17 +756,13 @@ GAME_HTML = f"""<!DOCTYPE html>
                 <button onclick="adminClearPlayers()" class="text-[8px] text-red-400 underline font-hud hover:text-red-300">[BORRAR TODOS]</button>
             </div>
 
-            <!-- LISTA EN VIVO PARA EL ADMIN -->
             <div id="admin-players-list" class="pixel-df-slot p-2.5 flex-grow overflow-y-auto flex flex-col gap-1.5 text-left min-h-[180px]">
             </div>
         </div>
     </div>
 
-    <!-- ========================================================
-         5. CONTENIDO DEL JUEGO PRINCIPAL
-         ======================================================== -->
+    <!-- 5. CONTENIDO DEL JUEGO PRINCIPAL -->
     <div id="game-ui" class="hidden flex flex-col justify-between h-full w-full relative z-10">
-        <!-- BOTONES INFERIORES -->
         <div class="fixed bottom-2 sm:bottom-3 left-2 sm:left-3 z-40 flex gap-2">
             <button onclick="toggleTutorial()" class="pixel-df-btn-arcane text-[8px] sm:text-xs px-2.5 sm:px-3.5 py-1.5 sm:py-2 font-hud">
                 [ ? ] TUTO
@@ -803,7 +779,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             </button>
         </div>
 
-        <!-- PANEL RANKING EN VIVO -->
         <div id="rank-panel" class="fixed right-0 top-0 h-full w-72 sm:w-80 bg-[#0d1017] border-l-4 border-black p-3 sm:p-4 flex flex-col z-50 transform translate-x-full transition-transform duration-200 shadow-2xl">
             <div class="flex justify-between items-center mb-2 border-b-2 border-[#2b3548] pb-2">
                 <div class="pixel-df-banner-crimson px-2.5 py-1 text-[8px] sm:text-[9px] font-hud">RANKING EN VIVO</div>
@@ -813,7 +788,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             <div id="rank-list" class="flex flex-col gap-1.5 overflow-y-auto flex-grow"></div>
         </div>
 
-        <!-- PANEL TUTORIAL -->
         <div id="tutorial-panel" class="fixed left-0 top-0 h-full w-72 sm:w-80 bg-[#0d1017] border-r-4 border-black p-3 sm:p-4 flex flex-col z-50 transform -translate-x-full transition-transform duration-200 shadow-2xl overflow-y-auto">
             <div class="flex justify-between items-center mb-3 border-b-2 border-[#2b3548] pb-2">
                 <div class="pixel-df-banner-crimson px-2.5 py-1 text-[8px] sm:text-[9px] font-hud">GUÍA FACTORIZACIÓN</div>
@@ -836,7 +810,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             </div>
         </div>
 
-        <!-- HEADER SUPERIOR -->
         <header class="flex justify-between items-center z-10 max-w-5xl mx-auto w-full gap-1.5 sm:gap-2 px-1 pt-1">
             <div class="pixel-df-panel px-2 sm:px-3 py-1.5 sm:py-2 text-center min-w-[85px] sm:min-w-[130px] flex flex-col items-center justify-center">
                 <span class="text-[7px] sm:text-[9px] text-[#8e98aa] font-hud tracking-wider">NIVEL</span>
@@ -844,18 +817,17 @@ GAME_HTML = f"""<!DOCTYPE html>
                 <span class="text-[6px] sm:text-[8px] text-[#c8b99c] font-hud tracking-wider">RONDA <span id="round-display" class="text-white">1</span>/3</span>
             </div>
 
-            <!-- COMODINES -->
             <div class="flex justify-center gap-2 sm:gap-3">
                 <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="btn-relic-slot relative">
-                    {reveal_icon_tag}
+                    __REVEAL_ICON_TAG__
                     <span id="qty-reveal" class="absolute -top-1.5 -right-1.5 bg-[#8b1820] text-amber-200 text-[7px] sm:text-[8px] px-1 py-0.5 border border-black font-hud">1</span>
                 </button>
                 <button id="btn-joker-reroll" onclick="useJoker('reroll')" title="Cambiar mano" class="btn-relic-slot relative">
-                    {reroll_icon_tag}
+                    __REROLL_ICON_TAG__
                     <span id="qty-reroll" class="absolute -top-1.5 -right-1.5 bg-[#51237a] text-purple-200 text-[7px] sm:text-[8px] px-1 py-0.5 border border-black font-hud">1</span>
                 </button>
                 <button id="btn-joker-skip" onclick="useJoker('skip')" title="Saltar 1 Ronda" class="btn-relic-slot relative opacity-40">
-                    {skip_icon_tag}
+                    __SKIP_ICON_TAG__
                     <span id="qty-skip" class="absolute -top-1.5 -right-1.5 bg-[#8b6508] text-amber-100 text-[7px] sm:text-[8px] px-1 py-0.5 border border-black font-hud">0</span>
                 </button>
             </div>
@@ -867,7 +839,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             </div>
         </header>
 
-        <!-- ÁREA CENTRAL DE CARTAS -->
         <main class="flex-grow flex flex-col items-center justify-center relative w-full max-w-5xl mx-auto my-auto px-1">
             <div id="hand-container" class="flex justify-center items-center flex-wrap w-full px-1 mb-3 sm:mb-6"></div>
 
@@ -901,7 +872,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- MODAL DERROTA (5 ERRORES SEGUIDOS) -->
+    <!-- MODAL DERROTA -->
     <div id="gameover-modal" class="fixed inset-0 bg-black/95 z-50 hidden flex items-center justify-center p-3 sm:p-4">
         <div class="pixel-df-panel max-w-xs sm:max-w-sm w-full p-4 sm:p-6 text-center border-red-700">
             <div class="pixel-df-banner-crimson py-2.5 px-3 mb-3 inline-block w-full bg-gradient-to-b from-red-900 to-black">
@@ -922,28 +893,22 @@ GAME_HTML = f"""<!DOCTYPE html>
     </div>
 
     <script>
-        /* ========================================================
-           COOKIES & UTILIDADES DE SESIÓN
-           ======================================================== */
-        function setCookie(name, value, days = 7) {{
+        function setCookie(name, value, days = 7) {
             const d = new Date();
             d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
-            document.cookie = `${{name}}=${{encodeURIComponent(value)}};expires=${{d.toUTCString()}};path=/;SameSite=Lax`;
-        }}
+            document.cookie = `${name}=${encodeURIComponent(value)};expires=${d.toUTCString()};path=/;SameSite=Lax`;
+        }
 
-        function getCookie(name) {{
+        function getCookie(name) {
             const prefix = name + "=";
             const parts = document.cookie.split(';');
-            for (let c of parts) {{
+            for (let c of parts) {
                 c = c.trim();
                 if (c.indexOf(prefix) === 0) return decodeURIComponent(c.substring(prefix.length));
-            }}
+            }
             return null;
-        }}
+        }
 
-        /* ========================================================
-           AUDIO DSP CON FALLBACK SEGURO PARA TELÉFONOS (iOS/ANDROID)
-           ======================================================== */
         let aCtx = null;
         let bgAudioEl = document.getElementById('bg-music');
         let bgSourceNode = null;
@@ -954,45 +919,43 @@ GAME_HTML = f"""<!DOCTYPE html>
         let wetGain = null;
         let masterMusicGain = null;
         let isMuted = false;
-        let useDirectHtmlAudio = false; // Fallback móvil si WebAudio falla/suspende
+        let useDirectHtmlAudio = false;
 
         const DEFAULT_VOLUME = 0.3375;
 
-        function buildImpulseResponse(duration = 2.4, decay = 3.2) {{
+        function buildImpulseResponse(duration = 2.4, decay = 3.2) {
             const rate = aCtx.sampleRate;
             const length = rate * duration;
             const impulse = aCtx.createBuffer(2, length, rate);
             const left = impulse.getChannelData(0);
             const right = impulse.getChannelData(1);
-            for (let i = 0; i < length; i++) {{
+            for (let i = 0; i < length; i++) {
                 const n = i / length;
                 const e = Math.exp(-n * decay);
                 left[i] = ((Math.random() * 2) - 1) * e;
                 right[i] = ((Math.random() * 2) - 1) * e;
-            }}
+            }
             return impulse;
-        }}
+        }
 
-        function initAudioEngine() {{
+        function initAudioEngine() {
             if (!bgAudioEl) return;
-            try {{
-                if (!aCtx) {{
+            try {
+                if (!aCtx) {
                     const AudioCtx = window.AudioContext || window.webkitAudioContext;
                     aCtx = new AudioCtx();
-                }}
-                if (aCtx.state === 'suspended') {{
-                    aCtx.resume().catch(() => {{}});
-                }}
+                }
+                if (aCtx.state === 'suspended') {
+                    aCtx.resume().catch(() => {});
+                }
 
-                // Evitar conectar el MediaElementSource más de una vez (causa silencio en móviles)
-                if (!bgSourceNode && !useDirectHtmlAudio) {{
+                if (!bgSourceNode && !useDirectHtmlAudio) {
                     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                    if (isMobile) {{
-                        // En móviles, controlar directamente el <audio> garantiza reproducción estable sin cortes de WebAudio
+                    if (isMobile) {
                         useDirectHtmlAudio = true;
                         bgAudioEl.volume = isMuted ? 0 : DEFAULT_VOLUME;
                         setCryptAudioMode(true);
-                    }} else {{
+                    } else {
                         bgSourceNode = aCtx.createMediaElementSource(bgAudioEl);
                         highPassNode = aCtx.createBiquadFilter();
                         highPassNode.type = 'highpass';
@@ -1020,72 +983,71 @@ GAME_HTML = f"""<!DOCTYPE html>
                         wetGain.connect(masterMusicGain);
                         masterMusicGain.connect(aCtx.destination);
                         setCryptAudioMode(true);
-                    }}
-                }}
-            }} catch(e) {{
+                    }
+                }
+            } catch(e) {
                 useDirectHtmlAudio = true;
                 if (bgAudioEl) bgAudioEl.volume = isMuted ? 0 : DEFAULT_VOLUME;
-            }}
-        }}
+            }
+        }
 
-        function ensureMusicPlaying() {{
+        function ensureMusicPlaying() {
             initAudioEngine();
-            if (aCtx && aCtx.state === 'suspended') aCtx.resume().catch(() => {{}});
-            if (bgAudioEl && bgAudioEl.paused && !isMuted) {{
-                bgAudioEl.play().catch(() => {{}});
-            }}
-        }}
+            if (aCtx && aCtx.state === 'suspended') aCtx.resume().catch(() => {});
+            if (bgAudioEl && bgAudioEl.paused && !isMuted) {
+                bgAudioEl.play().catch(() => {});
+            }
+        }
 
-        function setCryptAudioMode(enabled) {{
+        function setCryptAudioMode(enabled) {
             if (!bgAudioEl) return;
-            if (useDirectHtmlAudio || !aCtx || !dryGain) {{
+            if (useDirectHtmlAudio || !aCtx || !dryGain) {
                 bgAudioEl.playbackRate = enabled ? 0.82 : 1.0;
                 return;
-            }}
+            }
             const now = aCtx.currentTime;
-            if (enabled) {{
+            if (enabled) {
                 bgAudioEl.playbackRate = 0.78;
                 highPassNode.frequency.setValueAtTime(480, now);
                 lowPassNode.frequency.setValueAtTime(2800, now);
                 dryGain.gain.setValueAtTime(0.40, now);
                 wetGain.gain.setValueAtTime(0.51, now);
-            }} else {{
+            } else {
                 bgAudioEl.playbackRate = 1.0;
                 highPassNode.frequency.setValueAtTime(20, now);
                 lowPassNode.frequency.setValueAtTime(20000, now);
                 dryGain.gain.setValueAtTime(1.0, now);
                 wetGain.gain.setValueAtTime(0.0, now);
-            }}
-        }}
+            }
+        }
 
-        function toggleMute() {{
+        function toggleMute() {
             isMuted = !isMuted;
             const btn = document.getElementById('btn-audio-mute');
-            if (useDirectHtmlAudio || !masterMusicGain) {{
-                if (bgAudioEl) {{
+            if (useDirectHtmlAudio || !masterMusicGain) {
+                if (bgAudioEl) {
                     bgAudioEl.muted = isMuted;
                     bgAudioEl.volume = isMuted ? 0 : DEFAULT_VOLUME;
-                    if (!isMuted && bgAudioEl.paused) bgAudioEl.play().catch(() => {{}});
-                }}
-            }} else {{
+                    if (!isMuted && bgAudioEl.paused) bgAudioEl.play().catch(() => {});
+                }
+            } else {
                 masterMusicGain.gain.setValueAtTime(isMuted ? 0 : DEFAULT_VOLUME, aCtx.currentTime);
-            }}
+            }
             btn.textContent = isMuted ? "[♪ PLAY]" : "[♪ MUTE]";
-        }}
+        }
 
-        // Desbloqueo persistente de audio en cualquier interacción móvil
-        ['touchstart', 'touchend', 'pointerdown', 'click'].forEach(evt => {{
-            window.addEventListener(evt, () => {{
+        ['touchstart', 'touchend', 'pointerdown', 'click'].forEach(evt => {
+            window.addEventListener(evt, () => {
                 ensureMusicPlaying();
-            }}, {{ passive: true }});
-        }});
+            }, { passive: true });
+        });
 
-        document.addEventListener('visibilitychange', () => {{
+        document.addEventListener('visibilitychange', () => {
             if (!document.hidden && !isMuted) ensureMusicPlaying();
-        }});
+        });
 
-        function playTone(freq, type, dur, vol=0.1) {{
-            try {{
+        function playTone(freq, type, dur, vol=0.1) {
+            try {
                 if (!aCtx) aCtx = new (window.AudioContext || window.webkitAudioContext)();
                 if(aCtx.state === 'suspended') aCtx.resume();
                 const osc = aCtx.createOscillator(); const gain = aCtx.createGain();
@@ -1094,43 +1056,40 @@ GAME_HTML = f"""<!DOCTYPE html>
                 gain.gain.exponentialRampToValueAtTime(0.0001, aCtx.currentTime + dur);
                 osc.connect(gain); gain.connect(aCtx.destination);
                 osc.start(); osc.stop(aCtx.currentTime + dur);
-            }} catch(e) {{}}
-        }}
+            } catch(e) {}
+        }
 
-        const SFX = {{
+        const SFX = {
             hover: () => playTone(300, 'sine', 0.08, 0.04),
             select: () => playTone(510, 'triangle', 0.12, 0.12),
-            error: () => {{ playTone(120, 'sawtooth', 0.25, 0.25); setTimeout(() => playTone(80, 'sawtooth', 0.35, 0.25), 100); }},
-            flamePop: () => {{ playTone(170, 'sawtooth', 0.28, 0.25); setTimeout(() => playTone(230, 'sawtooth', 0.2, 0.2), 60); }},
-            star: () => {{ playTone(860, 'sine', 0.3, 0.2); setTimeout(()=>playTone(1080, 'sine', 0.4, 0.2), 100); }},
+            error: () => { playTone(120, 'sawtooth', 0.25, 0.25); setTimeout(() => playTone(80, 'sawtooth', 0.35, 0.25), 100); },
+            flamePop: () => { playTone(170, 'sawtooth', 0.28, 0.25); setTimeout(() => playTone(230, 'sawtooth', 0.2, 0.2), 60); },
+            star: () => { playTone(860, 'sine', 0.3, 0.2); setTimeout(()=>playTone(1080, 'sine', 0.4, 0.2), 100); },
             discard: () => playTone(220, 'triangle', 0.15, 0.15),
-            winRound: () => {{ playTone(420, 'sine', 0.3, 0.2); setTimeout(() => playTone(630, 'sine', 0.3, 0.2), 150); }}
-        }};
+            winRound: () => { playTone(420, 'sine', 0.3, 0.2); setTimeout(() => playTone(630, 'sine', 0.3, 0.2), 150); }
+        };
 
-        /* ========================================================
-           PARTÍCULAS
-           ======================================================== */
         const cvs = document.getElementById('fx-canvas'); const ctx = cvs.getContext('2d');
         let particles = [];
-        window.onresize = () => {{ cvs.width = window.innerWidth; cvs.height = window.innerHeight; }};
+        window.onresize = () => { cvs.width = window.innerWidth; cvs.height = window.innerHeight; };
         window.onresize();
 
-        function spawnParticles(x, y, count=35) {{
+        function spawnParticles(x, y, count=35) {
             const colors = ['#f4b41b', '#1b629b', '#c92a35', '#ffffff'];
-            for(let i=0; i<count; i++) {{
+            for(let i=0; i<count; i++) {
                 const angle = Math.random() * Math.PI * 2; const speed = 2 + Math.random() * 7;
-                particles.push({{ x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed-2, color: colors[Math.floor(Math.random()*colors.length)], size: 4, life: 1.0, decay: 0.03 }});
-            }}
-        }}
+                particles.push({ x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed-2, color: colors[Math.floor(Math.random()*colors.length)], size: 4, life: 1.0, decay: 0.03 });
+            }
+        }
 
-        function spawnSkipParticles() {{
+        function spawnSkipParticles() {
             const colors = ['#9e1a22', '#d4a340', '#ff4d4d', '#ffdb70', '#ffffff'];
             const w = window.innerWidth;
             const h = window.innerHeight;
-            for(let i=0; i<90; i++) {{
+            for(let i=0; i<90; i++) {
                 const angle = (Math.PI * 1.5) + (Math.random() - 0.5) * 1.4;
                 const speed = 4 + Math.random() * 9;
-                particles.push({{
+                particles.push({
                     x: Math.random() * w,
                     y: h + 10,
                     vx: Math.cos(angle) * speed,
@@ -1139,71 +1098,65 @@ GAME_HTML = f"""<!DOCTYPE html>
                     size: Math.floor(Math.random() * 5) + 3,
                     life: 1.0,
                     decay: 0.018
-                }});
-            }}
-        }}
+                });
+            }
+        }
 
-        function renderParticles() {{
+        function renderParticles() {
             ctx.clearRect(0,0,cvs.width,cvs.height);
-            for(let i=particles.length-1; i>=0; i--) {{
+            for(let i=particles.length-1; i>=0; i--) {
                 const p = particles[i];
                 p.x += p.vx; p.y += p.vy; p.vy += 0.14; p.life -= p.decay;
-                if(p.life<=0){{ particles.splice(i,1); continue; }}
+                if(p.life<=0){ particles.splice(i,1); continue; }
                 ctx.fillStyle = p.color; ctx.globalAlpha = p.life; ctx.fillRect(Math.floor(p.x), Math.floor(p.y), p.size, p.size);
-            }}
+            }
             ctx.globalAlpha = 1; requestAnimationFrame(renderParticles);
-        }}
+        }
         renderParticles();
 
-        /* ========================================================
-           CONTROL DE FLUJO Y ESTADOS DE JUEGO
-           ======================================================== */
         let playerName = "";
         let playerGender = null;
         let isAdminMode = false;
         let gameStartedLocally = false;
         let countdownInterval = null;
 
-        async function goToGenderStep() {{
+        async function goToGenderStep() {
             const rawInput = document.getElementById('username-input').value.trim();
-            if (!rawInput) {{
+            if (!rawInput) {
                 SFX.error();
                 showAlert("[DIGITA UN APODO]");
                 return;
-            }}
+            }
 
-            // 1. Verificar clave secreta de administrador (sin guardar en BD)
-            if (rawInput === "marvelRIVALS83") {{
+            if (rawInput === "marvelRIVALS83") {
                 isAdminMode = true;
                 SFX.winRound();
                 document.getElementById('intro-modal').classList.add('hidden');
                 document.getElementById('admin-modal').classList.remove('hidden');
                 return;
-            }}
+            }
 
-            // Normalizar apodo para clave única en Firebase
             const cleanName = rawInput.toUpperCase().replace(/[.#$\\[\\]\\/]/g, '').slice(0, 12);
-            if (!cleanName) {{
+            if (!cleanName) {
                 SFX.error();
                 showAlert("[APODO INVÁLIDO]");
                 return;
-            }}
+            }
 
             const btn = document.getElementById('btn-step-name');
             btn.disabled = true;
             btn.textContent = "VERIFICANDO...";
 
-            // 2. Validar en Firebase si el username ya está ocupado
-            if (window.checkUsernameAvailable) {{
+            if (window.checkUsernameAvailable) {
                 const check = await window.checkUsernameAvailable(cleanName);
-                if (!check.available) {{
+                if (!check.available) {
                     SFX.error();
                     showAlert("[ESTE APODO YA ESTÁ EN USO]");
                     btn.disabled = false;
                     btn.textContent = "CONTINUAR ➔";
                     return;
-                }}
-            }}
+                }
+            }
 
             btn.disabled = false;
             btn.textContent = "CONTINUAR ➔";
@@ -1211,26 +1164,26 @@ GAME_HTML = f"""<!DOCTYPE html>
             document.getElementById('step-name').classList.add('hidden');
             document.getElementById('step-gender').classList.remove('hidden');
             SFX.select();
-        }}
+        }
 
-        function selectGender(gender) {{
+        function selectGender(gender) {
             playerGender = gender;
             document.getElementById('opt-boy').classList.remove('selected');
             document.getElementById('opt-girl').classList.remove('selected');
             
-            if(gender === 'boy') {{
+            if(gender === 'boy') {
                 document.getElementById('opt-boy').classList.add('selected');
-            }} else {{
+            } else {
                 document.getElementById('opt-girl').classList.add('selected');
-            }}
+            }
 
             const btn = document.getElementById('btn-start-game');
             btn.disabled = false;
             btn.className = "pixel-df-btn-flame w-full py-3 text-xs font-bold tracking-wider cursor-pointer";
             SFX.select();
-        }}
+        }
 
-        async function registerAndEnterLobby() {{
+        async function registerAndEnterLobby() {
             if (!playerGender || !playerName) return;
             SFX.winRound();
 
@@ -1238,44 +1191,43 @@ GAME_HTML = f"""<!DOCTYPE html>
                 ? crypto.randomUUID()
                 : 'tok_' + Date.now() + Math.random().toString(36).slice(2);
 
-            if (window.registerPersistentPlayer) {{
+            if (window.registerPersistentPlayer) {
                 const res = await window.registerPersistentPlayer(playerName, playerGender, sessionToken);
-                if (!res.ok) {{
+                if (!res.ok) {
                     SFX.error();
                     showAlert("[APODO OCUPADO]");
                     return;
-                }}
-            }}
+                }
+            }
 
-            // Guardar cookies persistentes
             setCookie("balamath_user", playerName, 7);
             setCookie("balamath_token", sessionToken, 7);
 
             enterLobbyView();
-        }}
+        }
 
-        function enterLobbyView() {{
+        function enterLobbyView() {
             document.getElementById('intro-modal').classList.add('hidden');
             document.getElementById('game-ui').classList.add('hidden');
             document.getElementById('paused-modal').classList.add('hidden');
             document.getElementById('lobby-modal').classList.remove('hidden');
             document.getElementById('lobby-my-name').textContent = playerName;
             setCryptAudioMode(true);
-        }}
+        }
 
-        function launchActiveGameScreen() {{
+        function launchActiveGameScreen() {
             if (gameStartedLocally) return;
             gameStartedLocally = true;
 
             const fade = document.getElementById('fade-overlay');
             fade.style.opacity = '1';
 
-            setTimeout(() => {{
+            setTimeout(() => {
                 document.getElementById('intro-modal').classList.add('hidden');
                 document.getElementById('lobby-modal').classList.add('hidden');
                 document.getElementById('paused-modal').classList.add('hidden');
                 document.getElementById('game-ui').classList.remove('hidden');
-                document.getElementById('user-display-tag').textContent = `${{playerGender === 'boy' ? '[CHICO]' : '[CHICA]'}} ${{playerName}}`;
+                document.getElementById('user-display-tag').textContent = `${playerGender === 'boy' ? '[CHICO]' : '[CHICA]'} ${playerName}`;
                 document.getElementById('total-score').textContent = score.toLocaleString();
 
                 const bgReg = document.getElementById('bg-reg');
@@ -1290,35 +1242,30 @@ GAME_HTML = f"""<!DOCTYPE html>
                 updateUI();
                 scheduleEnemy();
 
-                setTimeout(() => {{
+                setTimeout(() => {
                     fade.style.opacity = '0';
-                }}, 150);
-            }}, 350);
-        }}
+                }, 150);
+            }, 350);
+        }
 
-        // Sincronización global con estado de Firebase (waiting / starting / playing / paused)
-        window.onGlobalGameStateChange = (stateData) => {{
+        window.onGlobalGameStateChange = (stateData) => {
             const status = (stateData && stateData.status) ? stateData.status : 'waiting';
 
-            // Actualizar badge del panel admin si está abierto
             const adminBadge = document.getElementById('admin-state-badge');
             if (adminBadge) adminBadge.textContent = "ESTADO: " + status.toUpperCase();
 
-            // El admin nunca entra como jugador
             if (isAdminMode) return;
-
-            // Si aún no ha iniciado sesión ni tiene cookie resuelta, no forzar pantallas
             if (!playerName || !playerGender) return;
 
-            if (status === 'waiting') {{
+            if (status === 'waiting') {
                 clearInterval(countdownInterval);
                 gameStartedLocally = false;
                 dismissEnemy();
                 document.getElementById('lobby-waiting-box').classList.remove('hidden');
                 document.getElementById('lobby-countdown-box').classList.add('hidden');
                 enterLobbyView();
-            }} 
-            else if (status === 'starting') {{
+            } 
+            else if (status === 'starting') {
                 document.getElementById('intro-modal').classList.add('hidden');
                 document.getElementById('paused-modal').classList.add('hidden');
                 document.getElementById('lobby-modal').classList.remove('hidden');
@@ -1331,97 +1278,94 @@ GAME_HTML = f"""<!DOCTYPE html>
                 numEl.textContent = count;
                 SFX.select();
 
-                countdownInterval = setInterval(() => {{
+                countdownInterval = setInterval(() => {
                     count--;
-                    if (count > 0) {{
+                    if (count > 0) {
                         numEl.textContent = count;
                         SFX.select();
-                    }} else {{
+                    } else {
                         clearInterval(countdownInterval);
                         numEl.textContent = "¡YA!";
                         SFX.winRound();
                         if (window.adminSetStateSilent) window.adminSetStateSilent('playing');
                         setTimeout(() => launchActiveGameScreen(), 400);
-                    }}
-                }}, 900);
-            }} 
-            else if (status === 'playing') {{
+                    }
+                }, 900);
+            } 
+            else if (status === 'playing') {
                 clearInterval(countdownInterval);
                 document.getElementById('paused-modal').classList.add('hidden');
-                if (!gameStartedLocally) {{
+                if (!gameStartedLocally) {
                     launchActiveGameScreen();
-                }} else {{
+                } else {
                     document.getElementById('game-ui').classList.remove('hidden');
                     setCryptAudioMode(false);
-                }}
-            }} 
-            else if (status === 'paused') {{
+                }
+            } 
+            else if (status === 'paused') {
                 clearInterval(countdownInterval);
                 dismissEnemy();
                 setCryptAudioMode(true);
                 document.getElementById('paused-modal').classList.remove('hidden');
-            }}
-        }};
+            }
+        };
 
-        function toggleRank() {{
+        function toggleRank() {
             SFX.hover();
             document.getElementById('rank-panel').classList.toggle('translate-x-full');
-        }}
+        }
 
-        function pushRank() {{
-            if (window.rankUpdate && playerName && !isAdminMode) {{
+        function pushRank() {
+            if (window.rankUpdate && playerName && !isAdminMode) {
                 window.rankUpdate(playerName, score, level);
-            }}
-        }}
+            }
+        }
 
-        function toggleTutorial() {{
+        function toggleTutorial() {
             SFX.hover();
             document.getElementById('tutorial-panel').classList.toggle('-translate-x-full');
-        }}
+        }
 
-        /* ========================================================
-           ESTADO Y DIFICULTAD
-           ======================================================== */
         let level = 1;
         let round = 1;
         let score = 0;
         let hand = [];
         let nextCardId = 0;
         let consecutiveErrors = 0;
-        let levelStats = {{ optimalPossible: 0, actualCorrect: 0, errors: 0 }};
-        let comodines = {{ reveal: 1, reroll: 1, skip: 1 }};
+        let levelStats = { optimalPossible: 0, actualCorrect: 0, errors: 0 };
+        let comodines = { reveal: 1, reroll: 1, skip: 1 };
 
         const handContainer = document.getElementById('hand-container');
         const btnPlay = document.getElementById('btn-play');
 
-        function gcd(a, b) {{ a=Math.abs(a); b=Math.abs(b); return b === 0 ? a : gcd(b, a % b); }}
+        function gcd(a, b) { a=Math.abs(a); b=Math.abs(b); return b === 0 ? a : gcd(b, a % b); }
 
-        function toSuperscript(num) {{
-            const map = {{ '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵' }};
+        function toSuperscript(num) {
+            const map = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵' };
             return num.toString().split('').map(d => map[d] || d).join('');
-        }}
+        }
 
-        function formatTerm(c, x, y) {{
+        function formatTerm(c, x, y) {
             let s = "";
             if (c === -1 && (x > 0 || y > 0)) s += "-";
             else if (c !== 1 || (x === 0 && y === 0)) s += c;
             
             if (x === 1) s += "x"; 
-            else if (x > 1) s += `x${{toSuperscript(x)}}`;
+            else if (x > 1) s += `x${toSuperscript(x)}`;
             
             if (y === 1) s += "y"; 
-            else if (y > 1) s += `y${{toSuperscript(y)}}`;
+            else if (y > 1) s += `y${toSuperscript(y)}`;
             return s;
-        }}
+        }
 
-        function getCardCornerRank(card) {{
-            if (card.x > 0 && card.y === 0) return card.x === 1 ? "X" : `X${{toSuperscript(card.x)}}`;
-            if (card.y > 0 && card.x === 0) return card.y === 1 ? "Y" : `Y${{toSuperscript(card.y)}}`;
+        function getCardCornerRank(card) {
+            if (card.x > 0 && card.y === 0) return card.x === 1 ? "X" : `X${toSuperscript(card.x)}`;
+            if (card.y > 0 && card.x === 0) return card.y === 1 ? "Y" : `Y${toSuperscript(card.y)}`;
             if (card.x > 0 && card.y > 0) return "XY";
             return Math.abs(card.c).toString();
-        }}
+        }
 
-        function generateTerm(forceFactor = null) {{
+        function generateTerm(forceFactor = null) {
             let maxCoef = Math.max(4, Math.floor(level * 3.54));
             let maxX = Math.min(4, Math.ceil(level * 0.59));
             let maxY = level > 2 ? Math.min(3, Math.floor(level * 0.39)) : 0;
@@ -1431,48 +1375,48 @@ GAME_HTML = f"""<!DOCTYPE html>
             let x = Math.floor(Math.random() * (maxX + 1));
             let y = Math.floor(Math.random() * (maxY + 1));
 
-            if (forceFactor) {{
+            if (forceFactor) {
                 c = forceFactor.c * (Math.floor(Math.random()*3)+1);
                 x = forceFactor.x + Math.floor(Math.random()*2);
                 y = forceFactor.y + (forceFactor.y>0 ? Math.floor(Math.random()*2) : 0);
-            }}
+            }
 
             if (c === 0) c = 1;
             const suits = ['♠', '♥', '♦', '♣'];
             const suit = suits[Math.floor(Math.random() * suits.length)];
             const suitColor = (suit === '♥' || suit === '♦') ? '#c92a35' : '#1b629b';
 
-            return {{ c, x, y, str: formatTerm(c,x,y), suit, suitColor, selected: false, id: nextCardId++ }};
-        }}
+            return { c, x, y, str: formatTerm(c,x,y), suit, suitColor, selected: false, id: nextCardId++ };
+        }
 
-        function getCommonFactorInfo(cards) {{
+        function getCommonFactorInfo(cards) {
             if(cards.length < 2) return null;
             let commC = cards[0].c, commX = cards[0].x, commY = cards[0].y;
-            for(let i=1; i<cards.length; i++){{
+            for(let i=1; i<cards.length; i++){
                 commC = gcd(commC, cards[i].c);
                 commX = Math.min(commX, cards[i].x);
                 commY = Math.min(commY, cards[i].y);
-            }}
-            return {{ c: commC, x: commX, y: commY, isValid: commC > 1 || commX > 0 || commY > 0 }};
-        }}
+            }
+            return { c: commC, x: commX, y: commY, isValid: commC > 1 || commX > 0 || commY > 0 };
+        }
 
-        function calculateOptimalPlays(currentHand) {{
+        function calculateOptimalPlays(currentHand) {
             let maxSubset = 0;
             const n = currentHand.length;
-            for(let i=1; i < (1<<n); i++) {{
+            for(let i=1; i < (1<<n); i++) {
                 let subset = [];
-                for(let j=0; j<n; j++) {{
+                for(let j=0; j<n; j++) {
                     if((i & (1<<j))) subset.push(hand[j]);
-                }}
-                if(subset.length > 1) {{
+                }
+                if(subset.length > 1) {
                     const info = getCommonFactorInfo(subset);
                     if(info.isValid && subset.length > maxSubset) maxSubset = subset.length;
-                }}
-            }}
+                }
+            }
             return maxSubset;
-        }}
+        }
 
-        function startRound() {{
+        function startRound() {
             pushRank();
             document.getElementById('level-display').textContent = level;
             document.getElementById('round-display').textContent = round;
@@ -1480,31 +1424,31 @@ GAME_HTML = f"""<!DOCTYPE html>
             let needed = 6 - hand.length;
             let plantedC = (Math.random() > 0.5) ? (Math.floor(Math.random()*3)+2) : 1;
             let plantedX = (plantedC === 1 || Math.random() > 0.4) ? 1 : 0;
-            let forceFactor = {{ c: plantedC, x: plantedX, y: 0 }};
+            let forceFactor = { c: plantedC, x: plantedX, y: 0 };
             
             if(Math.random() < 0.18) forceFactor = null;
             let forceCount = forceFactor ? (Math.floor(Math.random() * 3) + 3) : 0;
 
-            for(let i=0; i<needed; i++) {{
-                if(forceCount > 0) {{
+            for(let i=0; i<needed; i++) {
+                if(forceCount > 0) {
                     hand.push(generateTerm(forceFactor));
                     forceCount--;
-                }} else {{
+                } else {
                     hand.push(generateTerm(null));
-                }}
-            }}
+                }
+            }
 
             levelStats.optimalPossible += calculateOptimalPlays(hand);
             renderCards();
             updateUI();
-        }}
+        }
 
-        function renderCards() {{
+        function renderCards() {
             handContainer.innerHTML = '';
-            hand.forEach((card, idx) => {{
+            hand.forEach((card, idx) => {
                 const el = document.createElement('div');
                 const swayClass = idx % 3 === 0 ? 'idle-sway-1' : (idx % 3 === 1 ? 'idle-sway-2' : 'idle-sway-3');
-                el.className = `card-8bit ${{card.selected ? 'selected' : swayClass}}`;
+                el.className = `card-8bit ${card.selected ? 'selected' : swayClass}`;
                 
                 const cornerRank = getCardCornerRank(card);
 
@@ -1518,62 +1462,62 @@ GAME_HTML = f"""<!DOCTYPE html>
 
                 el.innerHTML = `
                     <div class="card-frame-inner"></div>
-                    <div class="pip-corner-tl" style="color: ${{card.suitColor}};">
-                        <span class="corner-text">${{cornerRank}}</span>
-                        <span class="corner-suit-icon">${{card.suit}}</span>
+                    <div class="pip-corner-tl" style="color: ${card.suitColor};">
+                        <span class="corner-text">${cornerRank}</span>
+                        <span class="corner-suit-icon">${card.suit}</span>
                     </div>
                     <div class="term-box-center">
-                        <span class="term-math-pixel ${{lenClass}}">${{card.str}}</span>
+                        <span class="term-math-pixel ${lenClass}">${card.str}</span>
                     </div>
-                    <div class="pip-corner-br" style="color: ${{card.suitColor}};">
-                        <span class="corner-text">${{cornerRank}}</span>
-                        <span class="corner-suit-icon">${{card.suit}}</span>
+                    <div class="pip-corner-br" style="color: ${card.suitColor};">
+                        <span class="corner-text">${cornerRank}</span>
+                        <span class="corner-suit-icon">${card.suit}</span>
                     </div>
                 `;
                 
-                el.onclick = () => {{
+                el.onclick = () => {
                     card.selected = !card.selected;
                     if(card.selected) SFX.select(); else SFX.hover();
                     renderCards();
                     updatePlayButton();
-                }};
+                };
                 handContainer.appendChild(el);
-            }});
-        }}
+            });
+        }
 
-        function updatePlayButton() {{
+        function updatePlayButton() {
             const selected = hand.filter(c => c.selected);
-            if(selected.length > 0) {{
+            if(selected.length > 0) {
                 btnPlay.disabled = false;
                 btnPlay.className = "pixel-df-btn-flame px-6 py-2.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest cursor-pointer";
-            }} else {{
+            } else {
                 btnPlay.disabled = true;
                 btnPlay.className = "pixel-df-panel bg-[#0d0f14] text-stone-600 px-6 py-2.5 sm:px-12 sm:py-4 text-xs sm:text-sm tracking-widest opacity-40 cursor-not-allowed font-hud";
-            }}
-        }}
+            }
+        }
 
-        function playHand() {{
+        function playHand() {
             const selected = hand.filter(c => c.selected);
             const info = getCommonFactorInfo(selected);
 
-            if(selected.length < 2 || !info || !info.isValid) {{
+            if(selected.length < 2 || !info || !info.isValid) {
                 SFX.error();
                 handContainer.classList.add('animate-shake');
                 levelStats.errors++;
                 consecutiveErrors++;
                 setTimeout(() => handContainer.classList.remove('animate-shake'), 250);
 
-                if(consecutiveErrors >= 5) {{
+                if(consecutiveErrors >= 5) {
                     triggerGameOver();
                     return;
-                }} else if(consecutiveErrors === 3) {{
+                } else if(consecutiveErrors === 3) {
                     showAlert("¡CUIDADO! TE QUEDAN 2 INTENTOS");
-                }} else if(consecutiveErrors === 4) {{
+                } else if(consecutiveErrors === 4) {
                     showAlert("¡PELIGRO! TE QUEDA 1 INTENTO");
-                }}
+                }
 
                 return;
-            }}
+            }
 
             consecutiveErrors = 0;
             btnPlay.disabled = true;
@@ -1597,37 +1541,37 @@ GAME_HTML = f"""<!DOCTYPE html>
 
             hand = hand.filter(c => !c.selected);
 
-            setTimeout(() => {{
+            setTimeout(() => {
                 flameContainer.style.opacity = '0';
                 setTimeout(() => flameContainer.classList.add('hidden'), 200);
                 
                 round++;
-                if(round > 3) {{
+                if(round > 3) {
                     endLevel();
-                }} else {{
+                } else {
                     startRound();
-                }}
-            }}, 1100);
-        }}
+                }
+            }, 1100);
+        }
 
-        function triggerGameOver() {{
+        function triggerGameOver() {
             dismissEnemy();
             setCryptAudioMode(true);
             document.getElementById('gameover-modal').classList.remove('hidden');
-        }}
+        }
 
-        function retryCurrentLevel() {{
+        function retryCurrentLevel() {
             document.getElementById('gameover-modal').classList.add('hidden');
             consecutiveErrors = 0;
             round = 1;
             hand = [];
-            levelStats = {{ optimalPossible: 0, actualCorrect: 0, errors: 0 }};
+            levelStats = { optimalPossible: 0, actualCorrect: 0, errors: 0 };
             setCryptAudioMode(false);
             startRound();
             showAlert("[NIVEL REINICIADO]");
-        }}
+        }
 
-        function endLevel() {{
+        function endLevel() {
             dismissEnemy();
             let precision = levelStats.optimalPossible > 0 ? (levelStats.actualCorrect / levelStats.optimalPossible) : 1;
             precision -= (levelStats.errors * 0.1);
@@ -1645,14 +1589,14 @@ GAME_HTML = f"""<!DOCTYPE html>
             setCryptAudioMode(true);
 
             starContainer.innerHTML = '';
-            for(let i=0; i<3; i++) {{
+            for(let i=0; i<3; i++) {
                 setTimeout(() => SFX.star(), i * 250);
-                if(i < stars) {{
+                if(i < stars) {
                     starContainer.innerHTML += `<span class="text-[#d4a340] drop-shadow-[0_2px_0_#000]">★</span>`;
-                }} else {{
+                } else {
                     starContainer.innerHTML += `<span class="text-stone-700">☆</span>`;
-                }}
-            }}
+                }
+            }
 
             let bonusScore = stars * 1000 * level;
             score += bonusScore;
@@ -1660,50 +1604,50 @@ GAME_HTML = f"""<!DOCTYPE html>
             document.getElementById('total-score').textContent = score.toLocaleString();
 
             let bonusItemText = "";
-            if(stars === 3) {{
+            if(stars === 3) {
                 comodines.skip++;
                 updateUI();
                 bonusItemText = `<div class="text-emerald-400 font-bold">[+] COMODÍN "SALTAR" DESBLOQUEADO</div>`;
-            }}
+            }
 
             desc.innerHTML = `
                 <div class="flex justify-between border-b border-[#2b3548] pb-1">
                     <span>PRECISIÓN DE MANO:</span>
-                    <span class="text-[#d4a340] font-bold">${{Math.round(precision * 100)}}%</span>
+                    <span class="text-[#d4a340] font-bold">${Math.round(precision * 100)}%</span>
                 </div>
                 <div class="flex justify-between border-b border-[#2b3548] py-1">
                     <span>BONO POR ESTRELLAS:</span>
-                    <span class="text-emerald-400 font-bold">+${{bonusScore.toLocaleString()}} PTS</span>
+                    <span class="text-emerald-400 font-bold">+${bonusScore.toLocaleString()} PTS</span>
                 </div>
                 <div class="pt-1">
-                    ${{bonusItemText}}
+                    ${bonusItemText}
                 </div>
             `;
 
             modal.classList.remove('hidden');
-        }}
+        }
 
-        function nextLevelWithTransition() {{
+        function nextLevelWithTransition() {
             const fade = document.getElementById('fade-overlay');
             fade.style.opacity = '1';
 
-            setTimeout(() => {{
+            setTimeout(() => {
                 document.getElementById('level-modal').classList.add('hidden');
                 setCryptAudioMode(false);
                 level++;
                 round = 1;
                 hand = [];
                 consecutiveErrors = 0;
-                levelStats = {{ optimalPossible: 0, actualCorrect: 0, errors: 0 }};
+                levelStats = { optimalPossible: 0, actualCorrect: 0, errors: 0 };
                 startRound();
 
-                setTimeout(() => {{
+                setTimeout(() => {
                     fade.style.opacity = '0';
-                }}, 150);
-            }}, 400);
-        }}
+                }, 150);
+            }, 400);
+        }
 
-        function updateUI() {{
+        function updateUI() {
             document.getElementById('qty-reveal').textContent = comodines.reveal;
             document.getElementById('qty-reroll').textContent = comodines.reroll;
             document.getElementById('qty-skip').textContent = comodines.skip;
@@ -1711,32 +1655,29 @@ GAME_HTML = f"""<!DOCTYPE html>
             document.getElementById('btn-joker-reveal').style.opacity = comodines.reveal > 0 ? '1' : '0.4';
             document.getElementById('btn-joker-reroll').style.opacity = comodines.reroll > 0 ? '1' : '0.4';
             document.getElementById('btn-joker-skip').style.opacity = comodines.skip > 0 ? '1' : '0.4';
-        }}
+        }
 
         let alertTimeout = null;
 
-        function showAlert(msg) {{
+        function showAlert(msg) {
             const el = document.getElementById('alert-modal');
             document.getElementById('alert-text').innerHTML = msg;
             if (alertTimeout) clearTimeout(alertTimeout);
             el.classList.remove('hidden');
             el.style.opacity = '1';
-            alertTimeout = setTimeout(() => {{
+            alertTimeout = setTimeout(() => {
                 dismissAlert();
-            }}, 1600);
-        }}
+            }, 1600);
+        }
 
-        function dismissAlert() {{
+        function dismissAlert() {
             const el = document.getElementById('alert-modal');
             el.style.opacity = '0';
-            setTimeout(() => {{
+            setTimeout(() => {
                 el.classList.add('hidden');
-            }}, 150);
-        }}
+            }, 150);
+        }
 
-        /* ========================================================
-           ENEMIGO: LADRÓN DE FICHAS
-           ======================================================== */
         const ENEMY_ART = [
             "....DDDDDD....",
             "...DXXXXXXD...",
@@ -1753,30 +1694,30 @@ GAME_HTML = f"""<!DOCTYPE html>
             ".GG...DXDXD...",
             "......D.D.D..."
         ];
-        const ENEMY_COLORS = {{
+        const ENEMY_COLORS = {
             'X': '#5b2a86', 'D': '#3a1758', 'W': '#f4ecd8', 'R': '#e0294a',
             'M': '#14081d', 'G': '#d4a340', 'Y': '#ffe68c'
-        }};
+        };
 
         let enemyTimer = null;
         let enemyEl = null;
         let enemyState = null;
 
-        function buildEnemySVG() {{
+        function buildEnemySVG() {
             let rects = '';
-            ENEMY_ART.forEach((row, y) => {{
-                [...row].forEach((ch, x) => {{
-                    if (ENEMY_COLORS[ch]) rects += `<rect x="${{x}}" y="${{y}}" width="1" height="1" fill="${{ENEMY_COLORS[ch]}}"/>`;
-                }});
-            }});
-            return `<svg viewBox="0 0 ${{ENEMY_ART[0].length}} ${{ENEMY_ART.length}}" shape-rendering="crispEdges">${{rects}}</svg>`;
-        }}
+            ENEMY_ART.forEach((row, y) => {
+                [...row].forEach((ch, x) => {
+                    if (ENEMY_COLORS[ch]) rects += `<rect x="${x}" y="${y}" width="1" height="1" fill="${ENEMY_COLORS[ch]}"/>`;
+                });
+            });
+            return `<svg viewBox="0 0 ${ENEMY_ART[0].length} ${ENEMY_ART.length}" shape-rendering="crispEdges">${rects}</svg>`;
+        }
 
-        function refreshScore() {{
+        function refreshScore() {
             document.getElementById('total-score').textContent = score.toLocaleString();
-        }}
+        }
 
-        function floatText(text, x, y, color) {{
+        function floatText(text, x, y, color) {
             const el = document.createElement('div');
             el.className = 'float-text';
             el.textContent = text;
@@ -1785,41 +1726,41 @@ GAME_HTML = f"""<!DOCTYPE html>
             el.style.color = color;
             document.body.appendChild(el);
             setTimeout(() => el.remove(), 1000);
-        }}
+        }
 
-        function isBlockingModalOpen() {{
+        function isBlockingModalOpen() {
             return !document.getElementById('level-modal').classList.contains('hidden')
                 || !document.getElementById('gameover-modal').classList.contains('hidden')
                 || !document.getElementById('paused-modal').classList.contains('hidden')
                 || !document.getElementById('lobby-modal').classList.contains('hidden')
                 || document.getElementById('game-ui').classList.contains('hidden');
-        }}
+        }
 
-        function scheduleEnemy() {{
+        function scheduleEnemy() {
             clearTimeout(enemyTimer);
             const base = Math.max(7000, 16000 - level * 900);
             enemyTimer = setTimeout(spawnEnemy, base + Math.random() * 9000);
-        }}
+        }
 
-        function randomEnemyPos() {{
+        function randomEnemyPos() {
             const size = window.innerWidth < 640 ? 52 : 68;
             const x = 20 + Math.random() * Math.max(10, window.innerWidth - size - 40);
             const y = 90 + Math.random() * (window.innerHeight * 0.55);
-            return {{ x, y }};
-        }}
+            return { x, y };
+        }
 
-        function spawnEnemy() {{
-            if (enemyEl || isBlockingModalOpen()) {{ scheduleEnemy(); return; }}
+        function spawnEnemy() {
+            if (enemyEl || isBlockingModalOpen()) { scheduleEnemy(); return; }
 
             const maxHp = Math.min(4, 1 + Math.floor(level / 3));
             const lifetime = Math.max(3500, 6500 - level * 300);
-            enemyState = {{ hp: maxHp, drift: null, timeout: null }};
+            enemyState = { hp: maxHp, drift: null, timeout: null };
 
             enemyEl = document.createElement('div');
             enemyEl.className = 'enemy';
             enemyEl.innerHTML = `
-                <div class="enemy-hp">${{'♥'.repeat(maxHp)}}</div>
-                ${{buildEnemySVG()}}
+                <div class="enemy-hp">${'♥'.repeat(maxHp)}</div>
+                ${buildEnemySVG()}
                 <div class="enemy-bar"><div class="enemy-bar-fill"></div></div>
             `;
             const p = randomEnemyPos();
@@ -1833,22 +1774,22 @@ GAME_HTML = f"""<!DOCTYPE html>
             showAlert('¡LADRÓN DE FICHAS! TÓCALO');
 
             const fill = enemyEl.querySelector('.enemy-bar-fill');
-            requestAnimationFrame(() => requestAnimationFrame(() => {{
-                fill.style.transition = `width ${{lifetime}}ms linear`;
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                fill.style.transition = `width ${lifetime}ms linear`;
                 fill.style.width = '0%';
-            }}));
+            }));
 
-            enemyState.drift = setInterval(() => {{
+            enemyState.drift = setInterval(() => {
                 if (!enemyEl) return;
                 const np = randomEnemyPos();
                 enemyEl.style.left = np.x + 'px';
                 enemyEl.style.top = np.y + 'px';
-            }}, Math.max(600, 1200 - level * 60));
+            }, Math.max(600, 1200 - level * 60));
 
             enemyState.timeout = setTimeout(enemyEscapes, lifetime);
-        }}
+        }
 
-        function hitEnemy(e) {{
+        function hitEnemy(e) {
             e.preventDefault();
             e.stopPropagation();
             if (!enemyEl || !enemyState || enemyState.hp <= 0) return;
@@ -1867,28 +1808,28 @@ GAME_HTML = f"""<!DOCTYPE html>
             spawnParticles(r.left + r.width / 2, r.top + r.height / 2, 10);
 
             if (enemyState.hp <= 0) defeatEnemy();
-        }}
+        }
 
-        function clearEnemyTimers() {{
+        function clearEnemyTimers() {
             if (!enemyState) return;
             clearInterval(enemyState.drift);
             clearTimeout(enemyState.timeout);
-        }}
+        }
 
-        function removeEnemy(delay) {{
+        function removeEnemy(delay) {
             const el = enemyEl;
             clearEnemyTimers();
             enemyEl = null;
             enemyState = null;
-            setTimeout(() => {{ if (el) el.remove(); }}, delay || 0);
+            setTimeout(() => { if (el) el.remove(); }, delay || 0);
             scheduleEnemy();
-        }}
+        }
 
-        function dismissEnemy() {{
+        function dismissEnemy() {
             if (enemyEl) removeEnemy(0);
-        }}
+        }
 
-        function defeatEnemy() {{
+        function defeatEnemy() {
             const r = enemyEl.getBoundingClientRect();
             const reward = 150 * level;
             score += reward;
@@ -1902,11 +1843,11 @@ GAME_HTML = f"""<!DOCTYPE html>
 
             enemyEl.classList.add('dying');
             removeEnemy(350);
-        }}
+        }
 
-        function enemyEscapes() {{
+        function enemyEscapes() {
             if (!enemyEl) return;
-            if (isBlockingModalOpen()) {{ removeEnemy(0); return; }}
+            if (isBlockingModalOpen()) { removeEnemy(0); return; }
 
             const stolen = Math.min(score, Math.max(50 * level, Math.floor(score * 0.12)));
             score -= stolen;
@@ -1927,70 +1868,67 @@ GAME_HTML = f"""<!DOCTYPE html>
             enemyEl.style.left = sr.left + 'px';
             enemyEl.style.top = (sr.top - 10) + 'px';
             removeEnemy(600);
-        }}
+        }
 
-        function useJoker(type) {{
+        function useJoker(type) {
             if(comodines[type] <= 0) return;
             
-            if(type === 'reveal') {{
+            if(type === 'reveal') {
                 comodines.reveal--;
                 let bestFactor = null;
                 let maxSubset = 1;
                 const n = hand.length;
-                for(let i=1; i < (1<<n); i++) {{
+                for(let i=1; i < (1<<n); i++) {
                     let subset = [];
                     for(let j=0; j<n; j++) if((i & (1<<j))) subset.push(hand[j]);
-                    if(subset.length > 1) {{
+                    if(subset.length > 1) {
                         const info = getCommonFactorInfo(subset);
-                        if(info.isValid && subset.length > maxSubset) {{
+                        if(info.isValid && subset.length > maxSubset) {
                             maxSubset = subset.length;
                             bestFactor = formatTerm(info.c, info.x, info.y);
-                        }}
-                    }}
-                }}
+                        }
+                    }
+                }
                 SFX.select();
-                if(maxSubset > 1) {{
-                    showAlert(`[FACTOR]: ${{bestFactor}} (${{maxSubset}} CARTAS)`);
-                }} else {{
+                if(maxSubset > 1) {
+                    showAlert(`[FACTOR]: ${bestFactor} (${maxSubset} CARTAS)`);
+                } else {
                     showAlert(`[SIN FACTOR COMÚN]`);
-                }}
-            }} 
-            else if (type === 'reroll') {{
+                }
+            } 
+            else if (type === 'reroll') {
                 comodines.reroll--;
                 SFX.discard();
                 hand = [];
                 startRound();
                 showAlert("[MANO REVOLVIDA]");
-            }}
-            else if (type === 'skip') {{
+            }
+            else if (type === 'skip') {
                 comodines.skip--;
                 SFX.winRound();
                 spawnSkipParticles();
                 showAlert("[RONDA SALTADA]");
                 
                 round++;
-                if(round > 3) {{
+                if(round > 3) {
                     levelStats.actualCorrect = Math.max(1, levelStats.actualCorrect);
                     levelStats.optimalPossible = Math.max(1, levelStats.optimalPossible);
                     endLevel();
-                }} else {{
+                } else {
                     startRound();
-                }}
-            }}
+                }
+            }
             updateUI();
-        }}
+        }
     </script>
 
-    <!-- ========================================================
-         MÓDULO FIREBASE: PERSISTENCIA + LOBBY + ADMIN
-         ======================================================== -->
     <script type="module">
-        import {{ initializeApp }} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import {{ getDatabase, ref, set, get, update, remove, onValue, serverTimestamp }} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getDatabase, ref, set, get, update, remove, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-        const FB_CONFIG = {firebase_config_json};
-        const RICKY_SRC = {ricky_src_js};
-        const ARIANA_SRC = {ariana_src_js};
+        const FB_CONFIG = __FIREBASE_CONFIG_JSON__;
+        const RICKY_SRC = __RICKY_SRC_JS__;
+        const ARIANA_SRC = __ARIANA_SRC_JS__;
 
         const statusEl = document.getElementById('rank-status');
         const listEl = document.getElementById('rank-list');
@@ -2001,8 +1939,239 @@ GAME_HTML = f"""<!DOCTYPE html>
         const adminCount = document.getElementById('admin-player-count');
 
         let db = null;
-        let prevPositions = {{}};
-        let latestGameState = {{ status: 'waiting' }};
+        let prevPositions = {};
+        let latestGameState = { status: 'waiting' };
 
-        function esc(s) {{
-            return String(s).replace(/[&<>"']/g, c => ({{ '&': '&
+        function esc(s) {
+            return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+        }
+
+        window.checkUsernameAvailable = async (cleanName) => {
+            if (!db) return { available: true };
+            try {
+                const snap = await get(ref(db, 'players/' + cleanName));
+                if (!snap.exists()) return { available: true };
+                const savedToken = getCookie("balamath_token");
+                const data = snap.val();
+                if (savedToken && data.token === savedToken) {
+                    return { available: true, existing: data };
+                }
+                return { available: false };
+            } catch (e) {
+                return { available: true };
+            }
+        };
+
+        window.registerPersistentPlayer = async (cleanName, gender, token) => {
+            if (!db) return { ok: true };
+            try {
+                const playerRef = ref(db, 'players/' + cleanName);
+                const snap = await get(playerRef);
+                if (snap.exists() && snap.val().token !== token) {
+                    return { ok: false };
+                }
+                await set(playerRef, {
+                    name: cleanName,
+                    gender: gender,
+                    score: 0,
+                    level: 1,
+                    token: token,
+                    updated: serverTimestamp()
+                });
+                return { ok: true };
+            } catch (e) {
+                return { ok: false };
+            }
+        };
+
+        window.rankUpdate = (cleanName, newScore, newLevel) => {
+            if (!db || !cleanName) return;
+            update(ref(db, 'players/' + cleanName), {
+                score: newScore,
+                level: newLevel,
+                updated: serverTimestamp()
+            }).catch(() => {});
+        };
+
+        window.adminSetState = (newStatus) => {
+            if (!db) return;
+            set(ref(db, 'gameState'), {
+                status: newStatus,
+                updated: serverTimestamp()
+            });
+        };
+
+        window.adminSetStateSilent = (newStatus) => {
+            if (!db) return;
+            update(ref(db, 'gameState'), { status: newStatus }).catch(() => {});
+        };
+
+        window.adminClearPlayers = () => {
+            if (!db) return;
+            remove(ref(db, 'players'));
+        };
+
+        function renderAllLists(playersObj) {
+            const arr = Object.entries(playersObj)
+                .map(([id, p]) => ({ id, ...p }))
+                .sort((a, b) => (b.score || 0) - (a.score || 0));
+
+            if (lobbyGrid) {
+                lobbyGrid.innerHTML = '';
+                lobbyCountTag.textContent = arr.length + (arr.length === 1 ? ' CONECTADO' : ' CONECTADOS');
+                arr.forEach(p => {
+                    const isMe = (p.name === playerName);
+                    const src = p.gender === 'girl' ? ARIANA_SRC : RICKY_SRC;
+                    const av = src ? `<img src="${src}" class="w-6 h-6 pixelated">` : `<span>${p.gender === 'girl' ? '♀' : '♂'}</span>`;
+                    const chip = document.createElement('div');
+                    chip.className = 'lobby-chip' + (isMe ? ' me' : '');
+                    chip.innerHTML = `${av}<span class="text-[8px] font-hud text-[#f0e6d2]">${esc(p.name)}</span>`;
+                    lobbyGrid.appendChild(chip);
+                });
+            }
+
+            if (adminList) {
+                adminCount.textContent = arr.length;
+                adminList.innerHTML = '';
+                if (arr.length === 0) {
+                    adminList.innerHTML = '<p class="text-[8px] text-stone-500 font-hud text-center mt-6">SIN JUGADORES EN SALA</p>';
+                }
+                arr.forEach((p, i) => {
+                    const row = document.createElement('div');
+                    row.className = 'rank-row';
+                    row.innerHTML = `
+                        <span class="rank-pos">#${i + 1}</span>
+                        <div class="flex-grow min-w-0">
+                            <div class="rank-name truncate">${esc(p.name)}</div>
+                            <div class="rank-sub">NIVEL ${p.level || 1}</div>
+                        </div>
+                        <span class="rank-score">${(p.score || 0).toLocaleString()} PTS</span>
+                    `;
+                    adminList.appendChild(row);
+                });
+            }
+
+            statusEl.textContent = arr.length + (arr.length === 1 ? ' JUGADOR REGISTRADO' : ' JUGADORES REGISTRADOS');
+
+            const firstTop = {};
+            listEl.querySelectorAll('.rank-row').forEach(el => {
+                firstTop[el.dataset.id] = el.getBoundingClientRect().top;
+            });
+
+            listEl.innerHTML = '';
+            if (arr.length === 0) {
+                listEl.innerHTML = '<p class="text-[8px] text-stone-500 font-hud text-center mt-4">SIN JUGADORES AÚN</p>';
+            }
+
+            arr.forEach((p, i) => {
+                const pos = i + 1;
+                const isMe = (p.name === playerName);
+                const row = document.createElement('div');
+                row.className = 'rank-row' + (isMe ? ' me' : '') + (pos <= 3 ? ' top' + pos : '');
+                row.dataset.id = p.id;
+
+                const src = p.gender === 'girl' ? ARIANA_SRC : RICKY_SRC;
+                const avatar = src
+                    ? `<img src="${src}" class="rank-avatar" alt="">`
+                    : `<div class="rank-avatar">${p.gender === 'girl' ? '♀' : '♂'}</div>`;
+
+                const prev = prevPositions[p.id];
+                let arrow = '';
+                if (prev && prev > pos) arrow = '<span class="rank-up">▲</span>';
+                else if (prev && prev < pos) arrow = '<span class="rank-down">▼</span>';
+
+                row.innerHTML = `
+                    <span class="rank-pos">#${pos}</span>
+                    ${avatar}
+                    <div class="flex-grow min-w-0">
+                        <div class="rank-name truncate">${esc(p.name || 'JUGADOR')}${isMe ? ' (TÚ)' : ''}</div>
+                        <div class="rank-sub">NIVEL ${p.level || 1}</div>
+                    </div>
+                    <span class="rank-score">${(p.score || 0).toLocaleString()}</span>${arrow}
+                `;
+                listEl.appendChild(row);
+
+                if (isMe) badgeEl.textContent = '#' + pos;
+            });
+
+            listEl.querySelectorAll('.rank-row').forEach(el => {
+                const old = firstTop[el.dataset.id];
+                if (old === undefined) return;
+                const dy = old - el.getBoundingClientRect().top;
+                if (dy !== 0) {
+                    el.style.transition = 'none';
+                    el.style.transform = `translateY(${dy}px)`;
+                    requestAnimationFrame(() => requestAnimationFrame(() => {
+                        el.style.transition = '';
+                        el.style.transform = '';
+                    }));
+                }
+            });
+
+            prevPositions = {};
+            arr.forEach((p, i) => { prevPositions[p.id] = i + 1; });
+        }
+
+        async function restoreSessionFromCookies() {
+            const savedUser = getCookie("balamath_user");
+            const savedToken = getCookie("balamath_token");
+            if (!savedUser || !savedToken || !db) return;
+
+            try {
+                const snap = await get(ref(db, 'players/' + savedUser));
+                if (snap.exists()) {
+                    const data = snap.val();
+                    if (data.token === savedToken) {
+                        playerName = data.name;
+                        playerGender = data.gender || 'boy';
+                        score = data.score || 0;
+                        level = data.level || 1;
+                        window.onGlobalGameStateChange(latestGameState);
+                    }
+                }
+            } catch (e) {}
+        }
+
+        try {
+            const app = initializeApp(FB_CONFIG);
+            db = getDatabase(app);
+
+            onValue(ref(db, 'gameState'), snap => {
+                latestGameState = snap.val() || { status: 'waiting' };
+                if (window.onGlobalGameStateChange) {
+                    window.onGlobalGameStateChange(latestGameState);
+                }
+            });
+
+            onValue(ref(db, 'players'), snap => {
+                renderAllLists(snap.val() || {});
+            }, err => {
+                statusEl.textContent = '[SIN PERMISO EN REGLAS]';
+            });
+
+            restoreSessionFromCookies();
+        } catch (e) {
+            statusEl.textContent = '[ERROR DE CONEXIÓN]';
+        }
+    </script>
+</body>
+</html>
+"""
+
+GAME_HTML = (
+    GAME_HTML_TEMPLATE
+    .replace("__FONT_FACE_CSS__", font_face_css)
+    .replace("__BG_REG_TAG__", bg_reg_tag)
+    .replace("__BG_GAME_TAG__", bg_game_tag)
+    .replace("__AUDIO_HTML_TAG__", audio_html_tag)
+    .replace("__RICKY_IMG_TAG__", ricky_img_tag)
+    .replace("__ARIANA_IMG_TAG__", ariana_img_tag)
+    .replace("__REVEAL_ICON_TAG__", reveal_icon_tag)
+    .replace("__REROLL_ICON_TAG__", reroll_icon_tag)
+    .replace("__SKIP_ICON_TAG__", skip_icon_tag)
+    .replace("__FIREBASE_CONFIG_JSON__", firebase_config_json)
+    .replace("__RICKY_SRC_JS__", ricky_src_js)
+    .replace("__ARIANA_SRC_JS__", ariana_src_js)
+)
+
+components.html(GAME_HTML, height=720, scrolling=False)
