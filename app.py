@@ -5,12 +5,13 @@ Universidad de Costa Rica - Recinto de Paraíso
 """
 
 import os
+import json
 import base64
 import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="BALAMATH | Factor Común IF0003",
+    page_title="BALAMATH | IF0003",
     page_icon="🃏",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -86,11 +87,11 @@ if dos_font_b64:
     """
 else:
     font_face_css += """
-    @font-face {
+    @font-face {{
         font-family: 'DosVgaFont';
         src: local('Press Start 2P'), local('Courier New'), monospace;
         font-weight: bold;
-    }
+    }}
     """
 
 if balatro_font_b64:
@@ -104,11 +105,11 @@ if balatro_font_b64:
     """
 else:
     font_face_css += """
-    @font-face {
+    @font-face {{
         font-family: 'BalatroFont';
         src: local('Press Start 2P'), sans-serif;
         font-weight: bold;
-    }
+    }}
     """
 
 bg_game_tag = f'<img id="bg-game" class="screen-bg" style="display:none;" src="data:image/gif;base64,{bg_game_b64}" alt="Game BG" />' if bg_game_b64 else '<div id="bg-game" class="screen-bg procedural-game" style="display:none;"></div>'
@@ -117,7 +118,7 @@ bg_reg_tag = f'<img id="bg-reg" class="screen-bg" style="display:block;" src="da
 audio_html_tag = ""
 if audio_bg_b64:
     audio_html_tag = f"""
-    <audio id="bg-music" loop preload="auto" crossorigin="anonymous">
+    <audio id="bg-music" loop preload="auto" playsinline>
         <source src="data:audio/mp3;base64,{audio_bg_b64}" type="audio/mp3">
     </audio>
     """
@@ -128,9 +129,6 @@ ariana_img_tag = f'<img src="data:image/png;base64,{ariana_b64}" class="w-full h
 reveal_icon_tag = f'<img src="data:image/png;base64,{joker_reveal_b64}" class="w-7 h-7 sm:w-9 sm:h-9 object-contain pixelated" alt="Revelar" />' if joker_reveal_b64 else '<span class="text-cyan-400 font-hud text-[12px]">👁</span>'
 reroll_icon_tag = f'<img src="data:image/png;base64,{joker_reroll_b64}" class="w-7 h-7 sm:w-9 sm:h-9 object-contain pixelated" alt="Revolver" />' if joker_reroll_b64 else '<span class="text-purple-400 font-hud text-[12px]">⟲</span>'
 skip_icon_tag = f'<img src="data:image/png;base64,{joker_skip_b64}" class="w-7 h-7 sm:w-9 sm:h-9 object-contain pixelated" alt="Saltar" />' if joker_skip_b64 else '<span class="text-yellow-400 font-hud text-[12px]">⏭</span>'
-
-# ===== RANKING EN VIVO (Firebase Realtime Database) =====
-import json
 
 FIREBASE_CONFIG = {
     "apiKey": "AIzaSyD_iJYDdW_desDTyI2Dh8-_sCvXm43qoq8",
@@ -151,7 +149,7 @@ GAME_HTML = f"""<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BALAMATH: Factor Común 8-Bit</title>
+    <title>BALAMATH</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
     
@@ -301,7 +299,22 @@ GAME_HTML = f"""<!DOCTYPE html>
             box-shadow: inset 2px 2px 0 #090e17, inset -2px -2px 0 #384e6f, 0 2px 0 #000;
         }}
 
-        /* COMODINES: 10% MÁS GRANDES (49px en PC, 40px en móvil) */
+        .pixel-df-btn-emerald {{
+            font-family: var(--font-hud);
+            background: linear-gradient(180deg, #1b7a43 0%, #0d4725 100%);
+            border: 3px solid #000000;
+            box-shadow: 
+                inset 3px 3px 0 #34b86b,
+                inset -3px -3px 0 #062613,
+                0 0 0 2px #d4a340,
+                0 6px 0 #000000;
+            color: #ffffff;
+            text-shadow: 2px 2px 0 #000000;
+            cursor: pointer;
+        }}
+        .pixel-df-btn-emerald:active {{ transform: translateY(4px); }}
+
+        /* COMODINES */
         .btn-relic-slot {{
             background: #131720;
             border: 2px solid #000000;
@@ -446,7 +459,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             z-index: 30;
         }}
 
-        /* RESPONSIVIDAD PARA TELÉFONOS */
         @media (max-width: 640px) {{
             .card-8bit {{
                 width: 68px !important;
@@ -504,6 +516,28 @@ GAME_HTML = f"""<!DOCTYPE html>
             z-index: 9999;
             transition: opacity 0.4s steps(4);
         }}
+
+        /* LOBBY TIPO KAHOOT CHIPS */
+        @keyframes pop-in-chip {{
+            0% {{ transform: scale(0.5); opacity: 0; }}
+            70% {{ transform: scale(1.1); }}
+            100% {{ transform: scale(1); opacity: 1; }}
+        }}
+        .lobby-chip {{
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #131722;
+            border: 2px solid #000;
+            box-shadow: inset 2px 2px 0 #2e3648, 0 3px 0 #000;
+            padding: 5px 9px;
+            animation: pop-in-chip 0.25s steps(4) forwards;
+        }}
+        .lobby-chip.me {{
+            border-color: #d4a340;
+            background: #1f2738;
+        }}
+
         /* RANKING EN VIVO */
         .rank-row {{
             display: flex;
@@ -538,6 +572,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         .rank-score {{ font-family: var(--font-hud); font-size: 9px; color: #d4a340; }}
         .rank-up {{ color: #4ade80; font-size: 9px; margin-left: 2px; }}
         .rank-down {{ color: #f87171; font-size: 9px; margin-left: 2px; }}
+
         /* ENEMIGO: LADRÓN DE FICHAS */
         .enemy {{
             position: fixed;
@@ -620,22 +655,23 @@ GAME_HTML = f"""<!DOCTYPE html>
     <canvas id="fx-canvas"></canvas>
     <div id="fade-overlay"></div>
 
-    <!-- INTRO / REGISTRO BALAMATH -->
+    <!-- ========================================================
+         1. VISTA DE REGISTRO / ACCESO (SOLO DICE BALAMATH)
+         ======================================================== -->
     <div id="intro-modal" class="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-4">
         <div class="pixel-df-panel max-w-xs sm:max-w-sm w-full p-4 sm:p-6 text-center">
             
-            <div class="pixel-df-banner-crimson py-2.5 px-3 mb-4 inline-block w-full">
-                <h1 class="text-sm sm:text-base tracking-widest font-hud text-[#fff1d0]">BALAMATH</h1>
-                <p class="text-[7px] sm:text-[8px] opacity-90 tracking-widest mt-1 font-hud text-amber-200">FACTOR COMÚN • UCR IF0003</p>
+            <div class="pixel-df-banner-crimson py-3 px-3 mb-4 inline-block w-full">
+                <h1 class="text-base sm:text-xl tracking-widest font-hud text-[#fff1d0]">BALAMATH</h1>
             </div>
             
             <!-- PASO 1: NOMBRE -->
             <div id="step-name">
                 <div class="pixel-df-slot p-3 mb-4 text-left">
                     <label class="block text-[8px] sm:text-[9px] text-[#a99878] mb-1.5 tracking-wider font-hud">APODO DEL JUGADOR:</label>
-                    <input type="text" id="username-input" class="w-full bg-[#050608] border-2 border-[#333d4f] text-[#d4a340] p-2.5 text-center uppercase tracking-wider text-xs sm:text-sm font-bold font-hud outline-none focus:border-[#d4a340]" placeholder="TU NOMBRE" maxlength="12">
+                    <input type="text" id="username-input" class="w-full bg-[#050608] border-2 border-[#333d4f] text-[#d4a340] p-2.5 text-center tracking-wider text-xs sm:text-sm font-bold font-hud outline-none focus:border-[#d4a340]" placeholder="TU NOMBRE" maxlength="16">
                 </div>
-                <button onclick="goToGenderStep()" class="pixel-df-btn-flame w-full py-3.5 text-xs font-bold tracking-wider">
+                <button id="btn-step-name" onclick="goToGenderStep()" class="pixel-df-btn-flame w-full py-3.5 text-xs font-bold tracking-wider">
                     CONTINUAR ➔
                 </button>
             </div>
@@ -659,15 +695,96 @@ GAME_HTML = f"""<!DOCTYPE html>
                         </div>
                     </div>
                 </div>
-                <button id="btn-start-game" onclick="startGameWithTransition()" disabled class="pixel-df-panel bg-[#0d0f14] text-stone-600 w-full py-3 text-xs font-bold tracking-wider opacity-40 cursor-not-allowed">
-                    ENTRAR AL JUEGO ➔
+                <button id="btn-start-game" onclick="registerAndEnterLobby()" disabled class="pixel-df-panel bg-[#0d0f14] text-stone-600 w-full py-3 text-xs font-bold tracking-wider opacity-40 cursor-not-allowed">
+                    UNIRSE A LA SALA ➔
                 </button>
             </div>
 
         </div>
     </div>
 
-    <!-- CONTENIDO DEL JUEGO -->
+    <!-- ========================================================
+         2. VISTA SALA DE ESPERA TIPO KAHOOT + CONTADOR
+         ======================================================== -->
+    <div id="lobby-modal" class="fixed inset-0 z-[900] hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="pixel-df-panel max-w-lg w-full p-4 sm:p-6 text-center">
+            <div class="pixel-df-banner-crimson py-2.5 px-3 mb-3 inline-block w-full">
+                <h2 class="text-xs sm:text-sm tracking-widest font-hud text-[#fff1d0]">SALA DE INVOCACIÓN</h2>
+            </div>
+
+            <div id="lobby-waiting-box">
+                <p class="text-[8px] sm:text-[10px] text-[#d4a340] font-hud mb-3 animate-pulse">
+                    ESPERANDO AL ANFITRIÓN...
+                </p>
+                <div class="pixel-df-slot p-3 mb-3 min-h-[150px] max-h-[240px] overflow-y-auto flex flex-wrap gap-2 justify-center items-start content-start" id="lobby-players-grid">
+                    <!-- Aquí aparecen los jugadores tipo Kahoot -->
+                </div>
+                <div class="flex justify-between items-center text-[8px] text-[#8e98aa] font-hud px-1">
+                    <span>TU APODO: <strong id="lobby-my-name" class="text-white">---</strong></span>
+                    <span id="lobby-count-tag">0 CONECTADOS</span>
+                </div>
+            </div>
+
+            <!-- CONTADOR REGRESIVO AL INICIAR -->
+            <div id="lobby-countdown-box" class="hidden py-6">
+                <p class="text-[10px] sm:text-xs text-amber-300 font-hud mb-3 tracking-widest">¡LA PARTIDA COMIENZA EN!</p>
+                <div id="lobby-countdown-num" class="text-5xl sm:text-7xl score-flame font-hud my-2">3</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================
+         3. VISTA DE JUEGO PAUSADO / DETENIDO / NO ACTIVO
+         ======================================================== -->
+    <div id="paused-modal" class="fixed inset-0 bg-black/90 z-[950] hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="pixel-df-panel max-w-xs sm:max-w-sm w-full p-5 sm:p-6 text-center">
+            <div class="pixel-df-banner-crimson py-2.5 px-3 mb-4 inline-block w-full">
+                <h2 id="paused-title" class="text-xs sm:text-sm font-bold tracking-wider font-hud">PARTIDA DETENIDA</h2>
+            </div>
+            <div class="pixel-df-slot p-3.5 text-stone-300 mb-4 font-sub text-lg sm:text-xl leading-snug">
+                <p id="paused-desc">El administrador ha detenido temporalmente el juego. Tu progreso y puntos están a salvo.</p>
+            </div>
+            <p class="text-[8px] text-[#d4a340] font-hud animate-pulse">AGUARDANDO REANUDACIÓN...</p>
+        </div>
+    </div>
+
+    <!-- ========================================================
+         4. VISTA DE ADMINISTRADOR (ACCESO: marvelRIVALS83)
+         ======================================================== -->
+    <div id="admin-modal" class="fixed inset-0 bg-black/92 z-[1100] hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="pixel-df-panel max-w-xl w-full p-4 sm:p-6 text-center max-h-[92dvh] flex flex-col">
+            <div class="pixel-df-banner-crimson py-2.5 px-3 mb-3 flex justify-between items-center">
+                <span class="text-[9px] sm:text-xs font-hud text-amber-200">⚙ PANEL ADMIN</span>
+                <span id="admin-state-badge" class="bg-black text-[#d4a340] text-[8px] px-2 py-1 border border-[#d4a340] font-hud">ESTADO: LOBBY</span>
+            </div>
+
+            <!-- CONTROLES GLOBALES -->
+            <div class="grid grid-cols-3 gap-2 mb-3">
+                <button onclick="adminSetState('starting')" class="pixel-df-btn-emerald py-3 px-2 text-[8px] sm:text-[10px] font-hud">
+                    ▶ INICIAR
+                </button>
+                <button onclick="adminSetState('paused')" class="pixel-df-btn-flame py-3 px-2 text-[8px] sm:text-[10px] font-hud">
+                    ⏸ PAUSAR
+                </button>
+                <button onclick="adminSetState('waiting')" class="pixel-df-btn-arcane py-3 px-2 text-[8px] sm:text-[10px] font-hud">
+                    ⟲ LOBBY
+                </button>
+            </div>
+
+            <div class="flex justify-between items-center mb-2 px-1">
+                <span class="text-[8px] text-[#a99878] font-hud">JUGADORES REGISTRADOS (<span id="admin-player-count">0</span>)</span>
+                <button onclick="adminClearPlayers()" class="text-[8px] text-red-400 underline font-hud hover:text-red-300">[BORRAR TODOS]</button>
+            </div>
+
+            <!-- LISTA EN VIVO PARA EL ADMIN -->
+            <div id="admin-players-list" class="pixel-df-slot p-2.5 flex-grow overflow-y-auto flex flex-col gap-1.5 text-left min-h-[180px]">
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================
+         5. CONTENIDO DEL JUEGO PRINCIPAL
+         ======================================================== -->
     <div id="game-ui" class="hidden flex flex-col justify-between h-full w-full relative z-10">
         <!-- BOTONES INFERIORES -->
         <div class="fixed bottom-2 sm:bottom-3 left-2 sm:left-3 z-40 flex gap-2">
@@ -727,7 +844,7 @@ GAME_HTML = f"""<!DOCTYPE html>
                 <span class="text-[6px] sm:text-[8px] text-[#c8b99c] font-hud tracking-wider">RONDA <span id="round-display" class="text-white">1</span>/3</span>
             </div>
 
-            <!-- COMODINES: 10% MÁS GRANDES -->
+            <!-- COMODINES -->
             <div class="flex justify-center gap-2 sm:gap-3">
                 <button id="btn-joker-reveal" onclick="useJoker('reveal')" title="Revelar factor" class="btn-relic-slot relative">
                     {reveal_icon_tag}
@@ -784,7 +901,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- MODAL DERROTA (GAME OVER TRAS 5 ERRORES SEGUIDOS) -->
+    <!-- MODAL DERROTA (5 ERRORES SEGUIDOS) -->
     <div id="gameover-modal" class="fixed inset-0 bg-black/95 z-50 hidden flex items-center justify-center p-3 sm:p-4">
         <div class="pixel-df-panel max-w-xs sm:max-w-sm w-full p-4 sm:p-6 text-center border-red-700">
             <div class="pixel-df-banner-crimson py-2.5 px-3 mb-3 inline-block w-full bg-gradient-to-b from-red-900 to-black">
@@ -799,12 +916,34 @@ GAME_HTML = f"""<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- NOTIFICACIONES CENTRADAS, DURACIÓN CORTA Y DISMISS AL TOCAR -->
-    <div id="alert-modal" onclick="dismissAlert()" class="fixed top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 pixel-df-banner-crimson text-[9px] sm:text-xs px-5 py-3 z-50 hidden text-center max-w-[85vw] font-hud cursor-pointer shadow-2xl transition-opacity duration-150">
+    <!-- NOTIFICACIONES -->
+    <div id="alert-modal" onclick="dismissAlert()" class="fixed top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 pixel-df-banner-crimson text-[9px] sm:text-xs px-5 py-3 z-[1200] hidden text-center max-w-[85vw] font-hud cursor-pointer shadow-2xl transition-opacity duration-150">
         <span id="alert-text"></span>
     </div>
 
     <script>
+        /* ========================================================
+           COOKIES & UTILIDADES DE SESIÓN
+           ======================================================== */
+        function setCookie(name, value, days = 7) {{
+            const d = new Date();
+            d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = `${{name}}=${{encodeURIComponent(value)}};expires=${{d.toUTCString()}};path=/;SameSite=Lax`;
+        }}
+
+        function getCookie(name) {{
+            const prefix = name + "=";
+            const parts = document.cookie.split(';');
+            for (let c of parts) {{
+                c = c.trim();
+                if (c.indexOf(prefix) === 0) return decodeURIComponent(c.substring(prefix.length));
+            }}
+            return null;
+        }}
+
+        /* ========================================================
+           AUDIO DSP CON FALLBACK SEGURO PARA TELÉFONOS (iOS/ANDROID)
+           ======================================================== */
         let aCtx = null;
         let bgAudioEl = document.getElementById('bg-music');
         let bgSourceNode = null;
@@ -815,8 +954,8 @@ GAME_HTML = f"""<!DOCTYPE html>
         let wetGain = null;
         let masterMusicGain = null;
         let isMuted = false;
+        let useDirectHtmlAudio = false; // Fallback móvil si WebAudio falla/suspende
 
-        // Volumen reducido un 25% (0.45 * 0.75 = 0.3375)
         const DEFAULT_VOLUME = 0.3375;
 
         function buildImpulseResponse(duration = 2.4, decay = 3.2) {{
@@ -835,65 +974,83 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
 
         function initAudioEngine() {{
-            if (aCtx) return;
+            if (!bgAudioEl) return;
             try {{
-                aCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (bgAudioEl) {{
-                    bgSourceNode = aCtx.createMediaElementSource(bgAudioEl);
-
-                    // Filtros para efecto teléfono/atrapado
-                    highPassNode = aCtx.createBiquadFilter();
-                    highPassNode.type = 'highpass';
-                    highPassNode.frequency.setValueAtTime(480, aCtx.currentTime); // Corta graves
-
-                    lowPassNode = aCtx.createBiquadFilter();
-                    lowPassNode.type = 'lowpass';
-                    lowPassNode.frequency.setValueAtTime(2800, aCtx.currentTime); // Corta agudos / encerrado
-                    lowPassNode.Q.setValueAtTime(1.5, aCtx.currentTime);
-
-                    convolverNode = aCtx.createConvolver();
-                    convolverNode.buffer = buildImpulseResponse(2.4, 3.2);
-
-                    dryGain = aCtx.createGain();
-                    wetGain = aCtx.createGain();
-                    masterMusicGain = aCtx.createGain();
-
-                    masterMusicGain.gain.setValueAtTime(DEFAULT_VOLUME, aCtx.currentTime);
-
-                    // Cadena de enrutamiento
-                    bgSourceNode.connect(highPassNode);
-                    highPassNode.connect(lowPassNode);
-
-                    // Señal seca
-                    lowPassNode.connect(dryGain);
-                    // Señal con reverb
-                    lowPassNode.connect(convolverNode);
-                    convolverNode.connect(wetGain);
-
-                    dryGain.connect(masterMusicGain);
-                    wetGain.connect(masterMusicGain);
-
-                    masterMusicGain.connect(aCtx.destination);
-                    
-                    setCryptAudioMode(true);
+                if (!aCtx) {{
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    aCtx = new AudioCtx();
                 }}
-            }} catch(e) {{}}
+                if (aCtx.state === 'suspended') {{
+                    aCtx.resume().catch(() => {{}});
+                }}
+
+                // Evitar conectar el MediaElementSource más de una vez (causa silencio en móviles)
+                if (!bgSourceNode && !useDirectHtmlAudio) {{
+                    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                    if (isMobile) {{
+                        // En móviles, controlar directamente el <audio> garantiza reproducción estable sin cortes de WebAudio
+                        useDirectHtmlAudio = true;
+                        bgAudioEl.volume = isMuted ? 0 : DEFAULT_VOLUME;
+                        setCryptAudioMode(true);
+                    }} else {{
+                        bgSourceNode = aCtx.createMediaElementSource(bgAudioEl);
+                        highPassNode = aCtx.createBiquadFilter();
+                        highPassNode.type = 'highpass';
+                        highPassNode.frequency.setValueAtTime(480, aCtx.currentTime);
+
+                        lowPassNode = aCtx.createBiquadFilter();
+                        lowPassNode.type = 'lowpass';
+                        lowPassNode.frequency.setValueAtTime(2800, aCtx.currentTime);
+                        lowPassNode.Q.setValueAtTime(1.5, aCtx.currentTime);
+
+                        convolverNode = aCtx.createConvolver();
+                        convolverNode.buffer = buildImpulseResponse(2.4, 3.2);
+
+                        dryGain = aCtx.createGain();
+                        wetGain = aCtx.createGain();
+                        masterMusicGain = aCtx.createGain();
+                        masterMusicGain.gain.setValueAtTime(isMuted ? 0 : DEFAULT_VOLUME, aCtx.currentTime);
+
+                        bgSourceNode.connect(highPassNode);
+                        highPassNode.connect(lowPassNode);
+                        lowPassNode.connect(dryGain);
+                        lowPassNode.connect(convolverNode);
+                        convolverNode.connect(wetGain);
+                        dryGain.connect(masterMusicGain);
+                        wetGain.connect(masterMusicGain);
+                        masterMusicGain.connect(aCtx.destination);
+                        setCryptAudioMode(true);
+                    }}
+                }}
+            }} catch(e) {{
+                useDirectHtmlAudio = true;
+                if (bgAudioEl) bgAudioEl.volume = isMuted ? 0 : DEFAULT_VOLUME;
+            }}
+        }}
+
+        function ensureMusicPlaying() {{
+            initAudioEngine();
+            if (aCtx && aCtx.state === 'suspended') aCtx.resume().catch(() => {{}});
+            if (bgAudioEl && bgAudioEl.paused && !isMuted) {{
+                bgAudioEl.play().catch(() => {{}});
+            }}
         }}
 
         function setCryptAudioMode(enabled) {{
-            if (!aCtx || !bgAudioEl) return;
+            if (!bgAudioEl) return;
+            if (useDirectHtmlAudio || !aCtx || !dryGain) {{
+                bgAudioEl.playbackRate = enabled ? 0.82 : 1.0;
+                return;
+            }}
             const now = aCtx.currentTime;
             if (enabled) {{
                 bgAudioEl.playbackRate = 0.78;
-                // Efecto teléfono (480Hz - 2800Hz)
                 highPassNode.frequency.setValueAtTime(480, now);
                 lowPassNode.frequency.setValueAtTime(2800, now);
                 dryGain.gain.setValueAtTime(0.40, now);
-                // 40% menos de reverb (0.85 * 0.60 = 0.51)
                 wetGain.gain.setValueAtTime(0.51, now);
             }} else {{
                 bgAudioEl.playbackRate = 1.0;
-                // Plano/completo para el juego
                 highPassNode.frequency.setValueAtTime(20, now);
                 lowPassNode.frequency.setValueAtTime(20000, now);
                 dryGain.gain.setValueAtTime(1.0, now);
@@ -904,13 +1061,28 @@ GAME_HTML = f"""<!DOCTYPE html>
         function toggleMute() {{
             isMuted = !isMuted;
             const btn = document.getElementById('btn-audio-mute');
-            if (masterMusicGain) {{
+            if (useDirectHtmlAudio || !masterMusicGain) {{
+                if (bgAudioEl) {{
+                    bgAudioEl.muted = isMuted;
+                    bgAudioEl.volume = isMuted ? 0 : DEFAULT_VOLUME;
+                    if (!isMuted && bgAudioEl.paused) bgAudioEl.play().catch(() => {{}});
+                }}
+            }} else {{
                 masterMusicGain.gain.setValueAtTime(isMuted ? 0 : DEFAULT_VOLUME, aCtx.currentTime);
-            }} else if (bgAudioEl) {{
-                bgAudioEl.muted = isMuted;
             }}
             btn.textContent = isMuted ? "[♪ PLAY]" : "[♪ MUTE]";
         }}
+
+        // Desbloqueo persistente de audio en cualquier interacción móvil
+        ['touchstart', 'touchend', 'pointerdown', 'click'].forEach(evt => {{
+            window.addEventListener(evt, () => {{
+                ensureMusicPlaying();
+            }}, {{ passive: true }});
+        }});
+
+        document.addEventListener('visibilitychange', () => {{
+            if (!document.hidden && !isMuted) ensureMusicPlaying();
+        }});
 
         function playTone(freq, type, dur, vol=0.1) {{
             try {{
@@ -935,14 +1107,9 @@ GAME_HTML = f"""<!DOCTYPE html>
             winRound: () => {{ playTone(420, 'sine', 0.3, 0.2); setTimeout(() => playTone(630, 'sine', 0.3, 0.2), 150); }}
         }};
 
-        window.addEventListener('click', function initPlay() {{
-            initAudioEngine();
-            if (bgAudioEl && bgAudioEl.paused && !isMuted) {{
-                bgAudioEl.play().catch(() => {{}});
-            }}
-            window.removeEventListener('click', initPlay);
-        }}, {{ once: true }});
-
+        /* ========================================================
+           PARTÍCULAS
+           ======================================================== */
         const cvs = document.getElementById('fx-canvas'); const ctx = cvs.getContext('2d');
         let particles = [];
         window.onresize = () => {{ cvs.width = window.innerWidth; cvs.height = window.innerHeight; }};
@@ -988,12 +1155,59 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
         renderParticles();
 
-        let playerName = "JUGADOR";
+        /* ========================================================
+           CONTROL DE FLUJO Y ESTADOS DE JUEGO
+           ======================================================== */
+        let playerName = "";
         let playerGender = null;
+        let isAdminMode = false;
+        let gameStartedLocally = false;
+        let countdownInterval = null;
 
-        function goToGenderStep() {{
-            const input = document.getElementById('username-input').value.trim();
-            if(input) playerName = input.toUpperCase();
+        async function goToGenderStep() {{
+            const rawInput = document.getElementById('username-input').value.trim();
+            if (!rawInput) {{
+                SFX.error();
+                showAlert("[DIGITA UN APODO]");
+                return;
+            }}
+
+            // 1. Verificar clave secreta de administrador (sin guardar en BD)
+            if (rawInput === "marvelRIVALS83") {{
+                isAdminMode = true;
+                SFX.winRound();
+                document.getElementById('intro-modal').classList.add('hidden');
+                document.getElementById('admin-modal').classList.remove('hidden');
+                return;
+            }}
+
+            // Normalizar apodo para clave única en Firebase
+            const cleanName = rawInput.toUpperCase().replace(/[.#$\\[\\]\\/]/g, '').slice(0, 12);
+            if (!cleanName) {{
+                SFX.error();
+                showAlert("[APODO INVÁLIDO]");
+                return;
+            }}
+
+            const btn = document.getElementById('btn-step-name');
+            btn.disabled = true;
+            btn.textContent = "VERIFICANDO...";
+
+            // 2. Validar en Firebase si el username ya está ocupado
+            if (window.checkUsernameAvailable) {{
+                const check = await window.checkUsernameAvailable(cleanName);
+                if (!check.available) {{
+                    SFX.error();
+                    showAlert("[ESTE APODO YA ESTÁ EN USO]");
+                    btn.disabled = false;
+                    btn.textContent = "CONTINUAR ➔";
+                    return;
+                }}
+            }}
+
+            btn.disabled = false;
+            btn.textContent = "CONTINUAR ➔";
+            playerName = cleanName;
             document.getElementById('step-name').classList.add('hidden');
             document.getElementById('step-gender').classList.remove('hidden');
             SFX.select();
@@ -1016,26 +1230,61 @@ GAME_HTML = f"""<!DOCTYPE html>
             SFX.select();
         }}
 
-        function startGameWithTransition() {{
-            if (!playerGender) return;
+        async function registerAndEnterLobby() {{
+            if (!playerGender || !playerName) return;
             SFX.winRound();
+
+            const sessionToken = (window.crypto && crypto.randomUUID)
+                ? crypto.randomUUID()
+                : 'tok_' + Date.now() + Math.random().toString(36).slice(2);
+
+            if (window.registerPersistentPlayer) {{
+                const res = await window.registerPersistentPlayer(playerName, playerGender, sessionToken);
+                if (!res.ok) {{
+                    SFX.error();
+                    showAlert("[APODO OCUPADO]");
+                    return;
+                }}
+            }}
+
+            // Guardar cookies persistentes
+            setCookie("balamath_user", playerName, 7);
+            setCookie("balamath_token", sessionToken, 7);
+
+            enterLobbyView();
+        }}
+
+        function enterLobbyView() {{
+            document.getElementById('intro-modal').classList.add('hidden');
+            document.getElementById('game-ui').classList.add('hidden');
+            document.getElementById('paused-modal').classList.add('hidden');
+            document.getElementById('lobby-modal').classList.remove('hidden');
+            document.getElementById('lobby-my-name').textContent = playerName;
+            setCryptAudioMode(true);
+        }}
+
+        function launchActiveGameScreen() {{
+            if (gameStartedLocally) return;
+            gameStartedLocally = true;
 
             const fade = document.getElementById('fade-overlay');
             fade.style.opacity = '1';
 
             setTimeout(() => {{
                 document.getElementById('intro-modal').classList.add('hidden');
+                document.getElementById('lobby-modal').classList.add('hidden');
+                document.getElementById('paused-modal').classList.add('hidden');
                 document.getElementById('game-ui').classList.remove('hidden');
                 document.getElementById('user-display-tag').textContent = `${{playerGender === 'boy' ? '[CHICO]' : '[CHICA]'}} ${{playerName}}`;
-                window.__rankJoinArgs = [playerName, playerGender];
-                if (window.rankJoin) window.rankJoin(playerName, playerGender);
-                
+                document.getElementById('total-score').textContent = score.toLocaleString();
+
                 const bgReg = document.getElementById('bg-reg');
                 const bgGame = document.getElementById('bg-game');
                 if (bgReg) bgReg.style.display = 'none';
                 if (bgGame) bgGame.style.display = 'block';
 
                 setCryptAudioMode(false);
+                ensureMusicPlaying();
 
                 startRound();
                 updateUI();
@@ -1044,8 +1293,75 @@ GAME_HTML = f"""<!DOCTYPE html>
                 setTimeout(() => {{
                     fade.style.opacity = '0';
                 }}, 150);
-            }}, 400);
+            }}, 350);
         }}
+
+        // Sincronización global con estado de Firebase (waiting / starting / playing / paused)
+        window.onGlobalGameStateChange = (stateData) => {{
+            const status = (stateData && stateData.status) ? stateData.status : 'waiting';
+
+            // Actualizar badge del panel admin si está abierto
+            const adminBadge = document.getElementById('admin-state-badge');
+            if (adminBadge) adminBadge.textContent = "ESTADO: " + status.toUpperCase();
+
+            // El admin nunca entra como jugador
+            if (isAdminMode) return;
+
+            // Si aún no ha iniciado sesión ni tiene cookie resuelta, no forzar pantallas
+            if (!playerName || !playerGender) return;
+
+            if (status === 'waiting') {{
+                clearInterval(countdownInterval);
+                gameStartedLocally = false;
+                dismissEnemy();
+                document.getElementById('lobby-waiting-box').classList.remove('hidden');
+                document.getElementById('lobby-countdown-box').classList.add('hidden');
+                enterLobbyView();
+            }} 
+            else if (status === 'starting') {{
+                document.getElementById('intro-modal').classList.add('hidden');
+                document.getElementById('paused-modal').classList.add('hidden');
+                document.getElementById('lobby-modal').classList.remove('hidden');
+                document.getElementById('lobby-waiting-box').classList.add('hidden');
+                document.getElementById('lobby-countdown-box').classList.remove('hidden');
+
+                clearInterval(countdownInterval);
+                let count = 3;
+                const numEl = document.getElementById('lobby-countdown-num');
+                numEl.textContent = count;
+                SFX.select();
+
+                countdownInterval = setInterval(() => {{
+                    count--;
+                    if (count > 0) {{
+                        numEl.textContent = count;
+                        SFX.select();
+                    }} else {{
+                        clearInterval(countdownInterval);
+                        numEl.textContent = "¡YA!";
+                        SFX.winRound();
+                        if (window.adminSetStateSilent) window.adminSetStateSilent('playing');
+                        setTimeout(() => launchActiveGameScreen(), 400);
+                    }}
+                }}, 900);
+            }} 
+            else if (status === 'playing') {{
+                clearInterval(countdownInterval);
+                document.getElementById('paused-modal').classList.add('hidden');
+                if (!gameStartedLocally) {{
+                    launchActiveGameScreen();
+                }} else {{
+                    document.getElementById('game-ui').classList.remove('hidden');
+                    setCryptAudioMode(false);
+                }}
+            }} 
+            else if (status === 'paused') {{
+                clearInterval(countdownInterval);
+                dismissEnemy();
+                setCryptAudioMode(true);
+                document.getElementById('paused-modal').classList.remove('hidden');
+            }}
+        }};
 
         function toggleRank() {{
             SFX.hover();
@@ -1053,7 +1369,9 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
 
         function pushRank() {{
-            if (window.rankUpdate) window.rankUpdate(score, level);
+            if (window.rankUpdate && playerName && !isAdminMode) {{
+                window.rankUpdate(playerName, score, level);
+            }}
         }}
 
         function toggleTutorial() {{
@@ -1062,14 +1380,14 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
 
         /* ========================================================
-           ESTADO Y DIFICULTAD (+18% MÁS EXIGENTE ENTRE NIVELES)
+           ESTADO Y DIFICULTAD
            ======================================================== */
         let level = 1;
         let round = 1;
         let score = 0;
         let hand = [];
         let nextCardId = 0;
-        let consecutiveErrors = 0; // Rastreador de fallos seguidos
+        let consecutiveErrors = 0;
         let levelStats = {{ optimalPossible: 0, actualCorrect: 0, errors: 0 }};
         let comodines = {{ reveal: 1, reroll: 1, skip: 1 }};
 
@@ -1104,7 +1422,6 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
 
         function generateTerm(forceFactor = null) {{
-            // Escalamiento +18% más agresivo de coeficientes y exponentes
             let maxCoef = Math.max(4, Math.floor(level * 3.54));
             let maxX = Math.min(4, Math.ceil(level * 0.59));
             let maxY = level > 2 ? Math.min(3, Math.floor(level * 0.39)) : 0;
@@ -1165,7 +1482,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             let plantedX = (plantedC === 1 || Math.random() > 0.4) ? 1 : 0;
             let forceFactor = {{ c: plantedC, x: plantedX, y: 0 }};
             
-            // Mayor variabilidad y menor probabilidad de mano regalada
             if(Math.random() < 0.18) forceFactor = null;
             let forceCount = forceFactor ? (Math.floor(Math.random() * 3) + 3) : 0;
 
@@ -1247,7 +1563,6 @@ GAME_HTML = f"""<!DOCTYPE html>
                 consecutiveErrors++;
                 setTimeout(() => handContainer.classList.remove('animate-shake'), 250);
 
-                // Sistema de 5 oportunidades
                 if(consecutiveErrors >= 5) {{
                     triggerGameOver();
                     return;
@@ -1260,7 +1575,6 @@ GAME_HTML = f"""<!DOCTYPE html>
                 return;
             }}
 
-            // Mano válida: resetea errores consecutivos
             consecutiveErrors = 0;
             btnPlay.disabled = true;
             levelStats.actualCorrect += selected.length;
@@ -1369,7 +1683,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             modal.classList.remove('hidden');
         }}
 
-        // Transición cinemática idéntica a la inicial al pasar de nivel
         function nextLevelWithTransition() {{
             const fade = document.getElementById('fade-overlay');
             fade.style.opacity = '1';
@@ -1405,13 +1718,9 @@ GAME_HTML = f"""<!DOCTYPE html>
         function showAlert(msg) {{
             const el = document.getElementById('alert-modal');
             document.getElementById('alert-text').innerHTML = msg;
-            
             if (alertTimeout) clearTimeout(alertTimeout);
-            
             el.classList.remove('hidden');
             el.style.opacity = '1';
-
-            // Duración más corta (1.6 segundos)
             alertTimeout = setTimeout(() => {{
                 dismissAlert();
             }}, 1600);
@@ -1427,8 +1736,6 @@ GAME_HTML = f"""<!DOCTYPE html>
 
         /* ========================================================
            ENEMIGO: LADRÓN DE FICHAS
-           Aparece cada cierto tiempo. Tócalo hasta vaciar sus
-           corazones para ganar puntos; si escapa, te roba puntos.
            ======================================================== */
         const ENEMY_ART = [
             "....DDDDDD....",
@@ -1483,12 +1790,13 @@ GAME_HTML = f"""<!DOCTYPE html>
         function isBlockingModalOpen() {{
             return !document.getElementById('level-modal').classList.contains('hidden')
                 || !document.getElementById('gameover-modal').classList.contains('hidden')
+                || !document.getElementById('paused-modal').classList.contains('hidden')
+                || !document.getElementById('lobby-modal').classList.contains('hidden')
                 || document.getElementById('game-ui').classList.contains('hidden');
         }}
 
         function scheduleEnemy() {{
             clearTimeout(enemyTimer);
-            // Más frecuente en niveles altos (mínimo 7 s)
             const base = Math.max(7000, 16000 - level * 900);
             enemyTimer = setTimeout(spawnEnemy, base + Math.random() * 9000);
         }}
@@ -1503,8 +1811,8 @@ GAME_HTML = f"""<!DOCTYPE html>
         function spawnEnemy() {{
             if (enemyEl || isBlockingModalOpen()) {{ scheduleEnemy(); return; }}
 
-            const maxHp = Math.min(4, 1 + Math.floor(level / 3));      // 1 a 4 toques
-            const lifetime = Math.max(3500, 6500 - level * 300);       // tiempo para atraparlo
+            const maxHp = Math.min(4, 1 + Math.floor(level / 3));
+            const lifetime = Math.max(3500, 6500 - level * 300);
             enemyState = {{ hp: maxHp, drift: null, timeout: null }};
 
             enemyEl = document.createElement('div');
@@ -1524,14 +1832,12 @@ GAME_HTML = f"""<!DOCTYPE html>
             setTimeout(() => playTone(140, 'sawtooth', 0.2, 0.12), 120);
             showAlert('¡LADRÓN DE FICHAS! TÓCALO');
 
-            // Barra de tiempo
             const fill = enemyEl.querySelector('.enemy-bar-fill');
             requestAnimationFrame(() => requestAnimationFrame(() => {{
                 fill.style.transition = `width ${{lifetime}}ms linear`;
                 fill.style.width = '0%';
             }}));
 
-            // Se mueve por la pantalla (más rápido en niveles altos)
             enemyState.drift = setInterval(() => {{
                 if (!enemyEl) return;
                 const np = randomEnemyPos();
@@ -1602,7 +1908,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             if (!enemyEl) return;
             if (isBlockingModalOpen()) {{ removeEnemy(0); return; }}
 
-            // Roba el 12% de tus puntos (mínimo 50 × nivel), sin bajar de 0
             const stolen = Math.min(score, Math.max(50 * level, Math.floor(score * 0.12)));
             score -= stolen;
             refreshScore();
@@ -1617,7 +1922,6 @@ GAME_HTML = f"""<!DOCTYPE html>
             scoreEl.classList.add('score-stolen');
             showAlert(stolen > 0 ? '¡TE ROBÓ ' + stolen.toLocaleString() + ' PTS!' : '¡EL LADRÓN ESCAPÓ!');
 
-            // Vuela hacia tus puntos y desaparece
             clearEnemyTimers();
             enemyEl.classList.add('stealing');
             enemyEl.style.left = sr.left + 'px';
@@ -1677,9 +1981,12 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
     </script>
 
+    <!-- ========================================================
+         MÓDULO FIREBASE: PERSISTENCIA + LOBBY + ADMIN
+         ======================================================== -->
     <script type="module">
         import {{ initializeApp }} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import {{ getDatabase, ref, set, update, onValue, onDisconnect, serverTimestamp }} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        import {{ getDatabase, ref, set, get, update, remove, onValue, serverTimestamp }} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
         const FB_CONFIG = {firebase_config_json};
         const RICKY_SRC = {ricky_src_js};
@@ -1688,122 +1995,14 @@ GAME_HTML = f"""<!DOCTYPE html>
         const statusEl = document.getElementById('rank-status');
         const listEl = document.getElementById('rank-list');
         const badgeEl = document.getElementById('rank-badge');
+        const lobbyGrid = document.getElementById('lobby-players-grid');
+        const lobbyCountTag = document.getElementById('lobby-count-tag');
+        const adminList = document.getElementById('admin-players-list');
+        const adminCount = document.getElementById('admin-player-count');
 
-        const myId = (window.crypto && crypto.randomUUID)
-            ? crypto.randomUUID()
-            : 'p' + Date.now() + Math.random().toString(36).slice(2);
-
-        let db = null, myRef = null, joined = false;
-        let lastScore = 0, lastLevel = 1;
+        let db = null;
         let prevPositions = {{}};
+        let latestGameState = {{ status: 'waiting' }};
 
         function esc(s) {{
-            return String(s).replace(/[&<>"']/g, c => ({{ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }})[c]);
-        }}
-
-        function renderRank(players) {{
-            const arr = Object.entries(players)
-                .map(([id, p]) => ({{ id, ...p }}))
-                .sort((a, b) => (b.score || 0) - (a.score || 0));
-
-            statusEl.textContent = arr.length + (arr.length === 1 ? ' JUGADOR EN LÍNEA' : ' JUGADORES EN LÍNEA');
-
-            const firstTop = {{}};
-            listEl.querySelectorAll('.rank-row').forEach(el => {{
-                firstTop[el.dataset.id] = el.getBoundingClientRect().top;
-            }});
-
-            listEl.innerHTML = '';
-            if (arr.length === 0) {{
-                listEl.innerHTML = '<p class="text-[8px] text-stone-500 font-hud text-center mt-4">NADIE JUGANDO AÚN</p>';
-            }}
-
-            arr.forEach((p, i) => {{
-                const pos = i + 1;
-                const isMe = p.id === myId;
-                const row = document.createElement('div');
-                row.className = 'rank-row' + (isMe ? ' me' : '') + (pos <= 3 ? ' top' + pos : '');
-                row.dataset.id = p.id;
-
-                const src = p.gender === 'girl' ? ARIANA_SRC : RICKY_SRC;
-                const avatar = src
-                    ? `<img src="${{src}}" class="rank-avatar" alt="">`
-                    : `<div class="rank-avatar">${{p.gender === 'girl' ? '♀' : '♂'}}</div>`;
-
-                const prev = prevPositions[p.id];
-                let arrow = '';
-                if (prev && prev > pos) arrow = '<span class="rank-up">▲</span>';
-                else if (prev && prev < pos) arrow = '<span class="rank-down">▼</span>';
-
-                row.innerHTML = `
-                    <span class="rank-pos">#${{pos}}</span>
-                    ${{avatar}}
-                    <div class="flex-grow min-w-0">
-                        <div class="rank-name truncate">${{esc(p.name || 'JUGADOR')}}${{isMe ? ' (TÚ)' : ''}}</div>
-                        <div class="rank-sub">NIVEL ${{p.level || 1}}</div>
-                    </div>
-                    <span class="rank-score">${{(p.score || 0).toLocaleString()}}</span>${{arrow}}
-                `;
-                listEl.appendChild(row);
-
-                if (isMe) badgeEl.textContent = '#' + pos;
-            }});
-
-            listEl.querySelectorAll('.rank-row').forEach(el => {{
-                const old = firstTop[el.dataset.id];
-                if (old === undefined) return;
-                const dy = old - el.getBoundingClientRect().top;
-                if (dy !== 0) {{
-                    el.style.transition = 'none';
-                    el.style.transform = `translateY(${{dy}}px)`;
-                    requestAnimationFrame(() => requestAnimationFrame(() => {{
-                        el.style.transition = '';
-                        el.style.transform = '';
-                    }}));
-                }}
-            }});
-
-            prevPositions = {{}};
-            arr.forEach((p, i) => {{ prevPositions[p.id] = i + 1; }});
-        }}
-
-        window.rankJoin = (name, gender) => {{
-            if (!db || joined) return;
-            joined = true;
-            myRef = ref(db, 'players/' + myId);
-            onDisconnect(myRef).remove();
-            set(myRef, {{
-                name: String(name).slice(0, 12),
-                gender: gender,
-                score: lastScore,
-                level: lastLevel,
-                updated: serverTimestamp()
-            }});
-        }};
-
-        window.rankUpdate = (score, level) => {{
-            lastScore = score;
-            lastLevel = level;
-            if (!myRef) return;
-            update(myRef, {{ score: score, level: level, updated: serverTimestamp() }});
-        }};
-
-        if (!FB_CONFIG.databaseURL) {{
-            statusEl.textContent = '[RANKING SIN CONFIGURAR]';
-        }} else {{
-            try {{
-                const app = initializeApp(FB_CONFIG);
-                db = getDatabase(app);
-                onValue(ref(db, 'players'), snap => renderRank(snap.val() || {{}}),
-                        err => {{ statusEl.textContent = '[SIN PERMISO: REVISA LAS REGLAS]'; }});
-                if (window.__rankJoinArgs) window.rankJoin(...window.__rankJoinArgs);
-            }} catch (e) {{
-                statusEl.textContent = '[ERROR DE CONEXIÓN]';
-            }}
-        }}
-    </script>
-</body>
-</html>
-"""
-
-components.html(GAME_HTML, height=720, scrolling=False)
+            return String(s).replace(/[&<>"']/g, c => ({{ '&': '&
