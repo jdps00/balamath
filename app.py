@@ -291,6 +291,7 @@ GAME_HTML_TEMPLATE = """<!DOCTYPE html>
             color: #a7c8e8;
             text-shadow: 2px 2px 0 #000000;
             transition: transform 0.05s steps(2);
+            cursor: pointer;
         }
         .pixel-df-btn-arcane:active {
             transform: translateY(2px);
@@ -710,7 +711,7 @@ GAME_HTML_TEMPLATE = """<!DOCTYPE html>
                     <span id="lobby-count-tag">0 CONECTADOS</span>
                 </div>
                 <div class="mt-3 text-right px-1">
-                    <button onclick="logoutSession()" class="text-[7px] sm:text-[8px] text-stone-500 hover:text-red-400 underline font-hud cursor-pointer">
+                    <button onclick="openLogoutConfirm()" class="text-[7px] sm:text-[8px] text-stone-500 hover:text-red-400 underline font-hud cursor-pointer">
                         [ CAMBIAR USUARIO ]
                     </button>
                 </div>
@@ -733,7 +734,7 @@ GAME_HTML_TEMPLATE = """<!DOCTYPE html>
                 <p id="paused-desc">El administrador ha detenido temporalmente el juego. Tu progreso y puntos están a salvo.</p>
             </div>
             <p class="text-[8px] text-[#d4a340] font-hud animate-pulse mb-4">AGUARDANDO REANUDACIÓN...</p>
-            <button onclick="logoutSession()" class="text-[7px] sm:text-[8px] text-stone-500 hover:text-red-400 underline font-hud cursor-pointer">
+            <button onclick="openLogoutConfirm()" class="text-[7px] sm:text-[8px] text-stone-500 hover:text-red-400 underline font-hud cursor-pointer">
                 [ SALIR DE ESTA CUENTA ]
             </button>
         </div>
@@ -760,15 +761,15 @@ GAME_HTML_TEMPLATE = """<!DOCTYPE html>
             </div>
 
             <div class="flex justify-between items-center mb-2 px-1">
-                <span class="text-[8px] text-[#a99878] font-hud">JUGADORES REGISTRADOS (<span id="admin-player-count">0</span>)</span>
-                <button onclick="adminClearPlayers()" class="text-[8px] text-red-400 underline font-hud hover:text-red-300">[BORRAR TODOS]</button>
+                <span class="text-[8px] text-[#a99878] font-hud">JUGADORES (<span id="admin-player-count">0</span>)</span>
+                <button onclick="adminClearPlayers()" class="text-[8px] text-red-400 underline font-hud hover:text-red-300 cursor-pointer">[BORRAR TODOS]</button>
             </div>
 
             <div id="admin-players-list" class="pixel-df-slot p-2.5 flex-grow overflow-y-auto flex flex-col gap-1.5 text-left min-h-[180px] mb-3">
             </div>
 
             <div class="text-right">
-                <button onclick="logoutSession()" class="text-[8px] text-stone-400 hover:text-white underline font-hud cursor-pointer">
+                <button onclick="openLogoutConfirm()" class="text-[8px] text-stone-400 hover:text-white underline font-hud cursor-pointer">
                     [ SALIR DEL MODO ADMIN ]
                 </button>
             </div>
@@ -784,7 +785,7 @@ GAME_HTML_TEMPLATE = """<!DOCTYPE html>
             <button id="btn-audio-mute" onclick="toggleMute()" class="pixel-df-btn-arcane text-[8px] sm:text-xs px-2 sm:px-3 py-1.5 sm:py-2 font-hud">
                 [♪ MUTE]
             </button>
-            <button onclick="logoutSession()" title="Salir / Cambiar cuenta" class="pixel-df-panel bg-[#0d1017] text-stone-500 hover:text-red-400 text-[8px] sm:text-xs px-2 sm:px-2.5 py-1.5 sm:py-2 font-hud cursor-pointer">
+            <button onclick="openLogoutConfirm()" title="Salir / Cambiar cuenta" class="pixel-df-panel bg-[#0d1017] text-stone-500 hover:text-red-400 text-[8px] sm:text-xs px-2 sm:px-2.5 py-1.5 sm:py-2 font-hud cursor-pointer">
                 [ SALIR ]
             </button>
         </div>
@@ -889,18 +890,39 @@ GAME_HTML_TEMPLATE = """<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- MODAL DERROTA -->
+    <!-- MODAL DERROTA (CON PENALIZACIÓN DEL 25%) -->
     <div id="gameover-modal" class="fixed inset-0 bg-black/95 z-50 hidden flex items-center justify-center p-3 sm:p-4">
         <div class="pixel-df-panel max-w-xs sm:max-w-sm w-full p-4 sm:p-6 text-center border-red-700">
             <div class="pixel-df-banner-crimson py-2.5 px-3 mb-3 inline-block w-full bg-gradient-to-b from-red-900 to-black">
                 <h2 class="text-xs sm:text-sm font-bold tracking-wider font-hud text-red-200">SIN INTENTOS</h2>
             </div>
-            <div class="pixel-df-slot p-3 text-stone-300 mb-4 font-sub text-base sm:text-lg text-center leading-snug">
-                Has acumulado <span class="text-red-400 font-bold font-hud">5 FALLOS</span> consecutivos sin hallar factor común.
+            <div class="pixel-df-slot p-3 text-stone-300 mb-4 font-sub text-base sm:text-lg text-center leading-snug space-y-1.5">
+                <p>Has acumulado <span class="text-red-400 font-bold font-hud">5 FALLOS</span> consecutivos.</p>
+                <p id="gameover-penalty-text" class="text-amber-300 font-bold">Penalización: -25% de puntos</p>
             </div>
             <button onclick="retryCurrentLevel()" class="pixel-df-btn-flame w-full py-3.5 text-xs sm:text-sm tracking-wider font-hud">
                 REINTENTAR NIVEL ➔
             </button>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMACIÓN DE SALIDA -->
+    <div id="logout-confirm-modal" class="fixed inset-0 bg-black/92 z-[1300] hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="pixel-df-panel max-w-xs w-full p-5 text-center">
+            <div class="pixel-df-banner-crimson py-2 px-3 mb-3 inline-block w-full">
+                <h3 class="text-[10px] sm:text-xs font-hud">¿CERRAR SESIÓN?</h3>
+            </div>
+            <p class="font-sub text-base sm:text-lg text-stone-300 mb-4 leading-tight">
+                Volverás a la pantalla de inicio y se desconectará tu sesión en este dispositivo.
+            </p>
+            <div class="grid grid-cols-2 gap-2.5">
+                <button onclick="closeLogoutConfirm()" class="pixel-df-btn-arcane py-2.5 text-[9px] font-hud">
+                    CANCELAR
+                </button>
+                <button onclick="executeLogout()" class="pixel-df-btn-flame py-2.5 text-[9px] font-hud">
+                    SÍ, SALIR
+                </button>
+            </div>
         </div>
     </div>
 
@@ -926,7 +948,17 @@ GAME_HTML_TEMPLATE = """<!DOCTYPE html>
             return null;
         }
 
-        function logoutSession() {
+        function openLogoutConfirm() {
+            SFX.hover();
+            document.getElementById('logout-confirm-modal').classList.remove('hidden');
+        }
+
+        function closeLogoutConfirm() {
+            SFX.hover();
+            document.getElementById('logout-confirm-modal').classList.add('hidden');
+        }
+
+        function executeLogout() {
             document.cookie = "balamath_user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax";
             document.cookie = "balamath_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax";
             location.reload();
@@ -1226,7 +1258,6 @@ GAME_HTML_TEMPLATE = """<!DOCTYPE html>
             setCookie("balamath_user", playerName, 7);
             setCookie("balamath_token", sessionToken, 7);
 
-            // Evalúa el estado global actual (si ya empezó o está en curso, entra directo al juego)
             const currentGlobalState = window.getLatestGameState ? window.getLatestGameState() : { status: 'waiting' };
             window.onGlobalGameStateChange(currentGlobalState);
         }
@@ -1582,6 +1613,20 @@ GAME_HTML_TEMPLATE = """<!DOCTYPE html>
         function triggerGameOver() {
             dismissEnemy();
             setCryptAudioMode(true);
+
+            // Deducción del 25% de puntos al acumular 5 fallos seguidos
+            const lostPts = Math.floor(score * 0.25);
+            score = Math.max(0, score - lostPts);
+            refreshScore();
+            pushRank();
+
+            const penaltyEl = document.getElementById('gameover-penalty-text');
+            if (penaltyEl) {
+                penaltyEl.textContent = lostPts > 0
+                    ? `Penalización (-25%): -${lostPts.toLocaleString()} PTS`
+                    : `Penalización: -25% de puntos`;
+            }
+
             document.getElementById('gameover-modal').classList.remove('hidden');
         }
 
@@ -2033,12 +2078,29 @@ GAME_HTML_TEMPLATE = """<!DOCTYPE html>
             update(ref(db, 'gameState'), { status: newStatus }).catch(() => {});
         };
 
+        window.adminDeletePlayer = (targetName) => {
+            if (!db || !targetName) return;
+            remove(ref(db, 'players/' + targetName)).then(() => {
+                SFX.discard();
+                showAlert(`[ELIMINADO: ${targetName}]`);
+            }).catch(() => {});
+        };
+
         window.adminClearPlayers = () => {
             if (!db) return;
-            remove(ref(db, 'players'));
+            remove(ref(db, 'players')).then(() => {
+                SFX.discard();
+                showAlert("[TODOS LOS JUGADORES ELIMINADOS]");
+            });
         };
 
         function renderAllLists(playersObj) {
+            // Si el jugador activo fue eliminado por el admin desde la BD, cerrar su sesión local
+            if (!isAdminMode && playerName && gameStartedLocally && !playersObj[playerName]) {
+                executeLogout();
+                return;
+            }
+
             const arr = Object.entries(playersObj)
                 .map(([id, p]) => ({ id, ...p }))
                 .sort((a, b) => (b.score || 0) - (a.score || 0));
@@ -2072,7 +2134,10 @@ GAME_HTML_TEMPLATE = """<!DOCTYPE html>
                             <div class="rank-name truncate">${esc(p.name)}</div>
                             <div class="rank-sub">NIVEL ${p.level || 1}</div>
                         </div>
-                        <span class="rank-score">${(p.score || 0).toLocaleString()} PTS</span>
+                        <span class="rank-score mr-2">${(p.score || 0).toLocaleString()}</span>
+                        <button onclick="adminDeletePlayer('${esc(p.name)}')" title="Eliminar usuario" class="bg-red-950 hover:bg-red-800 text-red-200 border border-black px-2 py-1 text-[8px] font-hud cursor-pointer">
+                            ✕
+                        </button>
                     `;
                     adminList.appendChild(row);
                 });
