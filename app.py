@@ -129,6 +129,23 @@ reveal_icon_tag = f'<img src="data:image/png;base64,{joker_reveal_b64}" class="w
 reroll_icon_tag = f'<img src="data:image/png;base64,{joker_reroll_b64}" class="w-7 h-7 sm:w-9 sm:h-9 object-contain pixelated" alt="Revolver" />' if joker_reroll_b64 else '<span class="text-purple-400 font-hud text-[12px]">⟲</span>'
 skip_icon_tag = f'<img src="data:image/png;base64,{joker_skip_b64}" class="w-7 h-7 sm:w-9 sm:h-9 object-contain pixelated" alt="Saltar" />' if joker_skip_b64 else '<span class="text-yellow-400 font-hud text-[12px]">⏭</span>'
 
+# ===== RANKING EN VIVO (Firebase Realtime Database) =====
+import json
+
+FIREBASE_CONFIG = {
+    "apiKey": "AIzaSyD_iJYDdW_desDTyI2Dh8-_sCvXm43qoq8",
+    "authDomain": "balamath-8d226.firebaseapp.com",
+    "databaseURL": "https://balamath-8d226-default-rtdb.firebaseio.com",
+    "projectId": "balamath-8d226",
+    "storageBucket": "balamath-8d226.firebasestorage.app",
+    "messagingSenderId": "353855358171",
+    "appId": "1:353855358171:web:3e67a045c14b4f9bad78fe"
+}
+
+firebase_config_json = json.dumps(FIREBASE_CONFIG)
+ricky_src_js = json.dumps(f"data:image/png;base64,{ricky_b64}" if ricky_b64 else "")
+ariana_src_js = json.dumps(f"data:image/png;base64,{ariana_b64}" if ariana_b64 else "")
+
 GAME_HTML = f"""<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -487,6 +504,40 @@ GAME_HTML = f"""<!DOCTYPE html>
             z-index: 9999;
             transition: opacity 0.4s steps(4);
         }}
+        /* RANKING EN VIVO */
+        .rank-row {{
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            background: #080a0e;
+            border: 2px solid #000000;
+            box-shadow: inset 2px 2px 0 #000000, inset -2px -2px 0 #1b202c;
+            transition: transform 0.45s steps(6);
+        }}
+        .rank-row.me {{
+            border-color: #d4a340;
+            background: #1b2230;
+            box-shadow: inset 0 0 0 2px #d4a340, 0 0 8px rgba(212, 163, 64, 0.35);
+        }}
+        .rank-pos {{ font-family: var(--font-hud); font-size: 10px; color: #8e98aa; min-width: 26px; }}
+        .rank-row.top1 .rank-pos {{ color: #f1b31c; text-shadow: 1px 1px 0 #000; }}
+        .rank-row.top2 .rank-pos {{ color: #c0c7d1; }}
+        .rank-row.top3 .rank-pos {{ color: #c97a3a; }}
+        .rank-avatar {{
+            width: 30px; height: 30px;
+            flex-shrink: 0;
+            image-rendering: pixelated;
+            background: #11141c;
+            border: 2px solid #000;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; color: #d4a340;
+        }}
+        .rank-name {{ font-family: var(--font-hud); font-size: 8px; color: #e8dcc2; }}
+        .rank-sub {{ font-family: var(--font-sub); font-size: 14px; color: #8e98aa; line-height: 1; }}
+        .rank-score {{ font-family: var(--font-hud); font-size: 9px; color: #d4a340; }}
+        .rank-up {{ color: #4ade80; font-size: 9px; margin-left: 2px; }}
+        .rank-down {{ color: #f87171; font-size: 9px; margin-left: 2px; }}
     </style>
 </head>
 <body class="p-2 sm:p-4">
@@ -557,10 +608,20 @@ GAME_HTML = f"""<!DOCTYPE html>
         </div>
 
         <div class="fixed bottom-2 sm:bottom-3 right-2 sm:right-3 z-40">
-            <button onclick="showRankNotice()" class="pixel-df-panel bg-[#0d1017] text-stone-400 text-[8px] sm:text-xs px-2.5 sm:px-3.5 py-1.5 sm:py-2 cursor-pointer relative font-hud">
+            <button onclick="toggleRank()" class="pixel-df-panel bg-[#0d1017] text-stone-400 text-[8px] sm:text-xs px-2.5 sm:px-3.5 py-1.5 sm:py-2 cursor-pointer relative font-hud">
                 [ RANK ]
-                <span class="absolute -top-2 -right-2 bg-[#8b1820] text-amber-200 text-[7px] font-bold px-1 py-0.5 border border-black">DEV</span>
+                <span id="rank-badge" class="absolute -top-2 -right-2 bg-[#8b1820] text-amber-200 text-[7px] font-bold px-1 py-0.5 border border-black">--</span>
             </button>
+        </div>
+
+        <!-- PANEL RANKING EN VIVO -->
+        <div id="rank-panel" class="fixed right-0 top-0 h-full w-72 sm:w-80 bg-[#0d1017] border-l-4 border-black p-3 sm:p-4 flex flex-col z-50 transform translate-x-full transition-transform duration-200 shadow-2xl">
+            <div class="flex justify-between items-center mb-2 border-b-2 border-[#2b3548] pb-2">
+                <div class="pixel-df-banner-crimson px-2.5 py-1 text-[8px] sm:text-[9px] font-hud">RANKING EN VIVO</div>
+                <button onclick="toggleRank()" class="text-amber-200 text-xs font-bold font-hud hover:text-white">[ ✕ ]</button>
+            </div>
+            <p id="rank-status" class="text-[7px] text-[#8e98aa] font-hud mb-2 tracking-wider">CONECTANDO...</p>
+            <div id="rank-list" class="flex flex-col gap-1.5 overflow-y-auto flex-grow"></div>
         </div>
 
         <!-- PANEL TUTORIAL -->
@@ -893,6 +954,8 @@ GAME_HTML = f"""<!DOCTYPE html>
                 document.getElementById('intro-modal').classList.add('hidden');
                 document.getElementById('game-ui').classList.remove('hidden');
                 document.getElementById('user-display-tag').textContent = `${{playerGender === 'boy' ? '[CHICO]' : '[CHICA]'}} ${{playerName}}`;
+                window.__rankJoinArgs = [playerName, playerGender];
+                if (window.rankJoin) window.rankJoin(playerName, playerGender);
                 
                 const bgReg = document.getElementById('bg-reg');
                 const bgGame = document.getElementById('bg-game');
@@ -910,9 +973,13 @@ GAME_HTML = f"""<!DOCTYPE html>
             }}, 400);
         }}
 
-        function showRankNotice() {{
+        function toggleRank() {{
             SFX.hover();
-            showAlert("[RANKING EN DESARROLLO]");
+            document.getElementById('rank-panel').classList.toggle('translate-x-full');
+        }}
+
+        function pushRank() {{
+            if (window.rankUpdate) window.rankUpdate(score, level);
         }}
 
         function toggleTutorial() {{
@@ -1015,6 +1082,7 @@ GAME_HTML = f"""<!DOCTYPE html>
         }}
 
         function startRound() {{
+            pushRank();
             document.getElementById('level-display').textContent = level;
             document.getElementById('round-display').textContent = round;
             
@@ -1127,6 +1195,7 @@ GAME_HTML = f"""<!DOCTYPE html>
             let mult = selected.length * selected.length;
             let handScore = basePts * mult;
             score += handScore;
+            pushRank();
             
             document.getElementById('total-score').textContent = score.toLocaleString();
             
@@ -1197,6 +1266,7 @@ GAME_HTML = f"""<!DOCTYPE html>
 
             let bonusScore = stars * 1000 * level;
             score += bonusScore;
+            pushRank();
             document.getElementById('total-score').textContent = score.toLocaleString();
 
             let bonusItemText = "";
@@ -1328,6 +1398,132 @@ GAME_HTML = f"""<!DOCTYPE html>
                 }}
             }}
             updateUI();
+        }}
+    </script>
+
+    <script type="module">
+        import {{ initializeApp }} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import {{ getDatabase, ref, set, update, onValue, onDisconnect, serverTimestamp }} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+        const FB_CONFIG = {firebase_config_json};
+        const RICKY_SRC = {ricky_src_js};
+        const ARIANA_SRC = {ariana_src_js};
+
+        const statusEl = document.getElementById('rank-status');
+        const listEl = document.getElementById('rank-list');
+        const badgeEl = document.getElementById('rank-badge');
+
+        const myId = (window.crypto && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : 'p' + Date.now() + Math.random().toString(36).slice(2);
+
+        let db = null, myRef = null, joined = false;
+        let lastScore = 0, lastLevel = 1;
+        let prevPositions = {{}};
+
+        function esc(s) {{
+            return String(s).replace(/[&<>"']/g, c => ({{ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }})[c]);
+        }}
+
+        function renderRank(players) {{
+            const arr = Object.entries(players)
+                .map(([id, p]) => ({{ id, ...p }}))
+                .sort((a, b) => (b.score || 0) - (a.score || 0));
+
+            statusEl.textContent = arr.length + (arr.length === 1 ? ' JUGADOR EN LÍNEA' : ' JUGADORES EN LÍNEA');
+
+            const firstTop = {{}};
+            listEl.querySelectorAll('.rank-row').forEach(el => {{
+                firstTop[el.dataset.id] = el.getBoundingClientRect().top;
+            }});
+
+            listEl.innerHTML = '';
+            if (arr.length === 0) {{
+                listEl.innerHTML = '<p class="text-[8px] text-stone-500 font-hud text-center mt-4">NADIE JUGANDO AÚN</p>';
+            }}
+
+            arr.forEach((p, i) => {{
+                const pos = i + 1;
+                const isMe = p.id === myId;
+                const row = document.createElement('div');
+                row.className = 'rank-row' + (isMe ? ' me' : '') + (pos <= 3 ? ' top' + pos : '');
+                row.dataset.id = p.id;
+
+                const src = p.gender === 'girl' ? ARIANA_SRC : RICKY_SRC;
+                const avatar = src
+                    ? `<img src="${{src}}" class="rank-avatar" alt="">`
+                    : `<div class="rank-avatar">${{p.gender === 'girl' ? '♀' : '♂'}}</div>`;
+
+                const prev = prevPositions[p.id];
+                let arrow = '';
+                if (prev && prev > pos) arrow = '<span class="rank-up">▲</span>';
+                else if (prev && prev < pos) arrow = '<span class="rank-down">▼</span>';
+
+                row.innerHTML = `
+                    <span class="rank-pos">#${{pos}}</span>
+                    ${{avatar}}
+                    <div class="flex-grow min-w-0">
+                        <div class="rank-name truncate">${{esc(p.name || 'JUGADOR')}}${{isMe ? ' (TÚ)' : ''}}</div>
+                        <div class="rank-sub">NIVEL ${{p.level || 1}}</div>
+                    </div>
+                    <span class="rank-score">${{(p.score || 0).toLocaleString()}}</span>${{arrow}}
+                `;
+                listEl.appendChild(row);
+
+                if (isMe) badgeEl.textContent = '#' + pos;
+            }});
+
+            listEl.querySelectorAll('.rank-row').forEach(el => {{
+                const old = firstTop[el.dataset.id];
+                if (old === undefined) return;
+                const dy = old - el.getBoundingClientRect().top;
+                if (dy !== 0) {{
+                    el.style.transition = 'none';
+                    el.style.transform = `translateY(${{dy}}px)`;
+                    requestAnimationFrame(() => requestAnimationFrame(() => {{
+                        el.style.transition = '';
+                        el.style.transform = '';
+                    }}));
+                }}
+            }});
+
+            prevPositions = {{}};
+            arr.forEach((p, i) => {{ prevPositions[p.id] = i + 1; }});
+        }}
+
+        window.rankJoin = (name, gender) => {{
+            if (!db || joined) return;
+            joined = true;
+            myRef = ref(db, 'players/' + myId);
+            onDisconnect(myRef).remove();
+            set(myRef, {{
+                name: String(name).slice(0, 12),
+                gender: gender,
+                score: lastScore,
+                level: lastLevel,
+                updated: serverTimestamp()
+            }});
+        }};
+
+        window.rankUpdate = (score, level) => {{
+            lastScore = score;
+            lastLevel = level;
+            if (!myRef) return;
+            update(myRef, {{ score: score, level: level, updated: serverTimestamp() }});
+        }};
+
+        if (!FB_CONFIG.databaseURL) {{
+            statusEl.textContent = '[RANKING SIN CONFIGURAR]';
+        }} else {{
+            try {{
+                const app = initializeApp(FB_CONFIG);
+                db = getDatabase(app);
+                onValue(ref(db, 'players'), snap => renderRank(snap.val() || {{}}),
+                        err => {{ statusEl.textContent = '[SIN PERMISO: REVISA LAS REGLAS]'; }});
+                if (window.__rankJoinArgs) window.rankJoin(...window.__rankJoinArgs);
+            }} catch (e) {{
+                statusEl.textContent = '[ERROR DE CONEXIÓN]';
+            }}
         }}
     </script>
 </body>
